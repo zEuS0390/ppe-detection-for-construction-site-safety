@@ -1,4 +1,4 @@
-import cv2, time, threading
+import cv2, threading
 
 class Camera:
 
