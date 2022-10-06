@@ -7,3 +7,7 @@ Clone YOLOR repository
 ```
 git clone https://github.com/WongKinYiu/yolor.git
 ```
+Install YOLOR dependencies
+```
+pip install -r ./yolor/requirements.txt
+```
