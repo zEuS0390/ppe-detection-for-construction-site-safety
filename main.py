@@ -1,16 +1,17 @@
-import cv2
+from src import *
+import argparse
 
-cap = cv2.VideoCapture(0)
+"""
+    TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
+    PERSONAL PROTECTIVE EQUIPMENT DETECTION USING YOLOR ALGORITHM [2022]
+    TEAM MEMBERS:
+        - BALTAZAR, ZEUS JAMES
+        - BASBACIO, MARTIN LORENZO
+		- LARROSA, CLARENCE GAIL
+        - MARQUEZ, IAN GABRIEL
+"""
 
-fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
-out = cv2.VideoWriter('sample.mp4', fourcc, 20.0, (640, 480))
-
-while True:
-	_, frame = cap.read()
-	cv2.imshow("frame", frame)
-	out.write(frame)
-	if cv2.waitKey(30) == 27:
-		break
-
-cap.release()
-cv2.destroyAllWindows()
+if __name__=="__main__":
+	argparser = argparse.ArgumentParser()
+	cam = Camera()
+	cam.run()
