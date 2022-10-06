@@ -1,5 +1,5 @@
 from src import *
-import argparse
+import argparse, threading
 
 """
     TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
@@ -14,4 +14,6 @@ import argparse
 if __name__=="__main__":
 	argparser = argparse.ArgumentParser()
 	cam = Camera()
-	cam.run()
+	camThread = threading.Thread(target=cam.run)
+	camController = CameraControllerThread(cam, camThread)
+	camController.start()
