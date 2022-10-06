@@ -1,5 +1,5 @@
 from src import *
-import argparse
+import argparse, configparser
 
 """
     TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
@@ -24,9 +24,12 @@ def shell(cam: Camera):
 
 if __name__=="__main__":
     argparser = argparse.ArgumentParser()
-    cam = Camera()
-    camThread = threading.Thread(target=cam.run)
-    camController = CameraControllerThread(cam, camThread)
-    shellThread = threading.Thread(target=shell, args=(cam,))
-    shellThread.start()
-    camController.start()
+    confparser = configparser.ConfigParser()
+    confparser.read("./config.cfg")
+    detection = Detection(confparser)
+    # cam = Camera()
+    # camThread = threading.Thread(target=cam.run)
+    # camController = CameraControllerThread(cam, camThread)
+    # shellThread = threading.Thread(target=shell, args=(cam,))
+    # shellThread.start()
+    # camController.start()
