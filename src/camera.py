@@ -11,7 +11,7 @@ class Camera:
     def run(self):
         while self.cap.isOpened() and self.running:
             self.ret, self.frame = self.cap.read()
-            time.sleep(0.03)
+            time.sleep(1)
         print("Camera thread has ended")
 
     def start(self):
