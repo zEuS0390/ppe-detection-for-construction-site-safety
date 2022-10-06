@@ -1,5 +1,6 @@
 import cv2, time, threading
 
+# Camera Class
 class Camera:
 
     def __init__(self):
@@ -19,6 +20,7 @@ class Camera:
     def stop(self):
         self.running = False
 
+# Camera Thread Controller
 class CameraControllerThread(threading.Thread):
 
     def __init__(self, cam: Camera, camThread: threading.Thread):
