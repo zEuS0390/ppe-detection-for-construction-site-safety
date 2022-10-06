@@ -11,10 +11,22 @@ import argparse
         - MARQUEZ, IAN GABRIEL
 """
 
+def shell(cam: Camera):
+    while True:
+        try:
+            inputmsg = input(">> ")
+            if inputmsg == "exit":
+                cam.stop()
+                break
+        except:
+            cam.stop()
+            break
+
 if __name__=="__main__":
     argparser = argparse.ArgumentParser()
     cam = Camera()
-    cam.runSelf()
-    # camThread = threading.Thread(target=cam.run)
-    # camController = CameraControllerThread(cam, camThread)
-    # camController.start()
+    camThread = threading.Thread(target=cam.run)
+    camController = CameraControllerThread(cam, camThread)
+    shellThread = threading.Thread(target=shell, args=(cam,))
+    shellThread.start()
+    camController.start()
