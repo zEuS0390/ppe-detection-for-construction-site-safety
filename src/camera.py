@@ -11,8 +11,16 @@ class Camera:
     def run(self):
         while self.cap.isOpened() and self.running:
             self.ret, self.frame = self.cap.read()
-            time.sleep(1)
-        print("Camera thread has ended")
+
+    def runSelf(self):
+        while self.cap.isOpened() and self.running:
+            self.ret, self.frame = self.cap.read()
+            if self.ret:
+                cv2.imshow("frame", self.frame)
+            if cv2.waitKey(30) == 27:
+                break
+        self.cap.release()
+        cv2.destroyAllWindows()
 
     def start(self):
         self.running = True

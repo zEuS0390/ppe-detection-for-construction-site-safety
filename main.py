@@ -12,8 +12,9 @@ import argparse, threading
 """
 
 if __name__=="__main__":
-	argparser = argparse.ArgumentParser()
-	cam = Camera()
-	camThread = threading.Thread(target=cam.run)
-	camController = CameraControllerThread(cam, camThread)
-	camController.start()
+    argparser = argparse.ArgumentParser()
+    cam = Camera()
+    cam.runSelf()
+    # camThread = threading.Thread(target=cam.run)
+    # camController = CameraControllerThread(cam, camThread)
+    # camController.start()
