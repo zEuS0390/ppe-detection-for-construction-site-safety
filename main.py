@@ -1,5 +1,5 @@
 from src import *
-import argparse, configparser, cv2
+import argparse, configparser
 
 """
     TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
@@ -11,27 +11,14 @@ import argparse, configparser, cv2
         - MARQUEZ, IAN GABRIEL
 """
 
-def shell(cam: Camera):
-    while True:
-        try:
-            inputmsg = input(">> ")
-            if inputmsg == "exit":
-                cam.stop()
-                break
-        except:
-            cam.stop()
-            break
-
 if __name__=="__main__":
+    args = [True,]
     argparser = argparse.ArgumentParser()
     confparser = configparser.ConfigParser()
     confparser.read("./config.cfg")
     det = Detection(confparser)
-    img = cv2.imread('./sample/construction.jpg')
-    det.detect(img)
-    # cam = Camera()
-    # camThread = threading.Thread(target=cam.run)
-    # camController = CameraControllerThread(cam, camThread)
-    # shellThread = threading.Thread(target=shell, args=(cam,))
-    # shellThread.start()
-    # camController.start()
+    with torch.no_grad():
+        cam = Camera(img_size=640)
+        for _, img, im0s, vid_cap in cam:
+            if det.isDetecting:
+                det.detect(img, im0s)
