@@ -1,5 +1,5 @@
 from src import *
-import argparse, configparser
+import argparse, configparser, cv2
 
 """
     TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
@@ -26,7 +26,9 @@ if __name__=="__main__":
     argparser = argparse.ArgumentParser()
     confparser = configparser.ConfigParser()
     confparser.read("./config.cfg")
-    detection = Detection(confparser)
+    det = Detection(confparser)
+    img = cv2.imread('./sample/construction.jpg')
+    det.detect(img)
     # cam = Camera()
     # camThread = threading.Thread(target=cam.run)
     # camController = CameraControllerThread(cam, camThread)
