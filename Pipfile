@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 opencv-python = "*"
+django = "*"
+djangorestframework = "*"
 
 [dev-packages]
 
