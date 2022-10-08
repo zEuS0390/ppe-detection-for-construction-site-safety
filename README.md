@@ -12,6 +12,8 @@ Install YOLOR dependencies
 pip install -r ./yolor/requirements.txt
 ```
 - opencv-python
+- django
+- djangorestframework
 - Cython
 - matplotlib
 - numpy
