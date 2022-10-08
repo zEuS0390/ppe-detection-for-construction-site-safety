@@ -1,5 +1,5 @@
 from src import *
-import argparse, configparser
+import argparse, configparser, threading
 
 """
     TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
@@ -12,7 +12,6 @@ import argparse, configparser
 """
 
 if __name__=="__main__":
-    args = [True,]
     argparser = argparse.ArgumentParser()
     confparser = configparser.ConfigParser()
     confparser.read("./config.cfg")
@@ -21,4 +20,6 @@ if __name__=="__main__":
         cam = Camera(img_size=640)
         for _, img, im0s, vid_cap in cam:
             if det.isDetecting:
-                det.detect(img, im0s)
+                frame = det.detect(img, im0s)
+                cv2.imshow("frame", frame)
+        cv2.destroyAllWindows()

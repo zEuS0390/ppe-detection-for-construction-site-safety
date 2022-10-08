@@ -3,6 +3,7 @@ import torch.backends.cudnn as cudnn
 from yolor.models.models import Darknet
 from yolor.utils.general import non_max_suppression, scale_coords
 from yolor.utils.torch_utils import select_device
+from yolor.utils.plots import plot_one_box
 import torch, random
 
 class Detection:
@@ -51,7 +52,10 @@ class Detection:
             for c in det[:, -1].unique():
                 n = (det[:, -1] == c).sum() 
                 s += '%g %ss, ' % (n, self.names[int(c)])
-            print(s)
+            for *xyxy, conf, cls in det:
+                label = '%s %.2f' % (self.names[int(cls)], conf)
+                plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
+        return im0
 
     def stop(self):
         self.isDetecting = False
