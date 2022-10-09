@@ -8,9 +8,9 @@ This is the official repository of our web api server, whicih is part of the who
 - Ian Gabriel Marquez (System Administration)
 
 ## Raspberry Pi Information
-- CPU: ARM Cortex-A72 64-bit SoC @ 1.5GHz<br>
-- OS: Raspberry Pi OS<br>
-- RAM: 8 GB<br>
+- CPU: BCM2835 ARM Quad-Core 64-bit @ 1.8GHz<br>
+- OS: Debian GNU/Linux 11 (bullseye) aarch64
+- Memory: 8 GB<br>
 
 ## Dependencies
 - opencv-python
