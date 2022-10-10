@@ -12,6 +12,8 @@ This is the official repository of our web api server, whicih is part of the who
 - OS: Debian GNU/Linux 11 (bullseye) aarch64
 - Memory: 8 GB<br>
 
+## Installation
+
 ## Dependencies
 - opencv-python
 - django
