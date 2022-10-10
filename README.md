@@ -13,26 +13,25 @@ This is the official repository of our web api server, whicih is part of the who
 - Memory: 8 GB<br>
 
 ## Installation
+...
 
-## Dependencies
-- opencv-python
-- django
-- djangorestframework
-- Cython
-- matplotlib
-- numpy
-- opencv-python
-- Pillow
-- PyYAML
-- scipy
-- tensorboard
-- torch
-- torchvision
-- tqdm
-- seaborn
-- pandas
-- thop
-- pycocotools
+## Classes
+- Helmet
+- No helmet
+- Glasses
+- No glasses
+- Vest
+- No vest
+- Gloves
+- No gloves
+- Boots
+- No boots
+
+## Trained Models
+| version | weights |
+| :-: | :-: |
+| 1.0 | [trained_ppe_model_v1.pt](https://drive.google.com/file/d/1CW1DPajYIh-xkUhtGIJ0pkbyez_LC4z0/view?usp=sharing) |
+| 2.0 | [trained_ppe_model_v2.pt](https://drive.google.com/file/d/14Q6iLv7_igK1761BUG3yBZ04N11YthVY/view?usp=sharing) |
 
 ## Demonstration
 On going...
