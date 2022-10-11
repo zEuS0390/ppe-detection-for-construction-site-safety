@@ -6,21 +6,21 @@ rm -rf "./yolor/.git"
 pipenv install
 
 # Install YOLOR dependencies
-pip install Cython
-pip install matplotlib
-pip install numpy
-pip install opencv-python
-pip install Pillow
-pip install PyYAML
-pip install scipy
-pip install tensorboard
-pip install torch
-pip install torchvision
-pip install tqdm
-pip install seaborn
-pip install andas
-pip install thop
-pip install pycocotools
+pipenv run pip install Cython
+pipenv run pip install matplotlib
+pipenv run pip install numpy
+pipenv run pip install opencv-python
+pipenv run pip install Pillow
+pipenv run pip install PyYAML
+pipenv run pip install scipy
+pipenv run pip install tensorboard
+pipenv run pip install torch
+pipenv run pip install torchvision
+pipenv run pip install tqdm
+pipenv run pip install seaborn
+pipenv run pip install andas
+pipenv run pip install thop
+pipenv run pip install pycocotools
 
 # ./yolor/models/models.py
 sed -i "1s/from *utils./from yolor.utils./1" "./yolor/models/models.py"
