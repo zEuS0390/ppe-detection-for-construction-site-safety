@@ -11,15 +11,20 @@ import argparse, configparser, threading
         - MARQUEZ, IAN GABRIEL
 """
 
+def func(cam, det):
+    with torch.no_grad():
+        while True:
+            processed = cam.getFrame()
+            if processed is not None:
+                det.detect(processed, cam.frame)
+            print("Waiting 10 seconds..")
+
 if __name__=="__main__":
     argparser = argparse.ArgumentParser()
     confparser = configparser.ConfigParser()
     confparser.read("./config.cfg")
     det = Detection(confparser)
-    with torch.no_grad():
-        cam = Camera(img_size=640)
-        for _, img, im0s, vid_cap in cam:
-            if det.isDetecting:
-                frame = det.detect(img, im0s)
-                cv2.imshow("frame", frame)
-        cv2.destroyAllWindows()
+    cam = Camera()
+    detThread = threading.Thread(target=func, args=(cam, det))
+    detThread.start()
+    

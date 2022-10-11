@@ -55,6 +55,7 @@ class Detection:
             for *xyxy, conf, cls in det:
                 label = '%s %.2f' % (self.names[int(cls)], conf)
                 plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
+            print(s)
         return im0
 
     def stop(self):
