@@ -37,7 +37,7 @@ To get started, we need to install the required dependencies. It is highly recom
 
 Just run this script and it will handle all of them for you.
 ```
-./scripts/install.sh
+./scripts/linux/install.sh
 ```
 
 ## Demonstration
