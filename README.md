@@ -12,9 +12,6 @@ This is the official repository of our web api server, whicih is part of the who
 - OS: Debian GNU/Linux 11 (bullseye) aarch64
 - Memory: 8 GB<br>
 
-## Installation
-...
-
 ## Classes
 - Helmet
 - No helmet
@@ -33,6 +30,14 @@ This is the official repository of our web api server, whicih is part of the who
 | 1.0 | [trained_ppe_model_v1.pt](https://drive.google.com/file/d/1CW1DPajYIh-xkUhtGIJ0pkbyez_LC4z0/view?usp=sharing) |
 | 2.0 | [trained_ppe_model_v2.pt](https://drive.google.com/file/d/14Q6iLv7_igK1761BUG3yBZ04N11YthVY/view?usp=sharing) |
 | 2.1 | [trained_ppe_model_v2.1.pt](https://drive.google.com/file/d/1NS3boQlglUI2QaJV-mmzlZ0vLqsbIvxH/view?usp=sharing) |
+
+## Installation
+```
+git clone https://github.com/WongKinYiu/yolor.git
+```
+```
+./install.sh
+```
 
 ## Demonstration
 On going...
