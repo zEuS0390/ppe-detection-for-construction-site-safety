@@ -13,6 +13,7 @@ This is the official repository of our web api server, whicih is part of the who
 - Memory: 8 GB<br>
 
 ## Classes
+The trained model detects 5 basic PPE for construction with additional of 5 noncompliant cases.
 - Helmet
 - No helmet
 - Glasses
@@ -32,9 +33,9 @@ This is the official repository of our web api server, whicih is part of the who
 | 2.1 | [trained_ppe_model_v2.1.pt](https://drive.google.com/file/d/1NS3boQlglUI2QaJV-mmzlZ0vLqsbIvxH/view?usp=sharing) |
 
 ## Installation
-```
-git clone https://github.com/WongKinYiu/yolor.git
-```
+To get started, we need to install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
+
+Just run this script and it will handle all of them for you.
 ```
 ./install.sh
 ```
