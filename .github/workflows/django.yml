@@ -29,4 +29,4 @@ jobs:
     - name: Run Tests
       working-directory: ./webapi
       run: |
-        python manage.py test
+        python -m pipenv run python manage.py test
