@@ -45,18 +45,19 @@ class Detection:
             classes=0,
             agnostic=False
         )
+        boxes = []
         for i, det in enumerate(pred):
-            s, im0 = '{}'.format(i), im0s[i].copy()
+            s, im0 = '{}'.format(i), im0s.copy()
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
             for c in det[:, -1].unique():
                 n = (det[:, -1] == c).sum() 
                 s += '%g %ss, ' % (n, self.names[int(c)])
             for *xyxy, conf, cls in det:
-                label = '%s %.2f' % (self.names[int(cls)], conf)
-                plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
-            print(s)
-        return im0
+                # label = '%s %.2f' % (self.names[int(cls)], conf)
+                boxes.append((xyxy, conf, self.names[int(cls)]))
+                # plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
+        return boxes
 
     def stop(self):
         self.isDetecting = False

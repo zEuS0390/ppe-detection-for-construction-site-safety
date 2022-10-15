@@ -1,5 +1,5 @@
 from src import *
-import argparse, configparser, threading
+import argparse, configparser, threading, time
 
 """
     TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
@@ -11,13 +11,13 @@ import argparse, configparser, threading
         - MARQUEZ, IAN GABRIEL
 """
 
+@torch.no_grad()
 def func(cam, det):
-    with torch.no_grad():
-        while True:
-            processed = cam.getFrame()
-            if processed is not None:
-                det.detect(processed, cam.frame)
-            print("Waiting 10 seconds..")
+    while True:
+        processed = cam.getFrame()
+        if processed is not None:
+            det = det.detect(processed, cam.frame)
+            cam.det = det
 
 if __name__=="__main__":
     argparser = argparse.ArgumentParser()
@@ -25,6 +25,7 @@ if __name__=="__main__":
     confparser.read("./config.cfg")
     det = Detection(confparser)
     cam = Camera()
+    time.sleep(10)
     detThread = threading.Thread(target=func, args=(cam, det))
     detThread.start()
     
