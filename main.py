@@ -1,4 +1,7 @@
-from src import *
+from src.camera import Camera
+from src.client import MQTTClient
+from src.detection import Detection
+from torch import no_grad
 import argparse, configparser, threading, time, json
 
 """
@@ -11,9 +14,9 @@ import argparse, configparser, threading, time, json
         - MARQUEZ, IAN GABRIEL
 """
 
-@torch.no_grad()
+@no_grad()
 def func(cam, det, mqtt_client: MQTTClient):
-    while True:
+    while cam.cap.isOpened():
         processed = cam.getFrame()
         if processed is not None:
             result = det.detect(processed, cam.frame)
@@ -27,13 +30,12 @@ if __name__=="__main__":
     confparser = configparser.ConfigParser()
     confparser.read("./config.cfg")
     mqtt_client = MQTTClient(
-        client_id = "rpi-camera-1",
-        topic = "rpi/notif",
-        broker = "192.168.1.14"
+        client_id = confparser.get("mqtt_notif", "client_id_name"),
+        topic = confparser.get("mqtt_notif", "topic_name"),
+        broker = confparser.get("mqtt_notif", "broker_ip")
     )
     det = Detection(confparser)
     cam = Camera()
-    time.sleep(10)
     detThread = threading.Thread(target=func, args=(cam, det, mqtt_client))
     detThread.start()
     

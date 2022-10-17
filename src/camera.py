@@ -1,9 +1,7 @@
 from yolor.utils.datasets import letterbox
 from threading import Thread
-import cv2, time
 import numpy as np
-
-from yolor.utils.plots import plot_one_box
+import cv2
 
 # Camera Class
 class Camera:
@@ -26,10 +24,11 @@ class Camera:
                 break
         cv2.destroyAllWindows()
 
-    # Get the frame with additional dimension to be detected by the model
+    # Get frame with an additional dimension to be used by the detection model
     def getFrame(self):
-        img: np.ndarray = self.frame.copy()
-        img = letterbox(img, new_shape=(640, 640), auto=True)[0]
-        img = np.expand_dims(img, axis=0)
-        img = img.transpose(0, 3, 1, 2)
-        return img
+        if self.frame is not None:
+            img: np.ndarray = self.frame.copy()
+            img = letterbox(img, new_shape=(640, 640), auto=True)[0]
+            img = np.expand_dims(img, axis=0)
+            img = img.transpose(0, 3, 1, 2)
+            return img
