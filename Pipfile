@@ -8,6 +8,7 @@ opencv-python = "*"
 requests = "*"
 django = "*"
 djangorestframework = "*"
+paho-mqtt = "*"
 
 [dev-packages]
 

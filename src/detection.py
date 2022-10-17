@@ -4,7 +4,7 @@ from yolor.models.models import Darknet
 from yolor.utils.general import non_max_suppression, scale_coords
 from yolor.utils.torch_utils import select_device
 from yolor.utils.plots import plot_one_box
-import torch, random
+import torch, random, base64, cv2
 
 class Detection:
 
@@ -45,7 +45,7 @@ class Detection:
             classes=0,
             agnostic=False
         )
-        boxes = []
+        result = {}
         for i, det in enumerate(pred):
             s, im0 = '{}'.format(i), im0s.copy()
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]
@@ -53,11 +53,20 @@ class Detection:
             for c in det[:, -1].unique():
                 n = (det[:, -1] == c).sum() 
                 s += '%g %ss, ' % (n, self.names[int(c)])
+            detected = []
             for *xyxy, conf, cls in det:
-                # label = '%s %.2f' % (self.names[int(cls)], conf)
-                boxes.append((xyxy, conf, self.names[int(cls)]))
-                # plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
-        return boxes
+                label = '%s %.2f' % (self.names[int(cls)], conf)
+                detected.append({
+                    "position": ((int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))),
+                    "confidence": float(conf), 
+                    "class_name": self.names[int(cls)]
+                })
+                plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
+            _, buffer = cv2.imencode(".jpg", im0)
+            jpg_as_txt = base64.b64encode(buffer)
+            result["image"] = jpg_as_txt.decode()
+            result["detected"] = detected
+        return result
 
     def stop(self):
         self.isDetecting = False
