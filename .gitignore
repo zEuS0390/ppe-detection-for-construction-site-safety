@@ -1,3 +1,7 @@
 output/
+
+# YOLOR repository should not be tracked by Git.
 yolor/
+
+# Consider the database file just in case that it gets accidentally saved here.
 .sqlite3
