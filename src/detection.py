@@ -6,6 +6,8 @@ from yolor.utils.torch_utils import select_device
 from yolor.utils.plots import plot_one_box
 import torch, random, base64, cv2
 
+from .utils import imageToBinary
+
 class Detection:
 
     # Initialize
@@ -62,9 +64,7 @@ class Detection:
                     "class_name": self.names[int(cls)]
                 })
                 plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
-            _, buffer = cv2.imencode(".jpg", im0)
-            jpg_as_txt = base64.b64encode(buffer)
-            result["image"] = jpg_as_txt.decode()
+            result["image"] = imageToBinary(im0)
             result["detected"] = detected
         return result
 
