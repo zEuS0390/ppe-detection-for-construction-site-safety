@@ -8,8 +8,13 @@ from datetime import datetime
 
 mapper_registry = registry()
 
+# These are PPE detection tables for construction
+
 @mapper_registry.mapped
 class PPEClass:
+    """
+        A mapped class that defines a table that holds classes of PPE for construction.
+    """
     __tablename__="ppeclass"
     id = Column(Integer, primary_key=True)
     name = Column(String(length=250))
@@ -17,21 +22,27 @@ class PPEClass:
     def __str__(self):
         return f"'{self.name}'"
 
-# Associative Table for PPEClass and Violator
+# Associative table for PPEClass and violator
 @mapper_registry.mapped
 class DetectedPPEClass:
+    """
+        A mapped class that defines a table that asoociates both PPEClass and Violator.
+    """
     __tablename__ = "detectedppeclass"
     violator_id = Column(Integer, ForeignKey("violator.id"), primary_key=True)
     ppeclass_id = Column(Integer, ForeignKey("ppeclass.id"), primary_key=True)
     violator = relationship("Violator", back_populates="detectedppeclasses",)
     ppeclass = relationship("PPEClass", back_populates="detectedppeclasses")
     def __str__(self):
-        return f"{self.ppeclass}"
+        return f"DetectedPPEClass(violator='{self.violator}',ppeclass='{self.ppeclass}')"
     def __repr__(self):
         return f"{self.ppeclass}"
 
 @mapper_registry.mapped
 class Violator:
+    """
+        A mapped class that defines a table which contains information about the violator and its detected PPE classes.
+    """
     __tablename__="violator"
     id = Column(Integer, primary_key=True)
     name = Column(String(length=250))
@@ -55,3 +66,6 @@ class ViolationDetails:
         return f"ViolationDetails(id={self.id},image='{self.image}',violators='{self.violators}',timestamp={self.timestamp})"
     def __repr__(self):
         return f"ViolationDetails(id={self.id},image='{self.image}',violators='{self.violators}',timestamp={self.timestamp})"
+
+# These are authentication tables that will be used on the end devices
+# User Table
