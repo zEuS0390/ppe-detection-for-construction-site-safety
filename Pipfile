@@ -9,6 +9,7 @@ requests = "*"
 django = "*"
 djangorestframework = "*"
 paho-mqtt = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 
