@@ -4,36 +4,54 @@ from sqlalchemy import (
     String, DateTime, 
     ForeignKey
 )
+from datetime import datetime
 
 mapper_registry = registry()
 
 @mapper_registry.mapped
 class PPEClass:
     __tablename__="ppeclass"
-    ppeclass_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(length=250))
+    detectedppeclasses = relationship("DetectedPPEClass", back_populates="ppeclass")
     def __str__(self):
-        return f"PPEClass(id='{self.id}', name='{self.name}')"
+        return f"'{self.name}'"
+
+# Associative Table for PPEClass and Violator
+@mapper_registry.mapped
+class DetectedPPEClass:
+    __tablename__ = "detectedppeclass"
+    violator_id = Column(Integer, ForeignKey("violator.id"), primary_key=True)
+    ppeclass_id = Column(Integer, ForeignKey("ppeclass.id"), primary_key=True)
+    violator = relationship("Violator", back_populates="detectedppeclasses",)
+    ppeclass = relationship("PPEClass", back_populates="detectedppeclasses")
+    def __str__(self):
+        return f"{self.ppeclass}"
+    def __repr__(self):
+        return f"{self.ppeclass}"
 
 @mapper_registry.mapped
 class Violator:
     __tablename__="violator"
-    violator_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     name = Column(String(length=250))
     position = Column(Integer)
-    detectedppeclasses = Column(Integer, ForeignKey("ppeclass.ppeclass_id"))
-    detectedppeclasses = relationship("PPEClass")
-    violationdetails_id = Column(Integer, ForeignKey("violationdetails.violationdetails_id", ondelete="CASCADE"))
+    detectedppeclasses = relationship("DetectedPPEClass", back_populates="violator", cascade="all, delete")
+    violationdetails_id = Column(Integer, ForeignKey("violationdetails.id", ondelete="CASCADE"))
     violationdetails = relationship("ViolationDetails", back_populates="violators")
     def __str__(self):
-        return f"Violator(id={self.id}, name='{self.name}', position='{self.position}', ppeclasses='{self.ppeclasses}')"
+        return f"Violator(id={self.id}, name='{self.name}', position='{self.position}', detectedppeclasses={self.detectedppeclasses})"
+    def __repr__(self):
+        return f"'{self.name}'"
 
 @mapper_registry.mapped
 class ViolationDetails:
     __tablename__ = "violationdetails"
-    violationdetails_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     image = Column(String(length=250))
     violators = relationship("Violator", back_populates="violationdetails", cascade="all, delete")
-    timestamp = Column(DateTime)
+    timestamp = Column(DateTime, default=datetime.now())
     def __str__(self):
-        return f"ViolationDetails(id={self.id},image='{self.image}',detected_ppe='{self.violators}')"
+        return f"ViolationDetails(id={self.id},image='{self.image}',violators='{self.violators}',timestamp={self.timestamp})"
+    def __repr__(self):
+        return f"ViolationDetails(id={self.id},image='{self.image}',violators='{self.violators}',timestamp={self.timestamp})"
