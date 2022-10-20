@@ -1,5 +1,5 @@
 # Application Server with PPE Detection for Construction Safety in Raspberry Pi
-This is the official repository of our application server, which is part of the whole system in our prototype on project design. The server act as the gateway for communication between Raspberry Pi and mobile application. It provides information about the detected PPE worker violations and they could be obtained by the mobile application through lightweight messaging protocol. 
+This is the official repository of our application server, which is part of the whole system in our project design prototype. The server acts as the gateway for communication between the Raspberry Pi and mobile application. It provides information about the detected PPE worker violations and they could be obtained through lightweight messaging protocol called MQTT. 
 
 ## Members
 - Zeus James Baltazar (Intelligent Systems) - Focuses mostly on utilization of ideas and their integration to the whole system.
