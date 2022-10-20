@@ -2,10 +2,10 @@
 This is the official repository of our application server, which is part of the whole system in our prototype on project design. The server act as the gateway for communication between Raspberry Pi and mobile application. It provides information about the detected PPE worker violations and they could be obtained by the mobile application through lightweight messaging protocol. 
 
 ## Members
-- Zeus James Baltazar (Intelligent Systems)
-- Martin Lorenzo Basbacio (Data Science)
-- Clarece Gail Larrosa (Intelligent Systems)
-- Ian Gabriel Marquez (System Administration)
+- Zeus James Baltazar (Intelligent Systems) - Focuses mostly on utilization of ideas and their integration to the whole system.
+- Martin Lorenzo Basbacio (Data Science) - Facilitates methods regarding detection, person tracking and recognition.
+- Clarece Gail Larrosa (Intelligent Systems) - Manages prototype paper and provides assets for mobile application.
+- Ian Gabriel Marquez (System Administration) - Handles mobile application development and its UI/UX design.
 
 ## Hardware
 | | Raspberry Pi |
