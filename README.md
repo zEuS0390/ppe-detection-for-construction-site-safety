@@ -1,16 +1,18 @@
-# Web API Server with PPE Detection for Construction Safety in Raspberry Pi
-This is the official repository of our web api server, whicih is part of the whole system in our prototype on project design. The server act as the gateway for communication between Raspberry Pi and mobile application. It provides information about the detected PPE worker violators and they could be requested by the mobile application through HTTP via RESTful API. 
+# Application Server with PPE Detection for Construction Safety in Raspberry Pi
+This is the official repository of our application server, which is part of the whole system in our project design prototype. The server acts as the gateway for communication between the Raspberry Pi and mobile application. It provides information about the detected PPE worker violations and they could be obtained through lightweight messaging protocol called MQTT. 
 
 ## Members
-- Zeus James Baltazar (Intelligent Systems)
-- Martin Lorenzo Basbacio (Data Science)
-- Clarece Gail Larrosa (Intelligent Systems)
-- Ian Gabriel Marquez (System Administration)
+- Zeus James Baltazar (Intelligent Systems) - Focuses mostly on utilization of ideas and their integration to the whole system.
+- Martin Lorenzo Basbacio (Data Science) - Facilitates methods regarding detection, person tracking and recognition.
+- Clarece Gail Larrosa (Intelligent Systems) - Manages prototype paper and provides assets for mobile application.
+- Ian Gabriel Marquez (System Administration) - Handles mobile application development and its UI/UX design.
 
-## Raspberry Pi Information
-- CPU: BCM2835 ARM Quad-Core 64-bit @ 1.8GHz<br>
-- OS: Debian GNU/Linux 11 (bullseye) aarch64
-- Memory: 8 GB<br>
+## Hardware
+| | Raspberry Pi |
+| :-: | :-: |
+| CPU | BCM2835 ARM Quad-Core 64-bit @ 1.8GHz |
+| OS | Debian GNU/Linux 11 (bullseye) aarch64 |
+| Memory | 8 GB |
 
 ## Classes
 The trained model detects 5 basic PPE for construction with additional of 5 noncompliant cases.
