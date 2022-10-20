@@ -28,7 +28,7 @@ def func(cam, det, mqtt_client: MQTTClient):
 if __name__=="__main__":
     argparser = argparse.ArgumentParser()
     confparser = configparser.ConfigParser()
-    confparser.read("./config.cfg")
+    confparser.read("./cfg/config.ini")
     mqtt_client = MQTTClient(
         client_id = confparser.get("mqtt_notif", "client_id_name"),
         topic = confparser.get("mqtt_notif", "topic_name"),
