@@ -7,10 +7,12 @@ This is the official repository of our application server, which is part of the 
 - Clarece Gail Larrosa (Intelligent Systems)
 - Ian Gabriel Marquez (System Administration)
 
-## Raspberry Pi Information
-- CPU: BCM2835 ARM Quad-Core 64-bit @ 1.8GHz<br>
-- OS: Debian GNU/Linux 11 (bullseye) aarch64
-- Memory: 8 GB<br>
+## Hardware
+| | Raspberry Pi |
+| :-: | :-: |
+| CPU | BCM2835 ARM Quad-Core 64-bit @ 1.8GHz |
+| OS | Debian GNU/Linux 11 (bullseye) aarch64 |
+| Memory | 8 GB |
 
 ## Classes
 The trained model detects 5 basic PPE for construction with additional of 5 noncompliant cases.
