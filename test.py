@@ -14,8 +14,7 @@ class TestConfigFiles(unittest.TestCase):
     def test_yolor_filepaths(self):
         options = [
             "classes",
-            "cfg",
-            "weights"
+            "cfg"
         ]
         self.configparser.read(self.configfile)
         for option in options:
