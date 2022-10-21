@@ -56,6 +56,7 @@ class TestDatabaseCRUD(unittest.TestCase):
         result = insertViolator(self.db, name, "(0, 0, 100, 400)", detected)
         self.assertFalse(result)
 
+        # The violator should obtain the selected name 
         violator = self.db.session.query(Violator).filter_by(name=name).first()
         self.assertIsInstance(violator, Violator)
 
@@ -65,6 +66,7 @@ class TestDatabaseCRUD(unittest.TestCase):
         result = insertViolator(self.db, name, "(0, 0, 100, 400)", detected)
         self.assertFalse(result)
 
+        # The violator should be a None value
         violator = self.db.session.query(Violator).filter_by(name=name).first()
         self.assertIsNone(violator)
 
