@@ -20,7 +20,7 @@ pipenv run pip install torch
 pipenv run pip install torchvision
 pipenv run pip install tqdm
 pipenv run pip install seaborn
-pipenv run pip install andas
+pipenv run pip install pandas
 pipenv run pip install thop
 pipenv run pip install pycocotools
 
