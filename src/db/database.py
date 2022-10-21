@@ -6,8 +6,8 @@ from src.db.tables import mapper_registry
 
 class DatabaseHandler:
 
-    def __init__(self, db_URL):
-        self.engine = create_engine(url=db_URL, echo=True, future=True)
+    def __init__(self, db_URL, echo=False):
+        self.engine = create_engine(url=db_URL, echo=echo, future=True)
         mapper_registry.metadata.create_all(self.engine)
         self.session = Session(self.engine)
 

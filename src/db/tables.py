@@ -46,7 +46,7 @@ class Violator:
     __tablename__="violator"
     id = Column(Integer, primary_key=True)
     name = Column(String(length=250))
-    position = Column(Integer)
+    position = Column(String)
     detectedppeclasses = relationship("DetectedPPEClass", back_populates="violator", cascade="all, delete")
     violationdetails_id = Column(Integer, ForeignKey("violationdetails.id", ondelete="CASCADE"))
     violationdetails = relationship("ViolationDetails", back_populates="violators")
