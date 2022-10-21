@@ -1,8 +1,8 @@
 from src.camera import Camera
-from src.client import MQTTClient
-from src.detection import Detection
-from torch import no_grad
-import argparse, configparser, threading, time, json
+from src.client import MQTTClient, streamCamera
+from src.detection import Detection, detThreadFunc
+import configparser
+import threading
 
 """
     TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
@@ -14,28 +14,25 @@ import argparse, configparser, threading, time, json
         - MARQUEZ, IAN GABRIEL
 """
 
-@no_grad()
-def func(cam, det, mqtt_client: MQTTClient):
-    while cam.cap.isOpened():
-        processed = cam.getFrame()
-        if processed is not None:
-            result = det.detect(processed, cam.frame)
-            if len(result["detected"]):
-                payload = json.dumps(result)
-                mqtt_client.client.publish(mqtt_client.topic, payload=payload)
-            cam.det = result
-
 if __name__=="__main__":
-    argparser = argparse.ArgumentParser()
-    confparser = configparser.ConfigParser()
-    confparser.read("./cfg/config.ini")
-    mqtt_client = MQTTClient(
-        client_id = confparser.get("mqtt_notif", "client_id_name"),
-        topic = confparser.get("mqtt_notif", "topic_name"),
-        broker = confparser.get("mqtt_notif", "broker_ip")
-    )
-    det = Detection(confparser)
+
+    # Load app configuration file
+    cfg = configparser.ConfigParser()
+    cfg.read("./cfg/config.ini")
+
+    # Instantiate objects
+    mqtt_notif = MQTTClient(cfg, "mqtt_notif")
+    mqtt_camera = MQTTClient(cfg, "mqtt_camera")
     cam = Camera()
-    detThread = threading.Thread(target=func, args=(cam, det, mqtt_client))
-    detThread.start()
+    mqtt_camera_thread = threading.Thread(
+        target=streamCamera, 
+        args=(cam, mqtt_camera)
+    )
+    det = Detection(cfg)
     
+    # Start threads
+    mqtt_notif.start()
+    mqtt_camera.start()
+    cam.start()
+    mqtt_camera_thread.start()
+    det.start(cam, detThreadFunc, mqtt_notif)

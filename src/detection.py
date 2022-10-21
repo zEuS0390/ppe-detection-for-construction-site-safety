@@ -4,9 +4,9 @@ from yolor.models.models import Darknet
 from yolor.utils.general import non_max_suppression, scale_coords
 from yolor.utils.torch_utils import select_device
 from yolor.utils.plots import plot_one_box
-import torch, random, base64, cv2
-
+import torch, random, threading, time, json
 from .utils import imageToBinary
+import cv2
 
 class Detection:
 
@@ -21,6 +21,11 @@ class Detection:
         cudnn.benchmark = True
         self.load_classes()
         self.load_model()
+    
+    # Start detection thread
+    def start(self, cam, func, mqtt_client):
+        self.detThread = threading.Thread(target=func, args=(cam, self, mqtt_client))
+        self.detThread.start()
 
     # Load classes
     def load_classes(self):
@@ -64,9 +69,32 @@ class Detection:
                     "class_name": self.names[int(cls)]
                 })
                 plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
+            im0 = cv2.resize(im0, (240, 240), interpolation=cv2.INTER_AREA)
             result["image"] = imageToBinary(im0)
             result["detected"] = detected
         return result
 
     def stop(self):
         self.isDetecting = False
+
+# Function for detection thread
+@torch.no_grad()
+def detThreadFunc(cam, det, mqtt_client):
+    external_last_time = time.time()
+    while cam.cap.isOpened():
+        processed = cam.getFrame()
+        external_elapsed_time = time.time() - external_last_time
+        # Activate detection every 10 seconds
+        if external_elapsed_time > 10:
+            external_last_time = time.time()
+            if processed is not None:
+                internal_last_time = time.time()
+                result = det.detect(processed, cam.frame)
+                if len(result["detected"]):
+                    # Serialize data from detection
+                    payload = json.dumps(result) 
+                    # Publish the serilized data to deliver to destination clients
+                    mqtt_client.client.publish(mqtt_client.topic, payload=payload)
+                internal_elapsed_time = time.time() - internal_last_time
+                print(f"Detection Time: {internal_elapsed_time:.2f}")
+        time.sleep(0.03)
