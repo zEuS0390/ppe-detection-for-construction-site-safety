@@ -1,0 +1,27 @@
+name: Application Server CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        - name: Set up Python 3.9
+        - uses: actions/setup-python@v3
+          with:
+            python-version: '3.9'
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            pip install pipenv
+            pipenv install
+        - name: Run Tests
+          run: |
+            pipenv run python test.py
+      
