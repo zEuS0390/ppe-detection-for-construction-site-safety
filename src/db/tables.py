@@ -2,7 +2,7 @@ from sqlalchemy.orm import registry, relationship
 from sqlalchemy import (
     Column, Integer, 
     String, DateTime, 
-    ForeignKey
+    ForeignKey, Boolean
 )
 from datetime import datetime
 
@@ -69,3 +69,14 @@ class ViolationDetails:
 
 # These are authentication tables that will be used on the end devices
 # User Table
+@mapper_registry.mapped
+class User:
+    __tablename__="user"
+    id = Column(Integer, primary_key=True)
+    username = Column(String(length=250))
+    password = Column(String(length=250))
+    online = Column(Boolean)
+    def __str__(self):
+        return f"User(id={self.id},username={self.username},online={self.online})"
+    def __repr__(self):
+        return f"{self.username}"

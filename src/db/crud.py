@@ -1,5 +1,10 @@
 from .database import DatabaseHandler
-from .tables import PPEClass, Violator, DetectedPPEClass
+from .tables import (
+    PPEClass, 
+    Violator, 
+    DetectedPPEClass,
+    User
+)
 
 def loadPPEClasses(db: DatabaseHandler, filepath: str):
     ppeclass_names = []
@@ -39,3 +44,31 @@ def insertViolator(db: DatabaseHandler, name: str, position: str, detectedppecla
     else:
         return False
     return True
+
+def insertUser(db: DatabaseHandler, username: str, password: str):
+    user =  db.session.query(User).filter_by(username=username).first()
+    if user is None:
+        user = User()
+        user.username = username
+        user.password = password
+        user.online = False
+        db.session.add(user)
+        db.session.commit()
+        db.session.close()
+        return True
+    return False
+
+def logIn(db: DatabaseHandler, username: str, password: str):
+    user = db.session.query(User).filter_by(username=username).first()
+    if user is not None:
+        user.online = True
+        return True
+    return False
+
+def logOut(db: DatabaseHandler, username: str):
+    user = db.session.query(User).filter_by(username=username).first()
+    if user is not None:
+        if user.online:
+            user.online = False
+            return True
+    return False

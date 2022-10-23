@@ -1,7 +1,7 @@
 import unittest, configparser, os
 from src.db.database import DatabaseHandler
 from src.db.tables import PPEClass, Violator
-from src.db.crud import insertViolator, loadPPEClasses
+from src.db.crud import insertUser, insertViolator, loadPPEClasses, logIn, logOut
 from sqlalchemy import select
 
 # Test the Configuration File Contents
@@ -69,6 +69,19 @@ class TestDatabaseCRUD(unittest.TestCase):
         # The violator should be a None value
         violator = self.db.session.query(Violator).filter_by(name=name).first()
         self.assertIsNone(violator)
+
+    def test_insert_user(self):
+        self.assertTrue(insertUser(self.db, "nick10", "passwd123"))
+
+    def test_log_in(self):
+        insertUser(self.db, username="nick10", password="passwd123")
+        self.assertTrue(logIn(self.db, username="nick10", password="passwd123"))
+
+    def test_log_out(self):
+        insertUser(self.db, username="nick10", password="passwd123")
+        logIn(self.db, username="nick10", password="passwd123")
+        self.assertTrue(logOut(self.db, username="nick10"))
+
 
 if __name__=="__main__":
     unittest.main()
