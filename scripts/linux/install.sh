@@ -1,5 +1,3 @@
-cd ../../
-
 # Clone YOLOR repository
 git clone "https://github.com/WongKinYiu/yolor.git"
 rm -rf "./yolor/.git"
