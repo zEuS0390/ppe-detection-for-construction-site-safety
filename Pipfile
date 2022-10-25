@@ -10,6 +10,7 @@ django = "*"
 djangorestframework = "*"
 paho-mqtt = "*"
 sqlalchemy = "*"
+faker = "*"
 
 [dev-packages]
 
