@@ -6,8 +6,6 @@ name = "pypi"
 [packages]
 opencv-python = "*"
 requests = "*"
-django = "*"
-djangorestframework = "*"
 paho-mqtt = "*"
 sqlalchemy = "*"
 faker = "*"
