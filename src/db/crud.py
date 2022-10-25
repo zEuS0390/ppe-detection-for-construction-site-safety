@@ -22,7 +22,8 @@ def loadPPEClasses(db: DatabaseHandler, filepath: str):
             ppeclass = PPEClass(name=name)
             db.session.add(ppeclass)
         else:
-            print(f"{name} already exist!")
+            pass
+            # print(f"{name} already exist!")
     db.session.commit()
     db.session.close()
 

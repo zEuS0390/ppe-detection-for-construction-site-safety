@@ -1,8 +1,10 @@
 import unittest, configparser, os
 from src.db.database import DatabaseHandler
-from src.db.tables import PPEClass, Person, Violator
+from src.db.tables import Person, Violator
 from src.db.crud import deleteViolator, insertViolator, loadPPEClasses, loadPeople
 from sqlalchemy import func
+from faker import Faker
+from csv import DictWriter
 
 # Test the Configuration File Contents
 class TestConfigFiles(unittest.TestCase):
@@ -37,8 +39,25 @@ class TestDatabaseCRUD(unittest.TestCase):
         self.cfg = configparser.ConfigParser()
         self.cfg.read("./cfg/config.ini")
         db_file = "testing.sqlite"
-        self.db = DatabaseHandler("sqlite:///")
+        self.db = DatabaseHandler(f"sqlite:///{db_file}")
         loadPPEClasses(self.db, self.cfg.get("yolor", "classes"))
+        faker = Faker()
+        with open(self.cfg.get("face_recognition", "people"), "w", newline="") as csv_file:
+            fieldnames = ["person_id", "first_name", "middle_name", "last_name", "job_title"]
+            writer = DictWriter(csv_file, fieldnames=fieldnames)
+            writer.writeheader()
+            number_of_people = 100
+            people_ids = [i+1 for i in range(number_of_people)]
+            people = [
+                {
+                    "person_id": people_ids.pop(0), 
+                    "first_name": faker.unique.first_name(), 
+                    "middle_name": faker.unique.last_name(), 
+                    "last_name": faker.unique.last_name(),
+                    "job_title": faker.unique.job()
+                } for _ in range(number_of_people)
+            ]
+            writer.writerows(people)
         loadPeople(self.db, self.cfg.get("face_recognition", "people"))
 
     def test_step_1_insert_violator(self):
