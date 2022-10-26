@@ -37,10 +37,14 @@ The trained model detects 5 basic PPE for construction with additional of 5 nonc
 ## Installation
 To get started, we need to install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
 
-Just run this script and it will handle all of them for you.
+Just run this script and it will handle the installation of dependencies for you.
 ```
 ./scripts/linux/install.sh
 ```
+
+After the installation, download the most recent trained model [here](#trained-models). Place it inside of the ```data/weights``` folder and name it as 'best_overall.pt'.
+
+Set the IP address of MQTT clients to the broker's IP address by changing the app configuration file in ```cfg/config.ini```.
 
 ## Demonstration
 TBA
