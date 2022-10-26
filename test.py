@@ -38,7 +38,7 @@ class TestDatabaseCRUD(unittest.TestCase):
     def setUp(self):
         self.cfg = configparser.ConfigParser()
         self.cfg.read("./cfg/config.ini")
-        db_file = "testing.sqlite"
+        db_file = "data/testing.sqlite"
         self.db = DatabaseHandler(f"sqlite:///{db_file}")
         loadPPEClasses(self.db, self.cfg.get("yolor", "classes"))
         faker = Faker()
