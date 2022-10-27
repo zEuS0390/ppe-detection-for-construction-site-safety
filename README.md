@@ -7,6 +7,12 @@ This is the official repository of our application server, which is part of the 
 - Clarece Gail Larrosa (Intelligent Systems) - Manages prototype paper and provides assets for mobile application.
 - Ian Gabriel Marquez (System Administration) - Handles mobile application development and its UI/UX design.
 
+## Features
+- PPE detection for construction safety
+- Human detection to determine worker violations
+- Face recognition to identify the detected violator
+- Mobile application reports and notifications
+
 ## Hardware
 | | Raspberry Pi |
 | :-: | :-: |
