@@ -50,6 +50,8 @@ Just run this script and it will handle the installation of dependencies for you
 
 After the installation, download the most recent trained model [here](#trained-models). Place it inside of the ```data/weights``` folder and name it as 'best_overall.pt'.
 
+Download and install mosquitto from https://mosquitto.org/download/. Make sure to run the broker as a service or as an independent program.
+
 Set the IP address of MQTT clients to the broker's IP address by changing the app configuration file in ```cfg/config.ini```.
 
 ## Demonstration
