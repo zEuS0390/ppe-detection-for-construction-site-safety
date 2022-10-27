@@ -1,7 +1,7 @@
 import unittest, configparser, os
 from src.db.database import DatabaseHandler
 from src.db.tables import Person, Violator
-from src.db.crud import deleteViolator, insertViolator, loadPPEClasses, loadPeople, updatePerson
+from src.db.crud import deletePerson, deleteViolator, insertViolator, loadPPEClasses, loadPeople, updatePerson
 from sqlalchemy import func
 from faker import Faker
 from csv import DictWriter
@@ -101,7 +101,12 @@ class TestDatabaseCRUD(unittest.TestCase):
         )
         self.assertTrue(result)
 
-    def test_step_3_delete_violator(self):
+    def test_step_4_delete_person(self):
+        person_id = int("2")
+        result = deletePerson(self.db, person_id=person_id)
+        self.assertTrue(result)
+
+    def test_step_5_delete_violator(self):
         # Delete violator with correct inputs
         result = deleteViolator(self.db, "1")
         self.assertTrue(result)

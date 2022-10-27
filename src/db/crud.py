@@ -59,6 +59,14 @@ def updatePerson(db: DatabaseHandler, person_id: int, first_name: str="", middle
         return True
     return False
 
+def deletePerson(db: DatabaseHandler, person_id: int):
+    person = db.session.query(Person).filter_by(person_id=person_id).first()
+    if person is not None:
+        db.session.delete(person)
+        db.session.commit()
+        return True
+    return False
+
 def insertViolator(db: DatabaseHandler, person_id: int, coordinates: str, detectedppeclasses: list):
     person = db.session.query(Person).filter_by(person_id=person_id).first()
     if person is not None:
