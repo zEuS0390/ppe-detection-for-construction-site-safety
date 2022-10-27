@@ -1,7 +1,7 @@
 import unittest, configparser, os
 from src.db.database import DatabaseHandler
 from src.db.tables import Person, Violator
-from src.db.crud import deleteViolator, insertViolator, loadPPEClasses, loadPeople
+from src.db.crud import deleteViolator, insertViolator, loadPPEClasses, loadPeople, updatePerson
 from sqlalchemy import func
 from faker import Faker
 from csv import DictWriter
@@ -40,8 +40,10 @@ class TestDatabaseCRUD(unittest.TestCase):
         self.cfg.read("./cfg/config.ini")
         db_file = "data/testing.sqlite"
         self.db = DatabaseHandler(f"sqlite:///{db_file}")
+        self.faker = Faker()
+
+    def test_step_1_load_data(self):
         loadPPEClasses(self.db, self.cfg.get("yolor", "classes"))
-        faker = Faker()
         with open(self.cfg.get("face_recognition", "people"), "w", newline="") as csv_file:
             fieldnames = ["person_id", "first_name", "middle_name", "last_name", "job_title"]
             writer = DictWriter(csv_file, fieldnames=fieldnames)
@@ -51,16 +53,16 @@ class TestDatabaseCRUD(unittest.TestCase):
             people = [
                 {
                     "person_id": people_ids.pop(0), 
-                    "first_name": faker.unique.first_name(), 
-                    "middle_name": faker.unique.last_name(), 
-                    "last_name": faker.unique.last_name(),
-                    "job_title": faker.unique.job()
+                    "first_name": self.faker.unique.first_name(), 
+                    "middle_name": self.faker.unique.last_name(), 
+                    "last_name": self.faker.unique.last_name(),
+                    "job_title": self.faker.unique.job()
                 } for _ in range(number_of_people)
             ]
             writer.writerows(people)
         loadPeople(self.db, self.cfg.get("face_recognition", "people"))
 
-    def test_step_1_insert_violator(self):
+    def test_step_2_insert_violator(self):
         # Insert violator entry with the correct inputs
         person_id = int("1")
         detected = ["no helmet", "no glasses", "no gloves", "no boots"]
@@ -88,7 +90,18 @@ class TestDatabaseCRUD(unittest.TestCase):
         result = insertViolator(self.db, person_id, "(0, 0, 100, 400)", detected)
         self.assertFalse(result)
 
-    def test_step_2_delete_violator(self):
+    def test_step_3_update_person(self):
+        person_id = int("2")
+        result = updatePerson(
+            self.db, 
+            person_id=person_id, 
+            first_name=self.faker.unique.first_name(), 
+            middle_name=self.faker.unique.last_name(), 
+            last_name=self.faker.unique.last_name()
+        )
+        self.assertTrue(result)
+
+    def test_step_3_delete_violator(self):
         # Delete violator with correct inputs
         result = deleteViolator(self.db, "1")
         self.assertTrue(result)

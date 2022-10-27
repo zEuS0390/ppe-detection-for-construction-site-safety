@@ -47,6 +47,17 @@ def loadPeople(db: DatabaseHandler, filepath: str):
     db.session.commit()
     db.session.close()
 
+def updatePerson(db: DatabaseHandler, person_id: int, first_name: str="", middle_name: str="", last_name: str="", job_title: str=""):
+    person = db.session.query(Person).filter_by(person_id=person_id).first()
+    if person is not None:
+        if len(first_name)>0: person.first_name = first_name
+        if len(middle_name)>0: person.middle_name = middle_name
+        if len(last_name)>0: person.last_name = last_name
+        if len(job_title)>0: person.job_title = job_title
+        db.session.commit()
+        db.session.close()
+        return True
+    return False
 
 def insertViolator(db: DatabaseHandler, person_id: int, coordinates: str, detectedppeclasses: list):
     person = db.session.query(Person).filter_by(person_id=person_id).first()
