@@ -20,6 +20,12 @@ This is the official repository of our application server, which is part of the 
 | OS | Debian GNU/Linux 11 (bullseye) aarch64 |
 | Memory | 8 GB |
 
+| | OKdo Camera Module |
+| :-: | :-: |
+| Sensor | 5MP OV5647 |
+| Resolution | 1080p |
+| FPS | 30 |
+
 ## Classes
 The trained model detects 5 basic PPE for construction with additional of 5 noncompliant cases.
 - Helmet
