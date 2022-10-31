@@ -1,8 +1,8 @@
 from src.camera import Camera
 from src.client import MQTTClient, streamCamera
 from src.detection import Detection, detThreadFunc
-import configparser
-import threading
+from src.recognition import Recognition
+import configparser, threading
 
 """
     TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
@@ -36,3 +36,6 @@ if __name__=="__main__":
     cam.start()
     mqtt_camera_thread.start()
     det.start(cam, detThreadFunc, mqtt_notif)
+
+    # Start recognition
+    Recognition.start(cam)
