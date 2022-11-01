@@ -11,6 +11,7 @@ class MQTTClient:
         self.broker = cfg.get(cfg_section, "broker_ip")
         self.port = port
         self.client = Client(client_id=self.client_id)
+        self.client.username_pw_set(cfg.get(cfg_section, "username"), cfg.get(cfg_section, "password"))
         self.client.on_connect = self.on_connect
         if on_message is not None:
             self.client.on_message = on_message
