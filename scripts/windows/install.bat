@@ -1,28 +1,11 @@
-cd ../../
+python -m venv .venv
+
+@REM Install project dependencies
+".venv/Scripts/activate" && pip install -r requirements.txt
 
 @REM Clone YOLOR repository
 git clone "https://github.com/WongKinYiu/yolor.git"
 rmdir /s /q "./yolor/.git"
-
-@REM Install project dependencies
-pipenv install
-
-@REM Install YOLOR dependencies
-pipenv run pip install Cython
-pipenv run pip install matplotlib
-pipenv run pip install numpy
-pipenv run pip install opencv-python
-pipenv run pip install Pillow
-pipenv run pip install PyYAML
-pipenv run pip install scipy
-pipenv run pip install tensorboard
-pipenv run pip install torch
-pipenv run pip install torchvision
-pipenv run pip install tqdm
-pipenv run pip install seaborn
-pipenv run pip install pandas
-pipenv run pip install thop
-pipenv run pip install pycocotools
 
 @REM ./yolor/models/models.py
 powershell -Command "(Get-Content ./yolor/models/models.py) -replace 'from utils.google_utils import *', 'from yolor.utils.google_utils import ' | Out-File -encoding ASCII ./yolor/models/models.py"

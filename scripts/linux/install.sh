@@ -1,26 +1,12 @@
+#!/bin/bash
+
+python -m venv .venv/ 
+
+. .venv/bin/activate && pip install -r requirements.txt
+
 # Clone YOLOR repository
 git clone "https://github.com/WongKinYiu/yolor.git"
 rm -rf "./yolor/.git"
-
-# Install project dependencies
-pipenv install
-
-# Install YOLOR dependencies
-pipenv run pip install Cython
-pipenv run pip install matplotlib
-pipenv run pip install numpy
-pipenv run pip install opencv-python
-pipenv run pip install Pillow
-pipenv run pip install PyYAML
-pipenv run pip install scipy
-pipenv run pip install tensorboard
-pipenv run pip install torch
-pipenv run pip install torchvision
-pipenv run pip install tqdm
-pipenv run pip install seaborn
-pipenv run pip install pandas
-pipenv run pip install thop
-pipenv run pip install pycocotools
 
 # ./yolor/models/models.py
 sed -i "1s/from *utils./from yolor.utils./1" "./yolor/models/models.py"
@@ -61,3 +47,5 @@ sed -i "19s/from *utils./from yolor.utils./1" "./yolor/utils/plots.py"
 echo "19s/from *utils./from yolor.utils./1 > ./yolor/utils/plots.py"
 sed -i "20s/from *utils./from yolor.utils./1" "./yolor/utils/plots.py"
 echo "20s/from *utils./from yolor.utils./1 > ./yolor/utils/plots.py"
+
+read -p "Press enter to exit..."
