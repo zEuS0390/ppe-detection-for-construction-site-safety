@@ -48,7 +48,7 @@ The trained model detects 5 basic PPE for construction with additional of 5 nonc
 | 3.0 | 1XYkB4GrGiwnxA5a0CheF6CuYBjd9im0- | [trained_ppe_model_v3.pt](https://drive.google.com/file/d/1XYkB4GrGiwnxA5a0CheF6CuYBjd9im0-/view?usp=share_link) |
 
 ## Installation
-To get started, we need to install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
+To get started, install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
 
 Just run this script and it will handle the installation of dependencies for you.
 ```
