@@ -1,18 +1,18 @@
 paho-mqtt
 sqlalchemy
 faker
-# Cython
-# matplotlib
-# numpy
-# opencv-python
-# Pillow
-# PyYAML
-# scipy
-# tensorboard
-# torch
-# torchvision
-# tqdm
-# seaborn
-# pandas
-# thop
-# pycocotools
+Cython
+matplotlib
+numpy
+opencv-python
+Pillow
+PyYAML
+scipy
+tensorboard
+torch==1.12.1
+torchvision==0.13.1
+tqdm
+seaborn
+pandas
+thop
+pycocotools
