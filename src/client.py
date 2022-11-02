@@ -5,16 +5,23 @@ import time, json
 
 class MQTTClient:
 
-    def __init__(self, cfg: ConfigParser, cfg_section: str, on_message=None, port=1883):
-        self.client_id = cfg.get(cfg_section, "client_id_name")
-        self.topic = cfg.get(cfg_section, "topic_name")
-        self.broker = cfg.get(cfg_section, "broker_ip")
-        self.port = port
-        self.client = Client(client_id=self.client_id)
-        self.client.username_pw_set(cfg.get(cfg_section, "username"), cfg.get(cfg_section, "password"))
-        self.client.on_connect = self.on_connect
-        if on_message is not None:
-            self.client.on_message = on_message
+    def __init__(self, name: str, on_message=None, port=1883):
+        self.client_id = name
+
+        try:
+            with open(f"cfg/client/{name}.cfg", "r") as file:
+                self.cfg = dict([line.strip().replace(" ", "").split(":") for line in file.readlines()])
+                print(self.cfg)
+                self.topic = self.cfg["topic_name"]
+                self.broker = self.cfg["broker_ip"]
+                self.port = port
+                self.client = Client(client_id=self.client_id)
+                self.client.username_pw_set(self.cfg["username"], self.cfg["password"])
+                self.client.on_connect = self.on_connect
+                if on_message is not None:
+                    self.client.on_message = on_message
+        except Exception as e:
+            print(e)
         
     def start(self):
         self.client.connect(self.broker, self.port)
@@ -30,7 +37,7 @@ class MQTTClient:
 
     def on_connect(self, client, userdata, flags, rc):
         print(f"Connection result: {connack_string(rc)}")
-        client.subscribe(self.topic)
+        self.client.subscribe(self.topic)
 
     def on_message(self, client, userdata, msg):
         print(f"Received message: {msg.payload}")

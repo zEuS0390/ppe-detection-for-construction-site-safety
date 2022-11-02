@@ -17,11 +17,11 @@ if __name__=="__main__":
 
     # Load app configuration file
     cfg = configparser.ConfigParser()
-    cfg.read("./cfg/config.ini")
+    cfg.read("./cfg/app.cfg")
 
     # Instantiate objects
-    mqtt_notif = MQTTClient(cfg, "mqtt_notif")
-    mqtt_camera = MQTTClient(cfg, "mqtt_camera")
+    mqtt_notif = MQTTClient("notif")
+    mqtt_camera = MQTTClient("camera")
     cam = Camera()
     mqtt_camera_thread = threading.Thread(
         target=streamCamera, 
