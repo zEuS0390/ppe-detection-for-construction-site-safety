@@ -39,24 +39,13 @@ The trained model detects 5 basic PPE for construction with additional of 5 nonc
 - Boots
 - No boots
 
-## Trained Models
-| version | google drive id | weights |
-| :-: | :-: | :-: |
-| 1.0 | 1CW1DPajYIh-xkUhtGIJ0pkbyez_LC4z0 | [trained_ppe_model_v1.pt](https://drive.google.com/file/d/1CW1DPajYIh-xkUhtGIJ0pkbyez_LC4z0/view?usp=sharing) |
-| 2.0 | 14Q6iLv7_igK1761BUG3yBZ04N11YthVY | [trained_ppe_model_v2.pt](https://drive.google.com/file/d/14Q6iLv7_igK1761BUG3yBZ04N11YthVY/view?usp=sharing) |
-| 2.1 | 1NS3boQlglUI2QaJV-mmzlZ0vLqsbIvxH | [trained_ppe_model_v2.1.pt](https://drive.google.com/file/d/1NS3boQlglUI2QaJV-mmzlZ0vLqsbIvxH/view?usp=sharing) |
-| 3.0 | 1XYkB4GrGiwnxA5a0CheF6CuYBjd9im0- | [trained_ppe_model_v3.pt](https://drive.google.com/file/d/1XYkB4GrGiwnxA5a0CheF6CuYBjd9im0-/view?usp=share_link) |
-| 3.1 | 1mVsbaWc4ZvAHLtfs3HdvNpQKBgl-2Lat | [trained_ppe_model_v3.1.pt](https://drive.google.com/file/d/1mVsbaWc4ZvAHLtfs3HdvNpQKBgl-2Lat/view?usp=share_link) |
-
 ## Installation
 To get started, install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
 
-Just run this script and it will handle the installation of dependencies for you.
+Just run this script and it will handle the installation.
 ```
 ./scripts/linux/install.sh
 ```
-
-After the installation, download the most recent trained model [here](#trained-models). Place it inside of the ```data/weights``` folder and name it as 'best_overall.pt'.
 
 Download and install mosquitto from https://mosquitto.org/download/. Make sure to run the broker as a service or as an independent program.
 

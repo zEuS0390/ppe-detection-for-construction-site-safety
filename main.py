@@ -1,6 +1,7 @@
-from src.camera import Camera
 from src.client import MQTTClient, streamCamera
 from src.detection import Detection, detThreadFunc
+from src.utils import checkLatestWeights
+from src.camera import Camera
 import configparser, threading
 
 """
@@ -14,6 +15,9 @@ import configparser, threading
 """
 
 if __name__=="__main__":
+
+    # Check latest weights file
+    checkLatestWeights()
 
     # Load app configuration file
     cfg = configparser.ConfigParser()

@@ -6,7 +6,7 @@ from yolor.utils.torch_utils import select_device
 from yolor.utils.plots import plot_one_box
 import torch, random, threading, time, json
 from .utils import imageToBinary
-import cv2
+import cv2, glob, os
 
 class Detection:
 
@@ -35,9 +35,15 @@ class Detection:
 
     # Load model
     def load_model(self):
-        self.model = Darknet(self.cfg.get("yolor", "cfg"), self.cfg.getint("yolor", "img_size")).cpu()
-        self.model.load_state_dict(torch.load(self.cfg.get("yolor", "weights"), map_location=self.device)['model'])
-        self.model.to(self.device).eval()
+        weights = glob.glob(os.path.join(self.cfg.get("yolor", "weights"), "*.pt"))
+        if len(weights) == 0:
+            raise Exception("No weights found.")
+        elif len(weights) > 1:
+            raise Exception("Too many weights found.")
+        else:
+            self.model = Darknet(self.cfg.get("yolor", "cfg"), self.cfg.getint("yolor", "img_size")).cpu()
+            self.model.load_state_dict(torch.load(weights[0], map_location=self.device)['model'])
+            self.model.to(self.device).eval()
 
     # Detect an image
     def detect(self, img, im0s):
