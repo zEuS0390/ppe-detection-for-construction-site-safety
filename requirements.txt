@@ -1,3 +1,4 @@
+gdown
 paho-mqtt
 sqlalchemy
 faker
