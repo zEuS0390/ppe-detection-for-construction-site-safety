@@ -6,3 +6,5 @@ yolor/
 # Consider the database file just in case that it gets accidentally saved here.
 *.sqlite
 *.sqlite3
+
+draft/
