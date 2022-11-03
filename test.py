@@ -6,29 +6,25 @@ from sqlalchemy import func
 from faker import Faker
 from csv import DictWriter
 
+CONFIG_FILE = "./cfg/app.cfg"
+
 # Test the Configuration File Contents
 class TestConfigFiles(unittest.TestCase):
 
     def setUp(self):
         self.configparser = configparser.ConfigParser()
-        self.configfile = "./cfg/config.ini"
-    
-    def test_step_1_read_config(self):
-        self.assertTrue(os.path.exists(self.configfile), f"{self.configfile} file does not exist.")
-        self.configparser.read(self.configfile)
+        self.configparser.read(CONFIG_FILE)
 
     def test_step_2_yolor_filepaths(self):
         options = [
             "classes",
             "cfg"
         ]
-        self.configparser.read(self.configfile)
         for option in options:
             filepath = self.configparser.get("yolor", option)
             self.assertTrue(os.path.exists(filepath), f"{filepath} file does not exist.")
 
     def test_step_3_device(self):
-        self.configparser.read(self.configfile)
         device = self.configparser.get("yolor", "device")
         self.assertEqual(device, "cpu")
 
@@ -37,7 +33,7 @@ class TestDatabaseCRUD(unittest.TestCase):
 
     def setUp(self):
         self.cfg = configparser.ConfigParser()
-        self.cfg.read("./cfg/config.ini")
+        self.cfg.read(CONFIG_FILE)
         db_file = "data/testing.sqlite"
         self.db = DatabaseHandler(f"sqlite:///{db_file}")
         self.faker = Faker()
