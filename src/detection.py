@@ -23,8 +23,8 @@ class Detection:
         self.load_model()
     
     # Start detection thread
-    def start(self, cam, func, mqtt_client):
-        self.detThread = threading.Thread(target=func, args=(cam, self, mqtt_client))
+    def start(self, cam, func, rec, mqtt_client):
+        self.detThread = threading.Thread(target=func, args=(cam, self, rec, mqtt_client))
         self.detThread.start()
 
     # Load classes
@@ -47,6 +47,7 @@ class Detection:
 
     # Detect an image
     def detect(self, img, im0s):
+        start_time = time.time()
         img = torch.from_numpy(img).to(self.device)
         img = img.float()
         img /= 255.0
@@ -78,6 +79,8 @@ class Detection:
             im0 = cv2.resize(im0, (240, 240), interpolation=cv2.INTER_AREA)
             result["image"] = imageToBinary(im0)
             result["detected"] = detected
+        elapsed_time = time.time() - start_time
+        print(f"Detection time: {elapsed_time}")
         return result
 
     def stop(self):
@@ -85,22 +88,25 @@ class Detection:
 
 # Function for detection thread
 @torch.no_grad()
-def detThreadFunc(cam, det, mqtt_client):
+def detThreadFunc(cam, det, rec, mqtt_client):
     external_last_time = time.time()
     while cam.cap.isOpened():
         processed = cam.getFrame()
         external_elapsed_time = time.time() - external_last_time
         # Activate detection every 10 seconds
-        if external_elapsed_time > 10:
+        if external_elapsed_time > 15:
             external_last_time = time.time()
             if processed is not None:
                 internal_last_time = time.time()
                 result = det.detect(processed, cam.frame)
+                result["faces"] = []
                 if len(result["detected"]):
+                    faces = rec.predict(cam.frame, distance_threshold=0.4)
+                    result["faces"] = faces
                     # Serialize data from detection
                     payload = json.dumps(result) 
                     # Publish the serilized data to deliver to destination clients
                     mqtt_client.client.publish(mqtt_client.topic, payload=payload)
                 internal_elapsed_time = time.time() - internal_last_time
-                print(f"Detection Time: {internal_elapsed_time:.2f}")
+                print(f"Overall process time: {internal_elapsed_time:.2f}")
         time.sleep(0.03)
