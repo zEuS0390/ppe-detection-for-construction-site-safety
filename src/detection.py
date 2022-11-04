@@ -80,7 +80,7 @@ class Detection:
             result["image"] = imageToBinary(im0)
             result["detected"] = detected
         elapsed_time = time.time() - start_time
-        print(f"Detection time: {elapsed_time:.2f}")
+        print(f"Detection time: {elapsed_time:.2f}s")
         return result
 
     def stop(self):
@@ -108,5 +108,5 @@ def detThreadFunc(cam, det, rec, mqtt_client):
                     # Publish the serilized data to deliver to destination clients
                     mqtt_client.client.publish(mqtt_client.topic, payload=payload)
                 internal_elapsed_time = time.time() - internal_last_time
-                print(f"Overall process time: {internal_elapsed_time:.2f}")
+                print(f"Overall process time: {internal_elapsed_time:.2f}s")
         time.sleep(0.03)
