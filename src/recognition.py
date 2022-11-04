@@ -29,7 +29,7 @@ class Recognition:
         are_matches = [closest_distances[0][i][0] <= distance_threshold for i in range(len(X_face_locations))]
         predictions = self.knn_clf.predict(faces_encodings)
         elapsed_time = time.time() - start_time
-        print(f"Face recognition time: {elapsed_time}")
+        print(f"Face recognition time: {elapsed_time:.2f}s")
         # Predict classes and remove classifications that aren't within the threshold
         return [(pred, loc) if rec else ("unknown", loc) for pred, loc, rec in zip(predictions, X_face_locations, are_matches)]
     
