@@ -80,7 +80,7 @@ class Detection:
             result["image"] = imageToBinary(im0)
             result["detected"] = detected
         elapsed_time = time.time() - start_time
-        print(f"Detection time: {elapsed_time}")
+        print(f"Detection time: {elapsed_time:.2f}")
         return result
 
     def stop(self):
