@@ -18,4 +18,4 @@ pandas
 thop
 pycocotools
 scikit-learn==1.0.2
-face_recognition
+# face_recognition
