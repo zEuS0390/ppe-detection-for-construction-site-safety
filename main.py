@@ -1,6 +1,7 @@
-from src.client import MQTTClient, streamCamera
+from src.client import MQTTClient
 from src.detection import Detection, detThreadFunc
 from src.utils import checkLatestWeights
+from src.recognition import Recognition
 from src.camera import Camera
 import configparser, threading
 
@@ -24,18 +25,14 @@ if __name__=="__main__":
     cfg.read("./cfg/app.cfg")
 
     # Instantiate objects
+    det = Detection(cfg)
+    rec = Recognition(cfg)
     mqtt_notif = MQTTClient("notif")
     mqtt_camera = MQTTClient("camera")
-    cam = Camera()
-    mqtt_camera_thread = threading.Thread(
-        target=streamCamera, 
-        args=(cam, mqtt_camera)
-    )
-    det = Detection(cfg)
+    cam = Camera(mqtt_camera)
     
     # Start threads
     mqtt_notif.start()
     mqtt_camera.start()
     cam.start()
-    mqtt_camera_thread.start()
-    det.start(cam, detThreadFunc, mqtt_notif)
+    det.start(cam, detThreadFunc, rec, mqtt_notif)

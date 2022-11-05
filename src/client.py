@@ -41,11 +41,3 @@ class MQTTClient:
 
     def on_message(self, client, userdata, msg):
         print(f"Received message: {msg.payload}")
-
-def streamCamera(cam, mqtt: MQTTClient):
-    while True:
-        if cam.frame is not None:
-            img = imageToBinary(cam.frame)
-            payload = json.dumps({"image": img, "detected": []})
-            mqtt.client.publish("rpi/camera", payload)
-        time.sleep(0.03)
