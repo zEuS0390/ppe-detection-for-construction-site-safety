@@ -3,7 +3,7 @@ This is the official repository of our application server, which is part of the 
 
 ## Members
 - Zeus James Baltazar (Intelligent Systems) - Focuses mostly on utilization of ideas and their integration to the whole system.
-- Martin Lorenzo Basbacio (Data Science) - Facilitates methods regarding detection, person tracking and recognition.
+- Martin Lorenzo Basbacio (Data Science) - Facilitates methods regarding detection and recognition.
 - Clarece Gail Larrosa (Intelligent Systems) - Manages prototype paper and provides assets for mobile application.
 - Ian Gabriel Marquez (System Administration) - Handles mobile application development and its UI/UX design.
 
