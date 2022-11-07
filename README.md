@@ -46,7 +46,9 @@ The trained model detects 5 basic PPE for construction with additional of 5 nonc
 ## Installation
 To get started, install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
 
-Just run this script and it will handle the installation.
+There are some dependencies that are not included in the script. Download and install them first before continuing to the next step. 
+
+After that, just run this script and it will handle the installation.
 ```
 ./scripts/linux/install.sh
 ```
