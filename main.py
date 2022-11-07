@@ -11,7 +11,7 @@ import configparser, threading
     TEAM MEMBERS:
         - BALTAZAR, ZEUS JAMES
         - BASBACIO, MARTIN LORENZO
-	    - LARROSA, CLARENCE GAIL
+        - LARROSA, CLARENCE GAIL
         - MARQUEZ, IAN GABRIEL
 """
 
