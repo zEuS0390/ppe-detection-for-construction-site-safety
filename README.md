@@ -27,7 +27,7 @@ This is the official repository of our application server, which is part of the 
 | FPS | 30 |
 
 ## Classes
-The trained model detects 5 basic PPE for construction with additional of 5 noncompliant cases.
+The trained model detects 5 basic PPE for construction with additional of 5 noncompliant cases and a person for determining violations.
 - Helmet
 - No helmet
 - Glasses
@@ -38,6 +38,7 @@ The trained model detects 5 basic PPE for construction with additional of 5 nonc
 - No gloves
 - Boots
 - No boots
+- Person
 
 ## Installation
 To get started, install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
