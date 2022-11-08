@@ -1,18 +1,25 @@
+from yolor.utils.general import non_max_suppression, scale_coords
+from src.utils import imageToBinary, getElapsedTime
+from yolor.utils.torch_utils import select_device
+import torch, random, threading, time, json
+from yolor.utils.plots import plot_one_box
+from yolor.models.models import Darknet
+from src.recognition import Recognition
 from configparser import ConfigParser
 import torch.backends.cudnn as cudnn
-from yolor.models.models import Darknet
-from yolor.utils.general import non_max_suppression, scale_coords
-from yolor.utils.torch_utils import select_device
-from yolor.utils.plots import plot_one_box
-import torch, random, threading, time, json
-from .utils import imageToBinary
+from src.client import MQTTClient
+from src.camera import Camera
+from datetime import datetime
 import cv2, glob, os
 
 class Detection:
 
     # Initialize
-    def __init__(self, cfg: ConfigParser):
+    def __init__(self, cfg: ConfigParser, camera: Camera, recognition: Recognition, mqtt_client: MQTTClient):
         self.cfg = cfg
+        self.camera = camera
+        self.recognition = recognition
+        self.mqtt_client = mqtt_client
         self.names: list = []
         self.colors: list = []
         self.model = None
@@ -21,11 +28,12 @@ class Detection:
         cudnn.benchmark = True
         self.load_classes()
         self.load_model()
+        self.isRunning = True
+        self.updateThread = threading.Thread(target=self.update)
     
     # Start detection thread
-    def start(self, cam, func, rec, mqtt_client):
-        self.detThread = threading.Thread(target=func, args=(cam, self, rec, mqtt_client))
-        self.detThread.start()
+    def start(self):
+        self.updateThread.start()
 
     # Load classes
     def load_classes(self):
@@ -47,7 +55,6 @@ class Detection:
 
     # Detect an image
     def detect(self, img, im0s):
-        start_time = time.time()
         img = torch.from_numpy(img).to(self.device)
         img = img.float()
         img /= 255.0
@@ -79,34 +86,41 @@ class Detection:
             im0 = cv2.resize(im0, (240, 240), interpolation=cv2.INTER_AREA)
             result["image"] = imageToBinary(im0)
             result["detected"] = detected
-        elapsed_time = time.time() - start_time
-        print(f"Detection time: {elapsed_time:.2f}s")
         return result
 
     def stop(self):
         self.isDetecting = False
 
-# Function for detection thread
-@torch.no_grad()
-def detThreadFunc(cam, det, rec, mqtt_client):
-    external_last_time = time.time()
-    while cam.cap.isOpened():
-        processed = cam.getFrame()
-        external_elapsed_time = time.time() - external_last_time
-        # Activate detection every 10 seconds
-        if external_elapsed_time > 15:
-            external_last_time = time.time()
-            if processed is not None:
-                internal_last_time = time.time()
-                result = det.detect(processed, cam.frame)
-                result["faces"] = []
-                if len(result["detected"]):
-                    faces = rec.predict(cam.frame, distance_threshold=0.4)
-                    result["faces"] = faces
-                    # Serialize data from detection
-                    payload = json.dumps(result) 
-                    # Publish the serilized data to deliver to destination clients
-                    mqtt_client.client.publish(mqtt_client.topic, payload=payload)
-                internal_elapsed_time = time.time() - internal_last_time
-                print(f"Overall process time: {internal_elapsed_time:.2f}s")
-        time.sleep(0.03)
+    @torch.no_grad()
+    def update(self, interval=10):
+        """
+        Function for update thread
+        """
+        message = {}
+        string = ""
+        detection_time = 0
+        faces_time = 0
+        previous_time = time.time()
+        while self.isRunning:
+            processed_frame = self.camera.getFrame()
+            elapsed_time = time.time() - previous_time
+            if elapsed_time >= interval:
+                previous_time = time.time()
+                if processed_frame is not None:
+                    message.clear()
+                    string = ""
+                    message, detection_time = getElapsedTime(self.detect, processed_frame, self.camera.frame)
+                    string += f"Detection time: {detection_time:.2f}\n"
+                    if len(message["detected"]):
+                        print([cls["class_name"] for cls in message["detected"]])
+                        faces_result, faces_time = getElapsedTime(self.recognition.predict, self.camera.frame, distance_threshold=0.4)
+                        string += f"Recognition time: {faces_time:.2f}\n"
+                        message["faces"] = faces_result
+                        message["timestamp"] = datetime.now().strftime(r"%m/%d/%y %H:%M:%S")
+                        # Serialize data from detection result
+                        payload = json.dumps(message) 
+                        # Publish the serialized data to deliver to destination clients
+                        self.mqtt_client.publish(payload)
+                    string += f"Overall process time: {detection_time + faces_time:.2f}\n"
+                    print(string)
+            time.sleep(0.03)

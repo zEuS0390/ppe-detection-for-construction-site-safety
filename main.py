@@ -1,9 +1,9 @@
 from src.client import MQTTClient
-from src.detection import Detection, detThreadFunc
+from src.detection import Detection
 from src.utils import checkLatestWeights
 from src.recognition import Recognition
 from src.camera import Camera
-import configparser, threading
+import configparser, time
 
 """
     TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
@@ -25,14 +25,23 @@ if __name__=="__main__":
     cfg.read("./cfg/app.cfg")
 
     # Instantiate objects
-    det = Detection(cfg)
-    rec = Recognition(cfg)
     mqtt_notif = MQTTClient("notif")
     mqtt_camera = MQTTClient("camera")
-    cam = Camera(mqtt_camera)
-    
+    recognition = Recognition(cfg)
+    camera = Camera(mqtt_camera)
+    detection = Detection(cfg, camera, recognition, mqtt_notif)
+
     # Start threads
     mqtt_notif.start()
     mqtt_camera.start()
-    cam.start()
-    det.start(cam, detThreadFunc, rec, mqtt_notif)
+    camera.start()
+    detection.start()
+
+    try:
+        while True: time.sleep(1)
+    except:
+        detection.isRunning = False
+        camera.isRunning = False
+
+
+    

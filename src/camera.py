@@ -1,5 +1,4 @@
 from yolor.utils.datasets import letterbox
-from src.client import MQTTClient
 from src.utils import imageToBinary
 from threading import Thread
 import numpy as np
@@ -15,18 +14,18 @@ class Camera:
         if not self.cap.isOpened():
             raise Exception("Camera is not detected. Abort.")
         self.mqtt_client = mqtt_client
-        self.camThread = Thread(target=self.update)    
+        self.updateThread = Thread(target=self.update)    
+        self.isRunning = True
         self.det = []
 
     def start(self):
-        self.camThread.start()
+        self.updateThread.start()
 
-    def join(self):
-        self.camThread.join()
-
-    # Update function for the camera thread
     def update(self):
-        while self.cap.isOpened():
+        """
+        Update function for the camera thread
+        """
+        while self.isRunning:
             _, self.frame = self.cap.read()
             if self.mqtt_client is not None:
                 img = imageToBinary(self.frame)
@@ -34,8 +33,10 @@ class Camera:
                 self.mqtt_client.client.publish("rpi/camera", payload)
             time.sleep(0.03)
 
-    # Get frame with an additional dimension to be used by the detection model
     def getFrame(self):
+        """
+        Get frame with an additional dimension to be used by the detection model
+        """
         if self.frame is not None:
             img: np.ndarray = self.frame.copy()
             img = letterbox(img, new_shape=(640, 640), auto=True)[0]
