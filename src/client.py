@@ -1,13 +1,9 @@
 from paho.mqtt.client import Client, connack_string
-from configparser import ConfigParser
-from src.utils import imageToBinary
-import time, json
 
 class MQTTClient:
 
     def __init__(self, name: str, on_message=None, port=1883):
         self.client_id = name
-
         try:
             with open(f"cfg/client/{name}.cfg", "r") as file:
                 self.cfg = dict([line.strip().replace(" ", "").split(":") for line in file.readlines()])
@@ -37,7 +33,14 @@ class MQTTClient:
 
     def on_connect(self, client, userdata, flags, rc):
         print(f"Connection result: {connack_string(rc)}")
-        self.client.subscribe(self.topic)
+        if rc == 0:
+            self.client.subscribe(self.topic)
+        elif rc == 5:
+            # Not authorized (incorrect username or password)
+            pass
 
     def on_message(self, client, userdata, msg):
         print(f"Received message: {msg.payload}")
+
+    def publish(self, payload):
+        self.client.publish(self.topic, payload=payload)

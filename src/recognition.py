@@ -1,6 +1,5 @@
 import pickle, face_recognition
 from configparser import ConfigParser
-import time
 
 class Recognition:
 
@@ -15,7 +14,6 @@ class Recognition:
             self.knn_clf = pickle.load(file)
 
     def predict(self, frame, distance_threshold=0.6):
-        start_time = time.time()
         # Load image file and find face locations
         X_img = frame
         X_face_locations = face_recognition.face_locations(X_img)
@@ -28,8 +26,6 @@ class Recognition:
         closest_distances = self.knn_clf.kneighbors(faces_encodings, n_neighbors=1)
         are_matches = [closest_distances[0][i][0] <= distance_threshold for i in range(len(X_face_locations))]
         predictions = self.knn_clf.predict(faces_encodings)
-        elapsed_time = time.time() - start_time
-        print(f"Face recognition time: {elapsed_time:.2f}s")
         # Predict classes and remove classifications that aren't within the threshold
         return [(pred, loc) if rec else ("unknown", loc) for pred, loc, rec in zip(predictions, X_face_locations, are_matches)]
     

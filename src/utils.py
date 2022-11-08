@@ -1,13 +1,40 @@
 from csv import DictReader
-import cv2, base64, os, gdown, glob
+import cv2, base64, os, gdown, glob, time
 
-# Convert an image to binary data
 def imageToBinary(image):
+    """
+    Convert a numpy array image to binary data.
+
+    Arg:
+        image: numpy.ndarray
+
+    Returns the encoded bytes in string
+    """
     _, buffer = cv2.imencode(".jpg", image)
     binary_string = base64.b64encode(buffer)
     return binary_string.decode()
 
+def getElapsedTime(func, *args, **kwargs):
+    """
+    Get the elapsed time of a given function.
+
+    Args:
+        func: A function that will be measured in time
+        *args: Required arguments in the func parameter
+        *kwargs: Key-worded arguments in the func parameter
+
+    Returns the encapsulated tuple of the function result and the elapsed time
+    """
+    start_time = time.time()
+    result = func(*args, **kwargs)
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    return (result, elapsed_time)
+
 def checkLatestWeights():
+    """
+    Checks the latest weights file
+    """
     current_version_file = "data/weights/current_version.txt"
     if not os.path.exists(current_version_file):
         current_id = 0
