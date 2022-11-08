@@ -4,7 +4,7 @@ val: ../dataset/valid
 test: ../dataset/valid
 
 # number of classes
-nc: 10
+nc: 11
 
 # class names
-names: ['helmet', 'no helmet', 'glasses', 'no glasses', 'vest', 'no vest', 'gloves', 'no gloves', 'boots', 'no boots']
+names: ['helmet', 'no helmet', 'glasses', 'no glasses', 'vest', 'no vest', 'gloves', 'no gloves', 'boots', 'no boots', 'person']
