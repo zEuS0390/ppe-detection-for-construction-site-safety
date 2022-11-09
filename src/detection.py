@@ -15,7 +15,7 @@ import cv2, glob, os
 class Detection:
 
     # Initialize
-    def __init__(self, cfg: ConfigParser, camera: Camera, recognition: Recognition, mqtt_client: MQTTClient):
+    def __init__(self, cfg: ConfigParser, camera: Camera=None, recognition: Recognition=None, mqtt_client: MQTTClient=None):
         self.cfg = cfg
         self.camera = camera
         self.recognition = recognition
@@ -33,7 +33,10 @@ class Detection:
     
     # Start detection thread
     def start(self):
-        self.updateThread.start()
+        if self.camera is not None and self.recognition is not None and self.mqtt_client is not None: 
+            self.updateThread.start()
+        else:
+            print("Missing arguments (camera, recognition, mqtt_client). Abort")
 
     # Load classes
     def load_classes(self):
