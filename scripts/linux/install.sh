@@ -48,4 +48,4 @@ echo "19s/from *utils./from yolor.utils./1 > ./yolor/utils/plots.py"
 sed -i "20s/from *utils./from yolor.utils./1" "./yolor/utils/plots.py"
 echo "20s/from *utils./from yolor.utils./1 > ./yolor/utils/plots.py"
 
-read -p "Press enter to exit..."
+# read -p "Press enter to exit..."
