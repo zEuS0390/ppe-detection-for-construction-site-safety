@@ -13,7 +13,7 @@ class Recognition:
         with open(self.cfg.get("face_recognition", "model"), "rb") as file:
             self.knn_clf = pickle.load(file)
 
-    def predict(self, frame, distance_threshold=0.6):
+    def predict(self, frame, distance_threshold=0.4):
         # Load image file and find face locations
         X_img = frame
         X_face_locations = face_recognition.face_locations(X_img)

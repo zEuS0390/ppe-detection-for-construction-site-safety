@@ -1,8 +1,7 @@
 from yolor.utils.general import non_max_suppression, scale_coords
-from src.utils import imageToBinary, getElapsedTime
+from src.utils import getElapsedTime
 from yolor.utils.torch_utils import select_device
-import torch, random, threading, time, json
-from yolor.utils.plots import plot_one_box
+import torch, random, threading, time
 from yolor.models.models import Darknet
 from src.recognition import Recognition
 from configparser import ConfigParser
@@ -10,7 +9,10 @@ import torch.backends.cudnn as cudnn
 from src.client import MQTTClient
 from src.camera import Camera
 from datetime import datetime
-import cv2, glob, os
+from src.box import Box, isColliding
+import glob, os
+
+PERSON = 10
 
 class Detection:
 
@@ -69,33 +71,28 @@ class Detection:
             classes=0,
             agnostic=False
         )
-        result = {}
-        for i, det in enumerate(pred):
-            s, im0 = '{}'.format(i), im0s.copy()
-            gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]
+        for det in pred:
+            im0 = im0s.copy()
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
-            for c in det[:, -1].unique():
-                n = (det[:, -1] == c).sum() 
-                s += '%g %ss, ' % (n, self.names[int(c)])
-            detected = []
+            people = []
+            ppe = []
             for *xyxy, conf, cls in det:
-                label = '%s %.2f' % (self.names[int(cls)], conf)
-                detected.append({
-                    "position": ((int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))),
-                    "confidence": float(conf), 
-                    "class_name": self.names[int(cls)]
-                })
-                plot_one_box(xyxy, im0, label=label, color=self.colors[int(cls)], line_thickness=3)
-            im0 = cv2.resize(im0, (240, 240), interpolation=cv2.INTER_AREA)
-            result["image"] = imageToBinary(im0)
-            result["detected"] = detected
-        return result
+                detected_obj = {
+                        "coordinate": ((int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))),
+                        "confidence": float(conf), 
+                        "class_name": self.names[int(cls)]
+                }
+                if int(cls) == PERSON:
+                    people.append(detected_obj)
+                else:
+                    ppe.append(detected_obj)
+        return people, ppe
 
     def stop(self):
         self.isDetecting = False
 
     @torch.no_grad()
-    def update(self, interval=10):
+    def update(self, interval=0):
         """
         Function for update thread
         """
@@ -104,26 +101,60 @@ class Detection:
         detection_time = 0
         faces_time = 0
         previous_time = time.time()
+        
         while self.isRunning:
             processed_frame = self.camera.getFrame()
             elapsed_time = time.time() - previous_time
             if elapsed_time >= interval:
                 previous_time = time.time()
+                
                 if processed_frame is not None:
                     message.clear()
                     string = ""
-                    message, detection_time = getElapsedTime(self.detect, processed_frame, self.camera.frame)
+                    
+                    detection_result, detection_time = getElapsedTime(self.detect, processed_frame, self.camera.frame)
                     string += f"Detection time: {detection_time:.2f}\n"
-                    if len(message["detected"]):
-                        print([cls["class_name"] for cls in message["detected"]])
-                        faces_result, faces_time = getElapsedTime(self.recognition.predict, self.camera.frame, distance_threshold=0.4)
-                        string += f"Recognition time: {faces_time:.2f}\n"
-                        message["faces"] = faces_result
-                        message["timestamp"] = datetime.now().strftime(r"%m/%d/%y %H:%M:%S")
-                        # Serialize data from detection result
-                        payload = json.dumps(message) 
-                        # Publish the serialized data to deliver to destination clients
-                        self.mqtt_client.publish(payload)
+
+                    violators = []
+                    for person in detection_result[0]:
+                        violator = {}
+                        person_coordinates = Box(
+                            top = person["coordinate"][0][1],
+                            right = person["coordinate"][1][0],
+                            bottom = person["coordinate"][1][0],
+                            left = person["coordinate"][0][0]
+                        )
+                        persons_result, persons_time = getElapsedTime(self.recognition.predict, self.camera.frame, distance_threshold=0.4)
+                        string += f"Recognition time: {persons_time:.2f}\n"
+                        persons = []
+                        for name, loc in persons_result:
+                            face_coordinates = Box(
+                                top = loc[0],
+                                right = loc[1],
+                                bottom = loc[2],
+                                left = loc[3]
+                            )
+                            if isColliding(face_coordinates, person_coordinates):
+                                persons.append(name)
+                        violator["persons"] = persons
+                        violations = []
+                        for ppe in detection_result[1]:
+                            ppe_coordinates = Box(
+                                top = ppe["coordinate"][0][1],
+                                right = ppe["coordinate"][1][0],
+                                bottom = ppe["coordinate"][1][1],
+                                left = ppe["coordinate"][0][0]
+                            )
+                            if isColliding(ppe_coordinates, person_coordinates):
+                                violations.append(
+                                    ppe["class_name"]
+                            )
+                        violator["violations"] = violations
+                        violators.append(violator)
+                    message["violators"] = violators
+                    message["timestamp"] = datetime.now().strftime(r"%m/%d/%y %H:%M:%S")
+                    print(message)
+  
                     string += f"Overall process time: {detection_time + faces_time:.2f}\n"
                     print(string)
             time.sleep(0.03)
