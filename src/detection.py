@@ -91,70 +91,77 @@ class Detection:
     def stop(self):
         self.isDetecting = False
 
+    def checkViolations(self, processed_image, image):
+        """
+        Analyzes which PPE objects belong to a specific person by recognizing the identity of the face or at least the knowing presence of the person.
+        
+        Note: It ignores all PPE objects that do not reside within the bounding box of the person class.
+
+        Args:
+            processed_image: A processed image with an additional dimension that will be used in the model.
+            image: Original image that will be used for plotting bounding boxes of the detected objects.
+
+        Returns the violations of the detected person
+        """
+        string = ""
+        message = {}
+        detection_result, detection_time = getElapsedTime(self.detect, processed_image, image)
+        string += f"Detection time: {detection_time:.2f}\n"
+
+        violators = []
+        for person in detection_result[0]:
+            violator = {}
+            person_coordinates = Box(
+                top = person["coordinate"][0][1],
+                right = person["coordinate"][1][0],
+                bottom = person["coordinate"][1][0],
+                left = person["coordinate"][0][0]
+            )
+            faces_result, faces_time = getElapsedTime(self.recognition.predict, image, distance_threshold=0.4)
+            string += f"Recognition time: {faces_time:.2f}\n"
+            faces = []
+            for name, loc in faces_result:
+                face_coordinates = Box(
+                    top = loc[0],
+                    right = loc[1],
+                    bottom = loc[2],
+                    left = loc[3]
+                )
+                if isColliding(face_coordinates, person_coordinates):
+                    faces.append(name)
+            violator["faces"] = faces
+            violations = []
+            for ppe in detection_result[1]:
+                ppe_coordinates = Box(
+                    top = ppe["coordinate"][0][1],
+                    right = ppe["coordinate"][1][0],
+                    bottom = ppe["coordinate"][1][1],
+                    left = ppe["coordinate"][0][0]
+                )
+                if isColliding(ppe_coordinates, person_coordinates):
+                    violations.append(
+                        ppe["class_name"]
+                )
+            violator["violations"] = violations
+            violators.append(violator)
+        message["violators"] = violators
+        message["timestamp"] = datetime.now().strftime(r"%m/%d/%y %H:%M:%S")
+        print(string, end="")
+        return message
+
     @torch.no_grad()
     def update(self, interval=0):
         """
         Function for update thread
         """
-        message = {}
-        string = ""
-        detection_time = 0
-        faces_time = 0
         previous_time = time.time()
-        
         while self.isRunning:
             processed_frame = self.camera.getFrame()
             elapsed_time = time.time() - previous_time
             if elapsed_time >= interval:
                 previous_time = time.time()
-                
                 if processed_frame is not None:
-                    message.clear()
-                    string = ""
-                    
-                    detection_result, detection_time = getElapsedTime(self.detect, processed_frame, self.camera.frame)
-                    string += f"Detection time: {detection_time:.2f}\n"
-
-                    violators = []
-                    for person in detection_result[0]:
-                        violator = {}
-                        person_coordinates = Box(
-                            top = person["coordinate"][0][1],
-                            right = person["coordinate"][1][0],
-                            bottom = person["coordinate"][1][0],
-                            left = person["coordinate"][0][0]
-                        )
-                        persons_result, persons_time = getElapsedTime(self.recognition.predict, self.camera.frame, distance_threshold=0.4)
-                        string += f"Recognition time: {persons_time:.2f}\n"
-                        persons = []
-                        for name, loc in persons_result:
-                            face_coordinates = Box(
-                                top = loc[0],
-                                right = loc[1],
-                                bottom = loc[2],
-                                left = loc[3]
-                            )
-                            if isColliding(face_coordinates, person_coordinates):
-                                persons.append(name)
-                        violator["persons"] = persons
-                        violations = []
-                        for ppe in detection_result[1]:
-                            ppe_coordinates = Box(
-                                top = ppe["coordinate"][0][1],
-                                right = ppe["coordinate"][1][0],
-                                bottom = ppe["coordinate"][1][1],
-                                left = ppe["coordinate"][0][0]
-                            )
-                            if isColliding(ppe_coordinates, person_coordinates):
-                                violations.append(
-                                    ppe["class_name"]
-                            )
-                        violator["violations"] = violations
-                        violators.append(violator)
-                    message["violators"] = violators
-                    message["timestamp"] = datetime.now().strftime(r"%m/%d/%y %H:%M:%S")
-                    print(message)
-  
-                    string += f"Overall process time: {detection_time + faces_time:.2f}\n"
-                    print(string)
+                    violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, self.camera.frame)
+                    print(f"Overall process time: {violations_time:.2f}")
+                    print(violations_result)
             time.sleep(0.03)
