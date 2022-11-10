@@ -27,7 +27,7 @@ def loadPPEClasses(db: DatabaseHandler, filepath: str):
     db.session.commit()
     db.session.close()
 
-def insertPersons(db: DatabaseHandler, filepath: str):
+def insertPersons(db: DatabaseHandler, filepath: str, verbose=False):
     persons = []
     with open(filepath, newline="") as csv_file:
         reader = csv.DictReader(csv_file)
@@ -43,7 +43,8 @@ def insertPersons(db: DatabaseHandler, filepath: str):
             person = Person(**person_data)
             db.session.add(person)
         else:
-            print(f"{person_data['first_name']} {person_data['middle_name']} {person_data['last_name']} already exist!")
+            if verbose:
+                print(f"{person_data['first_name']} {person_data['middle_name']} {person_data['last_name']} already exist!")
     db.session.commit()
     db.session.close()
 

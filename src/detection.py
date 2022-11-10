@@ -44,7 +44,6 @@ class Detection:
 
     def load_persons(self):
         self.persons = loadPersons(self.db)
-        print(self.persons)
     
     def start(self):
         """
