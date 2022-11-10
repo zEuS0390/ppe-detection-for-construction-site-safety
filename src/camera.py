@@ -1,8 +1,7 @@
 from yolor.utils.datasets import letterbox
-from src.utils import imageToBinary
 from threading import Thread
 import numpy as np
-import cv2, time, json
+import cv2, time
 
 # Camera Class
 class Camera:
@@ -27,10 +26,6 @@ class Camera:
         """
         while self.isRunning:
             _, self.frame = self.cap.read()
-            if self.mqtt_client is not None:
-                img = imageToBinary(self.frame)
-                payload = json.dumps({"image": img})
-                self.mqtt_client.client.publish("rpi/camera", payload)
             time.sleep(0.03)
 
     def getFrame(self):

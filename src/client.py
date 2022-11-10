@@ -7,7 +7,6 @@ class MQTTClient:
         try:
             with open(f"cfg/client/{name}.cfg", "r") as file:
                 self.cfg = dict([line.strip().replace(" ", "").split(":") for line in file.readlines()])
-                print(self.cfg)
                 self.topic = self.cfg["topic_name"]
                 self.broker = self.cfg["broker_ip"]
                 self.port = port
