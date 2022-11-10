@@ -93,7 +93,7 @@ class Detection:
 
     def checkViolations(self, processed_image, image):
         """
-        Analyzes which PPE objects belong to a specific person by recognizing the identity of the face or at least the knowing presence of the person.
+        Analyzes which PPE objects belong to a certain person and recognize identities by checking the overlapping bounding boxes.
         
         Note: It ignores all PPE objects that do not reside within the bounding box of the person class.
 
