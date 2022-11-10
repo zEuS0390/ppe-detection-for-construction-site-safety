@@ -1,19 +1,26 @@
 from yolor.utils.general import non_max_suppression, scale_coords
-from src.utils import getElapsedTime
 from yolor.utils.torch_utils import select_device
+from src.db.database import DatabaseHandler
 from yolor.models.models import Darknet
 from src.recognition import Recognition
+import glob, os, torch, threading, time
 from configparser import ConfigParser
+from src.box import Box, isColliding
+from src.utils import getElapsedTime
+import torch.backends.cudnn as cudnn
+from src.utils import imageToBinary
+from src.db.crud import loadPersons
 from src.client import MQTTClient
+from src.db.tables import Person
+from src.constants import Class
+from src.constants import Color
 from src.camera import Camera
 from datetime import datetime
-from src.box import Box, isColliding
-from src.constants import Class
-from src.db.database import DatabaseHandler
-import glob, os, torch, threading, time
-import torch.backends.cudnn as cudnn
-from src.db.tables import Person
-from src.db.crud import loadPersons
+import numpy as np
+import json
+import cv2
+
+from yolor.utils.plots import plot_one_box
 
 class Detection:
 
@@ -44,6 +51,7 @@ class Detection:
 
     def load_persons(self):
         self.persons = loadPersons(self.db)
+        self.colors = list(Color)
     
     def start(self):
         """
@@ -73,6 +81,19 @@ class Detection:
             self.model.load_state_dict(torch.load(weights[0], map_location=self.device)['model'])
             self.model.to(self.device).eval()
 
+    def plot_box(self, image: np.ndarray, coordinates: Box, color: Color, label: str):
+        tl = round(0.002 * (image.shape[0] + image.shape[1]) / 2) + 1 # Line/font thickness
+        cv2.rectangle(
+            image, 
+            (coordinates.left, coordinates.top), 
+            (coordinates.right, coordinates.bottom), 
+            color.value, 
+            thickness=tl, 
+            lineType=cv2.LINE_AA
+        )
+        font_thickness = max(tl - 1, 1)  # font thickness
+        cv2.putText(image, label, (coordinates.left, coordinates.bottom), 0, tl / 3, color.value, thickness=font_thickness, lineType=cv2.LINE_AA)
+
     # Detect an image
     def detect(self, img, im0s):
         img = torch.from_numpy(img).to(self.device)
@@ -95,7 +116,7 @@ class Detection:
                 detected_obj = {
                         "coordinate": ((int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))),
                         "confidence": float(conf), 
-                        "class_name": self.names[int(cls)]
+                        "class_id": int(cls)
                 }
                 if Class(int(cls)) == Class.PERSON:
                     people.append(detected_obj)
@@ -120,6 +141,15 @@ class Detection:
         detection_result, detection_time = getElapsedTime(self.detect, processed_image, image)
         string += f"Detection time: {detection_time:.2f}\n"
         violators = []
+        image_plots = image.copy()
+        for ppe in detection_result[1]:
+            ppe_coordinates = Box(
+                top = ppe["coordinate"][0][1],
+                right = ppe["coordinate"][1][0],
+                bottom = ppe["coordinate"][1][1],
+                left = ppe["coordinate"][0][0]
+            )
+            self.plot_box(image_plots, ppe_coordinates, self.colors[ppe["class_id"]], self.names[ppe["class_id"]])
         for bbox_person in detection_result[0]:
             violator = {}
             person_coordinates = Box(
@@ -155,10 +185,11 @@ class Detection:
                 )
                 if isColliding(ppe_coordinates, person_coordinates):
                     violations.append(
-                        ppe["class_name"]
+                        self.names[ppe["class_id"]]
                 )
             violator["violations"] = violations
             violators.append(violator)
+        message["image"] = imageToBinary(image_plots)
         message["violators"] = violators
         message["timestamp"] = datetime.now().strftime(r"%m/%d/%y %H:%M:%S")
         print(string, end="")
@@ -178,5 +209,10 @@ class Detection:
                 if processed_frame is not None:
                     violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, self.camera.frame)
                     print(f"Overall process time: {violations_time:.2f}")
-                    print(violations_result)
+                    print({
+                        "violators": violations_result["violators"],
+                        "timestamp": violations_result["timestamp"]
+                    })
+                    payload = json.dumps(violations_result)
+                    self.mqtt_client.publish(payload=payload)
             time.sleep(0.03)

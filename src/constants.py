@@ -18,5 +18,13 @@ class Color(Enum):
     Color in BGR format
     """
     RED = (0, 0, 255)
+    ORANGE = (0, 165, 255)
+    YELLOW = (0, 255, 255)
     GREEN = (0, 255, 0)
+    SPRING_GREEN = (124, 208, 38)
+    CYAN = (255, 255, 0)
+    AZURE = (255, 127, 0)
     BLUE = (255, 0, 0)
+    VIOLET = (128, 0, 128)
+    MAGENTA = (255, 0, 255)
+    ROSE = (127, 0, 255)
