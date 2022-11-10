@@ -196,7 +196,7 @@ class Detection:
         return message
 
     @torch.no_grad()
-    def update(self, interval=0):
+    def update(self, interval=12):
         """
         Function for update thread
         """
