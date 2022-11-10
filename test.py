@@ -1,7 +1,12 @@
 import unittest, configparser, os
 from src.db.database import DatabaseHandler
 from src.db.tables import Person, Violator
-from src.db.crud import deletePerson, deleteViolator, insertViolator, loadPPEClasses, loadPeople, updatePerson
+from src.db.crud import (
+    deletePerson, deleteViolator, 
+    insertViolator, loadPPEClasses, 
+    insertPersons, updatePerson,
+    loadPersons
+)
 from sqlalchemy import func
 from faker import Faker
 from csv import DictWriter
@@ -31,32 +36,39 @@ class TestConfigFiles(unittest.TestCase):
 # Test Database CRUD Functions
 class TestDatabaseCRUD(unittest.TestCase):
 
+    db_file = "data/test_db.sqlite"
+    persons_file = "data/test_persons.csv"
+
     def setUp(self):
         self.cfg = configparser.ConfigParser()
         self.cfg.read(CONFIG_FILE)
-        db_file = "data/testing.sqlite"
-        self.db = DatabaseHandler(f"sqlite:///{db_file}")
+        self.db = DatabaseHandler(f"sqlite:///{self.db_file}")
         self.faker = Faker()
+
+    @classmethod
+    def tearDownClass(cls):
+        os.remove(cls.persons_file)
+        os.remove(cls.db_file)
 
     def test_step_1_load_data(self):
         loadPPEClasses(self.db, self.cfg.get("yolor", "classes"))
-        with open(self.cfg.get("face_recognition", "people"), "w", newline="") as csv_file:
+        with open(self.persons_file, "w", newline="") as csv_file:
             fieldnames = ["person_id", "first_name", "middle_name", "last_name", "job_title"]
             writer = DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
-            number_of_people = 100
-            people_ids = [i+1 for i in range(number_of_people)]
-            people = [
+            number_of_persons = 100
+            persons_ids = [i+1 for i in range(number_of_persons)]
+            persons = [
                 {
-                    "person_id": people_ids.pop(0), 
+                    "person_id": persons_ids.pop(0), 
                     "first_name": self.faker.unique.first_name(), 
                     "middle_name": self.faker.unique.last_name(), 
                     "last_name": self.faker.unique.last_name(),
                     "job_title": self.faker.unique.job()
-                } for _ in range(number_of_people)
+                } for _ in range(number_of_persons)
             ]
-            writer.writerows(people)
-        loadPeople(self.db, self.cfg.get("face_recognition", "people"))
+            writer.writerows(persons)
+        insertPersons(self.db, self.persons_file)
 
     def test_step_2_insert_violator(self):
         # Insert violator entry with the correct inputs

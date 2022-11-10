@@ -27,5 +27,5 @@ class Recognition:
         are_matches = [closest_distances[0][i][0] <= distance_threshold for i in range(len(X_face_locations))]
         predictions = self.knn_clf.predict(faces_encodings)
         # Predict classes and remove classifications that aren't within the threshold
-        return [(pred, loc) if rec else ("unknown", loc) for pred, loc, rec in zip(predictions, X_face_locations, are_matches)]
+        return [(pred, loc) if rec else (-1, loc) for pred, loc, rec in zip(predictions, X_face_locations, are_matches)]
     

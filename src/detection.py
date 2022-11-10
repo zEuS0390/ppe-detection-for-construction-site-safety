@@ -1,50 +1,66 @@
 from yolor.utils.general import non_max_suppression, scale_coords
 from src.utils import getElapsedTime
 from yolor.utils.torch_utils import select_device
-import torch, random, threading, time
 from yolor.models.models import Darknet
 from src.recognition import Recognition
 from configparser import ConfigParser
-import torch.backends.cudnn as cudnn
 from src.client import MQTTClient
 from src.camera import Camera
 from datetime import datetime
 from src.box import Box, isColliding
-import glob, os
-
-PERSON = 10
+from src.constants import Class
+from src.db.database import DatabaseHandler
+import glob, os, torch, threading, time
+import torch.backends.cudnn as cudnn
+from src.db.tables import Person
+from src.db.crud import loadPersons
 
 class Detection:
 
     # Initialize
-    def __init__(self, cfg: ConfigParser, camera: Camera=None, recognition: Recognition=None, mqtt_client: MQTTClient=None):
+    def __init__(self, 
+        cfg: ConfigParser,
+        db: DatabaseHandler=None,
+        camera: Camera=None, 
+        recognition: Recognition=None, 
+        mqtt_client: MQTTClient=None
+    ):
         self.cfg = cfg
+        self.db = db
         self.camera = camera
         self.recognition = recognition
         self.mqtt_client = mqtt_client
+        self.persons: Person = []
         self.names: list = []
-        self.colors: list = []
         self.model = None
         self.isDetecting = True
         self.device = select_device(self.cfg.get("yolor", "device"))
         cudnn.benchmark = True
+        self.load_persons()
         self.load_classes()
         self.load_model()
         self.isRunning = True
         self.updateThread = threading.Thread(target=self.update)
+
+    def load_persons(self):
+        self.persons = loadPersons(self.db)
+        print(self.persons)
     
-    # Start detection thread
     def start(self):
+        """
+        Starts the detection thread. It will not start if one or more required arguments are missing.
+        """
         if self.camera is not None and self.recognition is not None and self.mqtt_client is not None: 
             self.updateThread.start()
         else:
             print("Missing arguments (camera, recognition, mqtt_client). Abort")
 
-    # Load classes
     def load_classes(self):
+        """
+        Loads class names which were used in the trained model.
+        """
         with open(self.cfg.get("yolor", "classes")) as f:
             self.names = f.read().split('\n')
-        self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(self.names))]
 
     # Load model
     def load_model(self):
@@ -82,14 +98,11 @@ class Detection:
                         "confidence": float(conf), 
                         "class_name": self.names[int(cls)]
                 }
-                if int(cls) == PERSON:
+                if Class(int(cls)) == Class.PERSON:
                     people.append(detected_obj)
                 else:
                     ppe.append(detected_obj)
         return people, ppe
-
-    def stop(self):
-        self.isDetecting = False
 
     def checkViolations(self, processed_image, image):
         """
@@ -107,20 +120,23 @@ class Detection:
         message = {}
         detection_result, detection_time = getElapsedTime(self.detect, processed_image, image)
         string += f"Detection time: {detection_time:.2f}\n"
-
         violators = []
-        for person in detection_result[0]:
+        for bbox_person in detection_result[0]:
             violator = {}
             person_coordinates = Box(
-                top = person["coordinate"][0][1],
-                right = person["coordinate"][1][0],
-                bottom = person["coordinate"][1][0],
-                left = person["coordinate"][0][0]
+                top = bbox_person["coordinate"][0][1],
+                right = bbox_person["coordinate"][1][0],
+                bottom = bbox_person["coordinate"][1][0],
+                left = bbox_person["coordinate"][0][0]
             )
-            faces_result, faces_time = getElapsedTime(self.recognition.predict, image, distance_threshold=0.4)
-            string += f"Recognition time: {faces_time:.2f}\n"
-            faces = []
-            for name, loc in faces_result:
+            person_indices_result, person_time = getElapsedTime(self.recognition.predict, image, distance_threshold=0.4)
+            string += f"Recognition time: {person_time:.2f}\n"
+            persons = []
+            for index, loc in person_indices_result:
+                if index != -1:
+                    name = self.persons[int(index)]
+                else:
+                    name = "unknown"
                 face_coordinates = Box(
                     top = loc[0],
                     right = loc[1],
@@ -128,8 +144,8 @@ class Detection:
                     left = loc[3]
                 )
                 if isColliding(face_coordinates, person_coordinates):
-                    faces.append(name)
-            violator["faces"] = faces
+                    persons.append(name)
+            violator["persons"] = persons
             violations = []
             for ppe in detection_result[1]:
                 ppe_coordinates = Box(

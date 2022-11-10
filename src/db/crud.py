@@ -27,13 +27,13 @@ def loadPPEClasses(db: DatabaseHandler, filepath: str):
     db.session.commit()
     db.session.close()
 
-def loadPeople(db: DatabaseHandler, filepath: str):
-    people = []
+def insertPersons(db: DatabaseHandler, filepath: str):
+    persons = []
     with open(filepath, newline="") as csv_file:
         reader = csv.DictReader(csv_file)
         for row in reader:
-            people.append(row)
-    for person_data in people:
+            persons.append(row)
+    for person_data in persons:
         exist = db.session.query(Person).filter_by(
             first_name=person_data["first_name"],
             middle_name=person_data["middle_name"],
@@ -46,6 +46,16 @@ def loadPeople(db: DatabaseHandler, filepath: str):
             print(f"{person_data['first_name']} {person_data['middle_name']} {person_data['last_name']} already exist!")
     db.session.commit()
     db.session.close()
+
+def loadPersons(db: DatabaseHandler):
+    row = db.session.query(Person).all()
+    persons = {}
+    for col in row:
+        person = {}
+        for column in col.__table__.columns:
+            person[column.name] = getattr(col, column.name)
+        persons[person["id"]] = person
+    return persons
 
 def updatePerson(db: DatabaseHandler, person_id: int, first_name: str="", middle_name: str="", last_name: str="", job_title: str=""):
     person = db.session.query(Person).filter_by(person_id=person_id).first()

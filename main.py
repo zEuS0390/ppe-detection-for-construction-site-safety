@@ -1,3 +1,5 @@
+from src.db.database import DatabaseHandler
+from src.db.crud import insertPersons
 from src.client import MQTTClient
 from src.detection import Detection
 from src.utils import checkLatestWeights
@@ -15,7 +17,7 @@ import configparser, time
         - MARQUEZ, IAN GABRIEL
 """
 
-if __name__=="__main__":
+def main():
 
     # Check latest weights file
     checkLatestWeights()
@@ -25,11 +27,14 @@ if __name__=="__main__":
     cfg.read("./cfg/app.cfg")
 
     # Instantiate objects
+    database = DatabaseHandler("sqlite:///appdb.sqlite")
     mqtt_notif = MQTTClient("notif")
     mqtt_camera = MQTTClient("camera")
     recognition = Recognition(cfg)
     camera = Camera(mqtt_camera)
-    detection = Detection(cfg, camera, recognition, mqtt_notif)
+    detection = Detection(cfg, database, camera, recognition, mqtt_notif)
+
+    insertPersons(database, "./data/persons.csv")
 
     # Start threads
     mqtt_notif.start()
@@ -43,5 +48,5 @@ if __name__=="__main__":
         detection.isRunning = False
         camera.isRunning = False
 
-
-    
+if __name__=="__main__":
+    main()
