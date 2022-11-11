@@ -1,4 +1,5 @@
 from paho.mqtt.client import Client, connack_string
+import time
 
 class MQTTClient:
 
@@ -19,7 +20,13 @@ class MQTTClient:
             print(e)
         
     def start(self):
-        self.client.connect(self.broker, self.port)
+        while True:
+            try:
+                self.client.connect(self.broker, self.port)
+                break
+            except Exception as e:
+                print(f"{e}")
+            time.sleep(0.03)
         self.client.loop_start()
 
     def stop(self):
