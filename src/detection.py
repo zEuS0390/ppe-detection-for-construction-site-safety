@@ -169,7 +169,7 @@ class Detection:
                 if index != -1:
                     name = self.persons[int(index)]
                 else:
-                    name = "unknown"
+                    name = {}
                 face_coordinates = Box(
                     top = loc[0],
                     right = loc[1],
