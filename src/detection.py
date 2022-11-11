@@ -1,4 +1,5 @@
 from yolor.utils.general import non_max_suppression, scale_coords
+from src.utils import getElapsedTime, getIPAddress
 from yolor.utils.torch_utils import select_device
 from src.db.database import DatabaseHandler
 from yolor.models.models import Darknet
@@ -6,7 +7,6 @@ from src.recognition import Recognition
 import glob, os, torch, threading, time
 from configparser import ConfigParser
 from src.box import Box, isColliding
-from src.utils import getElapsedTime
 import torch.backends.cudnn as cudnn
 from src.utils import imageToBinary
 from src.db.crud import loadPersons
@@ -47,6 +47,11 @@ class Detection:
         self.load_classes()
         self.load_model()
         self.isRunning = True
+        self.camera_details = {
+            "name": self.cfg.get("camera", "name"),
+            "description": self.cfg.get("camera", "description"),
+            "ip_address": getIPAddress()
+        }
         self.updateThread = threading.Thread(target=self.update)
 
     def load_persons(self):
@@ -193,6 +198,7 @@ class Detection:
                 )
             violator["violations"] = violations
             violators.append(violator)
+        message["camera"] = self.camera_details
         message["image"] = imageToBinary(image_plots)
         message["violators"] = violators
         message["timestamp"] = datetime.now().strftime(r"%m/%d/%y %H:%M:%S")
@@ -214,6 +220,7 @@ class Detection:
                     violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, self.camera.frame)
                     print(f"Overall process time: {violations_time:.2f}")
                     print({
+                        "camera": violations_result["camera"],
                         "violators": violations_result["violators"],
                         "timestamp": violations_result["timestamp"]
                     })
