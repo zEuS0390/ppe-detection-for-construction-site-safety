@@ -153,6 +153,7 @@ class Detection:
             confidence = obj["confidence"]
             label = f"{class_name} {confidence:.2f}"
             self.plot_box(image_plots, obj_coordinates, self.colors[obj["class_id"]], label)
+        image_plots = cv2.resize(image_plots, (240, 240), interpolation=cv2.INTER_AREA)
         for bbox_person in detection_result[0]:
             violator = {}
             person_coordinates = Box(
