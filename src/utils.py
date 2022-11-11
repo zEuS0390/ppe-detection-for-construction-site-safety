@@ -1,5 +1,5 @@
+import cv2, base64, os, gdown, glob, time, subprocess
 from csv import DictReader
-import cv2, base64, os, gdown, glob, time
 
 def imageToBinary(image):
     """
@@ -61,3 +61,7 @@ def checkLatestWeights():
                     data.write(str(id))
         except Exception as e:
             print(e)
+
+def getIPAddress():
+    ip_addr = subprocess.check_output(['hostname', '-I']).split()[0].decode()
+    return ip_addr
