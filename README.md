@@ -55,7 +55,7 @@ After that, just run this script and it will handle the installation.
 
 Download and install mosquitto from https://mosquitto.org/download/. Make sure to run the broker as a service or as an independent program.
 
-Set the IP address of MQTT clients to the broker's IP address by changing the app configuration file in ```cfg/config.ini```.
+Set the target IP address of MQTT client to the broker's IP address by creating its configuration file in ```cfg/client``` folder.
 
 ## Demonstration
 TBA
