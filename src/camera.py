@@ -1,4 +1,5 @@
 from yolor.utils.datasets import letterbox
+from configparser import ConfigParser
 from threading import Thread
 import numpy as np
 import cv2, time
@@ -7,12 +8,18 @@ import cv2, time
 class Camera:
 
     # Initialize
-    def __init__(self, mqtt_client=None):
+    def __init__(self, cfg: ConfigParser):
         self.frame = None
-        self.cap = cv2.VideoCapture(0)
-        if not self.cap.isOpened():
-            raise Exception("Camera is not detected. Abort.")
-        self.mqtt_client = mqtt_client
+        self.device: str = cfg.get("camera", "device")
+        while True:
+            try:
+                self.cap = cv2.VideoCapture(int(self.device) if self.device.isdigit() else self.device)
+                if not self.cap.isOpened():
+                    raise Exception("Camera is not detected. Abort.")
+                break
+            except Exception as e:
+                print(f"{e}")
+            time.sleep(1)
         self.updateThread = Thread(target=self.update)    
         self.isRunning = True
         self.det = []

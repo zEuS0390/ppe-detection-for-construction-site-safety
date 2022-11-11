@@ -42,7 +42,7 @@ class TestDatabaseCRUD(unittest.TestCase):
     def setUp(self):
         self.cfg = configparser.ConfigParser()
         self.cfg.read(CONFIG_FILE)
-        self.db = DatabaseHandler(f"sqlite:///{self.db_file}")
+        self.db = DatabaseHandler(db_URL=f"sqlite:///{self.db_file}")
         self.faker = Faker()
 
     @classmethod

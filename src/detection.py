@@ -142,14 +142,17 @@ class Detection:
         string += f"Detection time: {detection_time:.2f}\n"
         violators = []
         image_plots = image.copy()
-        for ppe in detection_result[1]:
-            ppe_coordinates = Box(
-                top = ppe["coordinate"][0][1],
-                right = ppe["coordinate"][1][0],
-                bottom = ppe["coordinate"][1][1],
-                left = ppe["coordinate"][0][0]
+        for obj in detection_result[0]+detection_result[1]:
+            obj_coordinates = Box(
+                top = obj["coordinate"][0][1],
+                right = obj["coordinate"][1][0],
+                bottom = obj["coordinate"][1][1],
+                left = obj["coordinate"][0][0]
             )
-            self.plot_box(image_plots, ppe_coordinates, self.colors[ppe["class_id"]], self.names[ppe["class_id"]])
+            class_name = self.names[obj["class_id"]]
+            confidence = obj["confidence"]
+            label = f"{class_name} {confidence:.2f}"
+            self.plot_box(image_plots, obj_coordinates, self.colors[obj["class_id"]], label)
         for bbox_person in detection_result[0]:
             violator = {}
             person_coordinates = Box(

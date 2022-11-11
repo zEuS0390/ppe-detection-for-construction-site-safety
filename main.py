@@ -27,18 +27,16 @@ def main():
     cfg.read("./cfg/app.cfg")
 
     # Instantiate objects
-    database = DatabaseHandler("sqlite:///appdb.sqlite")
+    database = DatabaseHandler(cfg=cfg)
     mqtt_notif = MQTTClient("notif")
-    mqtt_camera = MQTTClient("camera")
     recognition = Recognition(cfg)
-    camera = Camera(mqtt_camera)
+    camera = Camera(cfg)
     detection = Detection(cfg, database, camera, recognition, mqtt_notif)
 
-    insertPersons(database, "./data/persons.csv")
+    insertPersons(database, cfg.get("face_recognition", "persons"))
 
     # Start threads
     mqtt_notif.start()
-    mqtt_camera.start()
     camera.start()
     detection.start()
 
