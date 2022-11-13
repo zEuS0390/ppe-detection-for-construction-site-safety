@@ -8,7 +8,7 @@ from .tables import (
 import csv
 
 # Load the PPE classes that will be used for detection in PPE violations
-def loadPPEClasses(db: DatabaseHandler, filepath: str):
+def insertPPEClasses(db: DatabaseHandler, filepath: str):
     # Declare an empty list for names
     ppeclass_names = []
     # Read the file and add them to the list
@@ -78,7 +78,7 @@ def deletePerson(db: DatabaseHandler, person_id: int):
         return True
     return False
 
-def insertViolator(db: DatabaseHandler, person_id: int, coordinates: str, detectedppeclasses: list):
+def insertViolator(db: DatabaseHandler, person_id: int, coordinates: str, detectedppeclasses: list, verbose=False, commit=True):
     person = db.session.query(Person).filter_by(person_id=person_id).first()
     if person is not None:
         violator = Violator()
@@ -86,22 +86,30 @@ def insertViolator(db: DatabaseHandler, person_id: int, coordinates: str, detect
         violator.coordinates = coordinates
         for ppeclass_name in detectedppeclasses:
             ppeclass = db.session.query(PPEClass).filter_by(name=ppeclass_name).first()
-            detected = DetectedPPEClass()
-            detected.ppeclass = ppeclass
-            detected.violator = violator
+            if ppeclass is not None:
+                detected = DetectedPPEClass()
+                detected.ppeclass = ppeclass
+                detected.violator = violator
+            else:
+                if verbose:
+                    print(f"{ppeclass_name} does not exist!")
         db.session.add(violator)
-        db.session.commit()
-        db.session.close()
+        if commit:
+            if verbose:
+                print(f"Added {violator}")
+            db.session.commit()
+            db.session.close()
     else:
         return False
     return True
 
-def deleteViolator(db: DatabaseHandler, person_id: int):
+def deleteViolator(db: DatabaseHandler, person_id: int, commit=True):
     person = db.session.query(Person).filter_by(person_id=person_id).all()
     if len(person) > 0:
         for same in person:
             db.session.delete(same)
-        db.session.commit()
-        db.session.close()
+        if commit:
+            db.session.commit()
+            db.session.close()
         return True
     return False

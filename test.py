@@ -3,9 +3,8 @@ from src.db.database import DatabaseHandler
 from src.db.tables import Person, Violator
 from src.db.crud import (
     deletePerson, deleteViolator, 
-    insertViolator, loadPPEClasses, 
-    insertPersons, updatePerson,
-    loadPersons
+    insertViolator, insertPPEClasses, 
+    insertPersons, updatePerson
 )
 from sqlalchemy import func
 from faker import Faker
@@ -51,7 +50,7 @@ class TestDatabaseCRUD(unittest.TestCase):
         os.remove(cls.db_file)
 
     def test_step_1_load_data(self):
-        loadPPEClasses(self.db, self.cfg.get("yolor", "classes"))
+        insertPPEClasses(self.db, self.cfg.get("yolor", "classes"))
         with open(self.persons_file, "w", newline="") as csv_file:
             fieldnames = ["person_id", "first_name", "middle_name", "last_name", "job_title"]
             writer = DictWriter(csv_file, fieldnames=fieldnames)

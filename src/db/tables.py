@@ -35,6 +35,8 @@ class PPEClass:
     name = Column(String(length=250))
     detectedppeclasses = relationship("DetectedPPEClass", back_populates="ppeclass")
     def __str__(self):
+        return f"PPEClass(id={self.id}, name='{self.name}')"
+    def __repr__(self):
         return f"'{self.name}'"
 
 # Associative table for PPEClass and violator
@@ -44,8 +46,9 @@ class DetectedPPEClass:
         A mapped class that defines a table that asoociates both PPEClass and Violator.
     """
     __tablename__ = "detectedppeclass"
-    violator_id = Column(Integer, ForeignKey("violator.id"), primary_key=True)
-    ppeclass_id = Column(Integer, ForeignKey("ppeclass.id"), primary_key=True)
+    id = Column(Integer, primary_key=True)
+    violator_id = Column(Integer, ForeignKey("violator.id", ondelete="CASCADE"))
+    ppeclass_id = Column(Integer, ForeignKey("ppeclass.id", ondelete="CASCADE"))
     violator = relationship("Violator", back_populates="detectedppeclasses",)
     ppeclass = relationship("PPEClass", back_populates="detectedppeclasses")
     def __str__(self):
@@ -67,7 +70,7 @@ class Violator:
     violationdetails_id = Column(Integer, ForeignKey("violationdetails.id", ondelete="CASCADE"))
     violationdetails = relationship("ViolationDetails", back_populates="violators")
     def __str__(self):
-        return f"Violator(id={self.id}, name='{self.name}', coordinates='{self.coordinates}', detectedppeclasses={self.detectedppeclasses})"
+        return f"Violator(id={self.id}, name='{self.person}', coordinates='{self.coordinates}', detectedppeclasses={self.detectedppeclasses})"
     def __repr__(self):
         return f"{self.person}"
 

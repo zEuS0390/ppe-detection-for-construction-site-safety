@@ -9,7 +9,7 @@ from configparser import ConfigParser
 from src.box import Box, isColliding
 import torch.backends.cudnn as cudnn
 from src.utils import imageToBinary
-from src.db.crud import loadPersons
+from src.db.crud import loadPersons, insertViolator
 from src.client import MQTTClient
 from src.db.tables import Person
 from src.constants import Class
@@ -19,8 +19,6 @@ from datetime import datetime
 import numpy as np
 import json
 import cv2
-
-from yolor.utils.plots import plot_one_box
 
 class Detection:
 
@@ -56,7 +54,13 @@ class Detection:
 
     def load_persons(self):
         self.persons = loadPersons(self.db)
+        string = ""
+        for person in self.persons:
+            string += f"{person} {self.persons[person]['first_name']} loaded.\n"
         self.colors = list(Color)
+        for color in [(color.name, color.value) for color in self.colors]:
+            string += f"{color[0]} {color[1]} loaded.\n"
+        print(string, end="")
     
     def start(self):
         """
@@ -129,6 +133,20 @@ class Detection:
                     ppe.append(detected_obj)
         return people, ppe
 
+    def saveViolations(self, detected_persons, violations):
+        """
+        Save violations of person/s to the database
+        """
+        for person in detected_persons["names"]:
+            if len(person) > 0:
+                insertViolator(
+                    self.db,
+                    person_id=person["person_id"],
+                    coordinates="(0,0,0,0)",
+                    detectedppeclasses=violations,
+                    verbose=True
+                )
+
     def checkViolations(self, processed_image, image):
         """
         Analyzes which PPE objects belong to a certain person and recognize identities by checking the overlapping bounding boxes.
@@ -147,6 +165,8 @@ class Detection:
         string += f"Detection time: {detection_time:.2f}\n"
         violators = []
         image_plots = image.copy()
+
+        # Plot boxes of the detected objects
         for obj in detection_result[0]+detection_result[1]:
             obj_coordinates = Box(
                 top = obj["coordinate"][0][1],
@@ -158,7 +178,11 @@ class Detection:
             confidence = obj["confidence"]
             label = f"{class_name} {confidence:.2f}"
             self.plot_box(image_plots, obj_coordinates, self.colors[obj["class_id"]], label)
+        
+        # Resize image to be published from mqtt client
         image_plots = cv2.resize(image_plots, (240, 240), interpolation=cv2.INTER_AREA)
+
+        # Evaluate PPE to each person
         for bbox_person in detection_result[0]:
             violator = {}
             person_coordinates = Box(
@@ -169,7 +193,7 @@ class Detection:
             )
             person_indices_result, person_time = getElapsedTime(self.recognition.predict, image, distance_threshold=0.4)
             string += f"Recognition time: {person_time:.2f}\n"
-            persons = []
+            detected_persons = {"names": [], "coordinates": person_coordinates.__dict__}
             for index, loc in person_indices_result:
                 if index != -1:
                     name = self.persons[int(index)]
@@ -182,8 +206,7 @@ class Detection:
                     left = loc[3]
                 )
                 if isColliding(face_coordinates, person_coordinates):
-                    persons.append(name)
-            violator["persons"] = persons
+                    detected_persons["names"].append(name)
             violations = []
             for ppe in detection_result[1]:
                 ppe_coordinates = Box(
@@ -196,12 +219,19 @@ class Detection:
                     violations.append(
                         self.names[ppe["class_id"]]
                 )
+            violator["persons"] = detected_persons
             violator["violations"] = violations
             violators.append(violator)
+
+            # Save violations of person/s to the database
+            _, save_time = getElapsedTime(self.saveViolations, detected_persons, violations)
+            string += f"Saving violations time: {save_time:.2f}\n"
+
         message["camera"] = self.camera_details
         message["image"] = imageToBinary(image_plots)
         message["violators"] = violators
         message["timestamp"] = datetime.now().strftime(r"%m/%d/%y %H:%M:%S")
+        
         print(string, end="")
         return message
 
@@ -219,11 +249,12 @@ class Detection:
                 if processed_frame is not None:
                     violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, self.camera.frame)
                     print(f"Overall process time: {violations_time:.2f}")
-                    print({
+                    to_print = {
                         "camera": violations_result["camera"],
                         "violators": violations_result["violators"],
                         "timestamp": violations_result["timestamp"]
-                    })
+                    }
+                    print(json.dumps(to_print, indent=4, sort_keys=True))
                     payload = json.dumps(violations_result)
                     self.mqtt_client.publish(payload=payload)
             time.sleep(0.03)

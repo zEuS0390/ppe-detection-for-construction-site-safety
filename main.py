@@ -1,5 +1,7 @@
 from src.db.database import DatabaseHandler
-from src.db.crud import insertPersons
+from src.db.crud import *
+from src.db.tables import *
+from sqlalchemy import select
 from src.client import MQTTClient
 from src.detection import Detection
 from src.utils import checkLatestWeights
@@ -34,6 +36,7 @@ def main():
     detection = Detection(cfg, database, camera, recognition, mqtt_notif)
 
     insertPersons(database, cfg.get("face_recognition", "persons"))
+    insertPPEClasses(database, cfg.get("yolor","classes"))
 
     # Start threads
     mqtt_notif.start()
