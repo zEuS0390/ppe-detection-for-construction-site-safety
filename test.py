@@ -11,6 +11,8 @@ from faker import Faker
 from csv import DictWriter
 
 CONFIG_FILE = "./cfg/app.cfg"
+DB_FILE = "data/test_db.sqlite"
+PERSONS_FILE = "data/test_persons.csv"
 
 # Test the Configuration File Contents
 class TestConfigFiles(unittest.TestCase):
@@ -35,23 +37,20 @@ class TestConfigFiles(unittest.TestCase):
 # Test Database CRUD Functions
 class TestDatabaseCRUD(unittest.TestCase):
 
-    db_file = "data/test_db.sqlite"
-    persons_file = "data/test_persons.csv"
-
     def setUp(self):
         self.cfg = configparser.ConfigParser()
         self.cfg.read(CONFIG_FILE)
-        self.db = DatabaseHandler(db_URL=f"sqlite:///{self.db_file}")
+        self.db = DatabaseHandler(db_URL=f"sqlite:///{DB_FILE}")
         self.faker = Faker()
 
     @classmethod
     def tearDownClass(cls):
-        os.remove(cls.persons_file)
-        os.remove(cls.db_file)
+        os.remove(PERSONS_FILE)
+        os.remove(DB_FILE)
 
     def test_step_1_load_data(self):
         insertPPEClasses(self.db, self.cfg.get("yolor", "classes"))
-        with open(self.persons_file, "w", newline="") as csv_file:
+        with open(PERSONS_FILE, "w", newline="") as csv_file:
             fieldnames = ["person_id", "first_name", "middle_name", "last_name", "job_title"]
             writer = DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
@@ -67,7 +66,7 @@ class TestDatabaseCRUD(unittest.TestCase):
                 } for _ in range(number_of_persons)
             ]
             writer.writerows(persons)
-        insertPersons(self.db, self.persons_file)
+        insertPersons(self.db, PERSONS_FILE)
 
     def test_step_2_insert_violator(self):
         # Insert violator entry with the correct inputs
