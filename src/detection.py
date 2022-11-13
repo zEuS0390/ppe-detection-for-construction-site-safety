@@ -21,6 +21,19 @@ import json
 import cv2
 
 class Detection:
+    
+    """
+    Methods:
+        start() -> None
+        load_persons() -> None
+        load_classes() -> None
+        load_model() -> None
+        plot_box(image: np.ndarray, coordinates: Box, color: Color, label: str) -> None
+        detect(img, im0s) -> tuple
+        saveViolations(detected_persons: dict, violations: list) -> None
+        checkViolations(processed_image: np.ndarray, image: np.ndarray) -> dict
+        update(interval: int=12) -> None
+    """
 
     # Initialize
     def __init__(self, 
@@ -51,6 +64,15 @@ class Detection:
             "ip_address": getIPAddress()
         }
         self.updateThread = threading.Thread(target=self.update)
+        
+    def start(self):
+        """
+        Starts the detection thread. It will not start if one or more required arguments are missing.
+        """
+        if self.camera is not None and self.recognition is not None and self.mqtt_client is not None: 
+            self.updateThread.start()
+        else:
+            print("Missing arguments (camera, recognition, mqtt_client). Abort")
 
     def load_persons(self):
         self.persons = loadPersons(self.db)
@@ -61,15 +83,6 @@ class Detection:
         for color in [(color.name, color.value) for color in self.colors]:
             string += f"{color[0]} {color[1]} loaded.\n"
         print(string, end="")
-    
-    def start(self):
-        """
-        Starts the detection thread. It will not start if one or more required arguments are missing.
-        """
-        if self.camera is not None and self.recognition is not None and self.mqtt_client is not None: 
-            self.updateThread.start()
-        else:
-            print("Missing arguments (camera, recognition, mqtt_client). Abort")
 
     def load_classes(self):
         """
