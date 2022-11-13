@@ -1,5 +1,7 @@
-import pickle, face_recognition
+from face_recognition.face_recognition_cli import image_files_in_folder
+import os, math, pickle, face_recognition
 from configparser import ConfigParser
+from sklearn import neighbors
 
 class Recognition:
 
