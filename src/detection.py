@@ -199,12 +199,7 @@ class Detection:
                     name = self.persons[int(index)]
                 else:
                     name = {}
-                face_coordinates = Box(
-                    top = loc[0],
-                    right = loc[1],
-                    bottom = loc[2],
-                    left = loc[3]
-                )
+                face_coordinates = Box(*loc)
                 if isColliding(face_coordinates, person_coordinates):
                     detected_persons["names"].append(name)
             violations = []
