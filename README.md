@@ -1,8 +1,8 @@
 [![](https://img.shields.io/badge/TIP-Quezon%20City-yellow)](https://tip.edu.ph/)
 [![.github/workflows/app_server.yml](https://github.com/cpe-pd/rpi-camera/actions/workflows/app_server.yml/badge.svg?event=push)](https://github.com/cpe-pd/rpi-camera/actions/workflows/app_server.yml)
 
-<h1 align="center"> Application Server with PPE Detection for Construction Safety in Raspberry Pi </h1>
-This is the official repository of our application server, which is part of the whole system in our project design prototype. The server acts as the gateway for communication between the Raspberry Pi and mobile application. It provides information about the detected PPE worker violations and they could be obtained through lightweight messaging protocol called MQTT. 
+<h1 align="center">PPE Detection Application for Construction Safety in Raspberry Pi</h1>
+This is the official repository of our detection application, which is part of the whole system in our project design prototype. It analyzes the detected PPE from camera stream and evaluates the violations of each person. We used face recognition API to predict their identities, although there are some limitations. After obtaining the output, they will be published and sent as a payload which will then be received by multiple clients that are connected in the broker through lightweight messaging protocol called MQTT.
 
 ## Members
 - Zeus James Baltazar (Intelligent Systems) - Focuses mostly on utilization of ideas and their integration to the whole system.
@@ -13,7 +13,7 @@ This is the official repository of our application server, which is part of the 
 ## Features
 - PPE detection for construction safety
 - Human detection to determine worker violations
-- Face recognition to identify the detected violator
+- Face recognition to predict the detected violator
 - Mobile application reports and notifications
 
 ## Hardware
