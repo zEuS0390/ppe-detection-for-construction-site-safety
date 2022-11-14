@@ -60,6 +60,7 @@ class Camera:
             if self.q.qsize() > 0:
                 original_frame = self.q.get()
                 img: np.ndarray = original_frame.copy()
+                img = img[:,:,::-1]
                 img = letterbox(img, new_shape=(640, 640), auto=True)[0]
                 img = np.expand_dims(img, axis=0)
                 img = img.transpose(0, 3, 1, 2)
@@ -68,6 +69,7 @@ class Camera:
             if self.frame is not None:
                 original_frame = self.frame
                 img: np.ndarray = original_frame.copy()
+                img = img[:,:,::-1]
                 img = letterbox(img, new_shape=(640, 640), auto=True)[0]
                 img = np.expand_dims(img, axis=0)
                 img = img.transpose(0, 3, 1, 2)
