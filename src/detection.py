@@ -250,12 +250,17 @@ class Detection:
         """
         previous_time = time.time()
         while self.isRunning:
-            processed_frame = self.camera.getFrame()
             elapsed_time = time.time() - previous_time
             if elapsed_time >= interval:
                 previous_time = time.time()
+                try:
+                    processed_frame, original_frame = self.camera.getFrame()
+                except:
+                    print("Returned None on getFrame method")
+                    time.sleep(0.03)
+                    continue
                 if processed_frame is not None:
-                    violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, self.camera.frame)
+                    violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, original_frame)
                     print(f"Overall process time: {violations_time:.2f}")
                     to_print = {
                         "camera": violations_result["camera"],

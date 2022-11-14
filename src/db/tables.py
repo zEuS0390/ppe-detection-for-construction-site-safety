@@ -2,7 +2,7 @@ from sqlalchemy.orm import registry, relationship
 from sqlalchemy import (
     Column, Integer, 
     String, DateTime, 
-    ForeignKey, Boolean
+    ForeignKey
 )
 from datetime import datetime
 

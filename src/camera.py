@@ -1,8 +1,10 @@
 from yolor.utils.datasets import letterbox
 from configparser import ConfigParser
 from threading import Thread
+from queue import Queue
 import numpy as np
 import cv2, time
+import os
 
 # Camera Class
 class Camera:
@@ -10,10 +12,19 @@ class Camera:
     # Initialize
     def __init__(self, cfg: ConfigParser):
         self.frame = None
+        self.cfg = cfg
         self.device: str = cfg.get("camera", "device")
+        self.rtsp_enabled = self.cfg.getboolean("camera", "rtsp_enabled")
         while True:
             try:
-                self.cap = cv2.VideoCapture(int(self.device) if self.device.isdigit() else self.device)
+                if self.device.isdigit():
+                    self.cap = cv2.VideoCapture(int(self.device))
+                else:
+                    if self.rtsp_enabled:
+                        os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
+                        self.cap = cv2.VideoCapture(self.device, cv2.CAP_FFMPEG)
+                    else:
+                        self.cap = cv2.VideoCapture(self.device)
                 if not self.cap.isOpened():
                     raise Exception("Camera is not detected. Abort.")
                 break
@@ -23,6 +34,8 @@ class Camera:
         self.updateThread = Thread(target=self.update)    
         self.isRunning = True
         self.det = []
+        self.q = Queue()
+        self.q.put(self.cap.read()[1])
 
     def start(self):
         self.updateThread.start()
@@ -32,16 +45,30 @@ class Camera:
         Update function for the camera thread
         """
         while self.isRunning:
-            _, self.frame = self.cap.read()
+            _, read_frame = self.cap.read()
+            if self.rtsp_enabled:
+                self.q.put(read_frame)
+            else:
+                self.frame = read_frame
             time.sleep(0.03)
 
     def getFrame(self):
         """
         Get frame with an additional dimension to be used by the detection model
         """
-        if self.frame is not None:
-            img: np.ndarray = self.frame.copy()
-            img = letterbox(img, new_shape=(640, 640), auto=True)[0]
-            img = np.expand_dims(img, axis=0)
-            img = img.transpose(0, 3, 1, 2)
-            return img
+        if self.rtsp_enabled:
+            if self.q.qsize() > 0:
+                original_frame = self.q.get()
+                img: np.ndarray = original_frame.copy()
+                img = letterbox(img, new_shape=(640, 640), auto=True)[0]
+                img = np.expand_dims(img, axis=0)
+                img = img.transpose(0, 3, 1, 2)
+                return img, original_frame
+        else:
+            if self.frame is not None:
+                original_frame = self.frame
+                img: np.ndarray = original_frame.copy()
+                img = letterbox(img, new_shape=(640, 640), auto=True)[0]
+                img = np.expand_dims(img, axis=0)
+                img = img.transpose(0, 3, 1, 2)
+                return img, original_frame
