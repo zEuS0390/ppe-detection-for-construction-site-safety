@@ -24,15 +24,15 @@ class Detection:
     
     """
     Methods:
-        start() -> None
-        load_persons() -> None
-        load_classes() -> None
-        load_model() -> None
-        plot_box(image: np.ndarray, coordinates: Box, color: Color, label: str) -> None
-        detect(img, im0s) -> tuple
-        saveViolations(detected_persons: dict, violations: list) -> None
-        checkViolations(processed_image: np.ndarray, image: np.ndarray) -> dict
-        update(interval: int=12) -> None
+        - start() -> None
+        - load_persons() -> None
+        - load_classes() -> None
+        - load_model() -> None
+        - plot_box(image: np.ndarray, coordinates: Box, color: Color, label: str) -> None
+        - detect(img, im0s) -> tuple
+        - saveViolations(detected_persons: dict, violations: list) -> None
+        - checkViolations(processed_image: np.ndarray, image: np.ndarray) -> dict
+        - update(interval: int=12) -> None
     """
 
     # Initialize
@@ -54,7 +54,9 @@ class Detection:
         self.isDetecting = True
         self.device = select_device(self.cfg.get("yolor", "device"))
         cudnn.benchmark = True
-        self.load_persons()
+        if self.db is not None:
+            self.load_persons()
+        self.load_colors()
         self.load_classes()
         self.load_model()
         self.isRunning = True
@@ -79,10 +81,13 @@ class Detection:
         string = ""
         for person in self.persons:
             string += f"{person} {self.persons[person]['first_name']} loaded.\n"
+        print(string, end="")
+
+    def load_colors(self):
+        string = ""
         self.colors = list(Color)
         for color in [(color.name, color.value) for color in self.colors]:
             string += f"{color[0]} {color[1]} loaded.\n"
-        print(string, end="")
 
     def load_classes(self):
         """
@@ -232,8 +237,9 @@ class Detection:
             violators.append(violator)
 
             # Save violations of person/s to the database
-            _, save_time = getElapsedTime(self.saveViolations, detected_persons, violations)
-            string += f"Saving violations time: {save_time:.2f}\n"
+            if self.db is not None:
+                _, save_time = getElapsedTime(self.saveViolations, detected_persons, violations)
+                string += f"Saving violations time: {save_time:.2f}\n"
 
         message["camera"] = self.camera_details
         message["image"] = imageToBinary(image_plots)
