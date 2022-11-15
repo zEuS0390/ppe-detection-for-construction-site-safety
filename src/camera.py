@@ -18,12 +18,15 @@ class Camera:
         while True:
             try:
                 if self.device.isdigit():
+                    print("Choosing in-built camera")
                     self.cap = cv2.VideoCapture(int(self.device))
                 else:
                     if self.rtsp_enabled:
+                        print("Choosing RTSP video stream")
                         os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
                         self.cap = cv2.VideoCapture(self.device, cv2.CAP_FFMPEG)
                     else:
+                        print("Choosing other video stream")
                         self.cap = cv2.VideoCapture(self.device)
                 if not self.cap.isOpened():
                     raise Exception("Camera is not detected. Abort.")

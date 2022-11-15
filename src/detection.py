@@ -272,7 +272,10 @@ class Detection:
                 if id in ppe_item["overlaps"]:
                     ppe_item["confidence"] = confidence
                     ppe_item["class_name"] = class_name
-                    del ppe_item["coordinate"]
+                    try:
+                        del ppe_item["coordinate"]
+                    except Exception as e:
+                        pass
                     violator["violations"].append(ppe_item)
 
             # Get recognized faces that are in the person
