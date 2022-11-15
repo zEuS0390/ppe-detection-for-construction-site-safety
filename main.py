@@ -33,10 +33,9 @@ def main():
     mqtt_notif = MQTTClient("notif")
     recognition = Recognition(cfg)
     camera = Camera(cfg)
-    detection = Detection(cfg, database, camera, recognition, mqtt_notif)
-
     insertPersons(database, cfg.get("face_recognition", "persons"))
     insertPPEClasses(database, cfg.get("yolor","classes"))
+    detection = Detection(cfg, database, camera, recognition, mqtt_notif)
 
     # Start threads
     mqtt_notif.start()
