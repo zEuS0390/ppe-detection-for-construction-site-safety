@@ -65,3 +65,13 @@ def checkLatestWeights():
 def getIPAddress():
     ip_addr = subprocess.check_output(['hostname', '-I']).split()[0].decode()
     return ip_addr
+
+def parsePlainConfig(filepath: str):
+    if not os.path.exists(filepath):
+        raise Exception(f"'{filepath}' does not exist.")
+    try:
+        with open(filepath, "r") as file:
+            cfg = dict([line.strip().replace(" ", "").split(":") for line in file.readlines()])
+            return cfg
+    except Exception as e:
+        raise e

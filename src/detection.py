@@ -8,7 +8,7 @@ import glob, os, torch, threading, time
 from configparser import ConfigParser
 from src.box import Box, isColliding
 import torch.backends.cudnn as cudnn
-from src.utils import imageToBinary
+from src.utils import imageToBinary, parsePlainConfig
 from src.db.crud import loadPersons, insertViolator
 from src.client import MQTTClient
 from src.db.tables import Person
@@ -26,8 +26,9 @@ class Detection:
     Methods:
         - start                 () -> None
         - loadPersons           () -> None
-        - loadClasses          () -> None
+        - loadClasses           () -> None
         - loadModel             () -> None
+        - loadPreferences       () -> None
         - plotBox               (image: np.ndarray, coordinates: Box, color: Color, label: str) -> None
         - detect                (img, im0s) -> tuple
         - saveViolations        (detected_persons: dict, violations: list) -> None
@@ -57,6 +58,7 @@ class Detection:
         cudnn.benchmark = True
         if self.db is not None:
             self.loadPersons()
+        self.loadPreferences()
         self.loadColors()
         self.loadClasses()
         self.loadModel()
@@ -118,6 +120,11 @@ class Detection:
             self.model.load_state_dict(torch.load(weights[0], map_location=self.device)['model'])
             self.model.to(self.device).eval()
 
+    def loadPreferences(self):
+        preferences_cfg = parsePlainConfig(f"cfg/detection/filter.cfg")
+        self.ppe_preferences = {class_name.replace("_", " "): True if status == 'on' else False for class_name, status in preferences_cfg.items()}
+        print(self.ppe_preferences)
+    
     def plotBox(self, image: np.ndarray, coordinates: Box, color: Color, label: str):
         """
         Plot bounding boxes and labels in the image.
@@ -154,6 +161,11 @@ class Detection:
             im0 = image.copy()
             det[:, :4] = scale_coords(processed_image.shape[2:], det[:, :4], im0.shape).round()
             for *xyxy, conf, cls in det:
+                class_name = self.names[int(cls)]
+                # Filter class names based on PPE preferences
+                if class_name in self.ppe_preferences:
+                    if self.ppe_preferences[class_name] == False:
+                        continue
                 detected_obj = {
                         "id": id,
                         "coordinate": Box(
@@ -163,7 +175,7 @@ class Detection:
                             left=int(xyxy[0])
                         ),
                         "confidence": float(conf), 
-                        "class_id": int(cls)
+                        "class_name": class_name
                 }
                 id+=1
                 if Class(int(cls)) == Class.PERSON:
@@ -217,8 +229,10 @@ class Detection:
 
         # Plot boxes of the detected objects
         for obj in persons+ppe:
-            label = f"{self.names[obj['class_id']]} {obj['confidence']:.2f}"
-            self.plotBox(image_plots, obj["coordinate"], self.colors[obj["class_id"]], label)
+            confidence = obj['confidence']
+            class_name = obj["class_name"]
+            label = f"{class_name} {confidence:.2f}"
+            self.plotBox(image_plots, obj["coordinate"], self.colors[self.names.index(class_name)], label)
 
         # Check overlaps of each detected ppe item
         for ppe_item in ppe:
@@ -234,7 +248,7 @@ class Detection:
         for person_index, person_coordinate in person_indices:
             person_info = self.persons_info[int(person_index)] if person_index != -1 else {}
             box = Box(*person_coordinate)
-            self.plotbox(image_plots, box, self.colors[11], person_info["first_name"] if len(person_info) > 0 else "Unknown")
+            self.plotBox(image_plots, box, self.colors[11], person_info["first_name"] if len(person_info) > 0 else "Unknown")
             overlaps = self.checkOverlaps(box, persons)
             person_info["overlaps"] = overlaps
             recognized_persons.append(person_info)
@@ -253,11 +267,12 @@ class Detection:
 
             # Get PPE items that are in the person
             for ppe_item in ppe:
+                confidence = round(ppe_item["confidence"], 4)
+                class_name = ppe_item["class_name"]
                 if id in ppe_item["overlaps"]:
-                    ppe_item["confidence"] = round(ppe_item["confidence"], 4)
-                    ppe_item["class_name"] = self.names[ppe_item["class_id"]]
+                    ppe_item["confidence"] = confidence
+                    ppe_item["class_name"] = class_name
                     del ppe_item["coordinate"]
-                    del ppe_item["class_id"]
                     violator["violations"].append(ppe_item)
 
             # Get recognized faces that are in the person

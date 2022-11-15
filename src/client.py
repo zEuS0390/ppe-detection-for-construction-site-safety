@@ -1,23 +1,23 @@
 from paho.mqtt.client import Client, connack_string
+from src.utils import parsePlainConfig
 import time
 
 class MQTTClient:
 
     def __init__(self, name: str, on_message=None, port=1883):
         self.client_id = name
+        self.port = port
+        if on_message is not None:
+            self.client.on_message = on_message
         try:
-            with open(f"cfg/client/{name}.cfg", "r") as file:
-                self.cfg = dict([line.strip().replace(" ", "").split(":") for line in file.readlines()])
-                self.topic = self.cfg["topic_name"]
-                self.broker = self.cfg["broker_ip"]
-                self.port = port
-                self.client = Client(client_id=self.client_id)
-                self.client.username_pw_set(self.cfg["username"], self.cfg["password"])
-                self.client.on_connect = self.on_connect
-                if on_message is not None:
-                    self.client.on_message = on_message
+            self.cfg = parsePlainConfig(f"cfg/client/{name}.cfg")
+            self.topic = self.cfg["topic_name"]
+            self.broker = self.cfg["broker_ip"]
+            self.client = Client(client_id=self.client_id)
+            self.client.username_pw_set(self.cfg["username"], self.cfg["password"])
+            self.client.on_connect = self.on_connect
         except Exception as e:
-            print(e)
+            raise e
         
     def start(self):
         while True:
