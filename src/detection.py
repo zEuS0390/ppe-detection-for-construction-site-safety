@@ -24,16 +24,16 @@ class Detection:
     
     """
     Methods:
-        - start() -> None
-        - load_persons() -> None
-        - load_classes() -> None
-        - load_model() -> None
-        - plot_box(image: np.ndarray, coordinates: Box, color: Color, label: str) -> None
-        - detect(img, im0s) -> tuple
-        - saveViolations(detected_persons: dict, violations: list) -> None
-        - checkOverlaps(bbox: Box, bboxes: list) -> list
-        - checkViolations(processed_image: np.ndarray, image: np.ndarray) -> dict
-        - update(interval: int=12) -> None
+        - start                 () -> None
+        - loadPersons           () -> None
+        - loadClasses          () -> None
+        - loadModel             () -> None
+        - plotBox               (image: np.ndarray, coordinates: Box, color: Color, label: str) -> None
+        - detect                (img, im0s) -> tuple
+        - saveViolations        (detected_persons: dict, violations: list) -> None
+        - checkOverlaps         (bbox: Box, bboxes: list) -> list
+        - checkViolations       (processed_image: np.ndarray, image: np.ndarray) -> dict
+        - update                (interval: int=12) -> None
     """
 
     # Initialize
@@ -56,10 +56,10 @@ class Detection:
         self.device = select_device(self.cfg.get("yolor", "device"))
         cudnn.benchmark = True
         if self.db is not None:
-            self.load_persons()
-        self.load_colors()
-        self.load_classes()
-        self.load_model()
+            self.loadPersons()
+        self.loadColors()
+        self.loadClasses()
+        self.loadModel()
         self.isRunning = True
         self.camera_details = {
             "name": self.cfg.get("camera", "name"),
@@ -77,20 +77,26 @@ class Detection:
         else:
             print("Missing arguments (camera, recognition, mqtt_client). Abort")
 
-    def load_persons(self):
+    def loadPersons(self):
+        """
+        Loads all persons inserted in the database
+        """
         self.persons_info = loadPersons(self.db)
         string = ""
         for person in self.persons_info:
             string += f"{person} {self.persons_info[person]['first_name']} loaded.\n"
         print(string, end="")
 
-    def load_colors(self):
+    def loadColors(self):
+        """
+        Loads predefined colors for each class names
+        """
         string = ""
         self.colors = list(Color)
         for color in [(color.name, color.value) for color in self.colors]:
             string += f"{color[0]} {color[1]} loaded.\n"
 
-    def load_classes(self):
+    def loadClasses(self):
         """
         Loads class names which were used in the trained model.
         """
@@ -98,7 +104,10 @@ class Detection:
             self.names = f.read().split('\n')
 
     # Load model
-    def load_model(self):
+    def loadModel(self):
+        """
+        Loads the detection model.
+        """
         weights = glob.glob(os.path.join(self.cfg.get("yolor", "weights"), "*.pt"))
         if len(weights) == 0:
             raise Exception("No weights found.")
@@ -109,7 +118,10 @@ class Detection:
             self.model.load_state_dict(torch.load(weights[0], map_location=self.device)['model'])
             self.model.to(self.device).eval()
 
-    def plot_box(self, image: np.ndarray, coordinates: Box, color: Color, label: str):
+    def plotBox(self, image: np.ndarray, coordinates: Box, color: Color, label: str):
+        """
+        Plot bounding boxes and labels in the image.
+        """
         tl = round(0.002 * (image.shape[0] + image.shape[1]) / 2) + 1 # Line/font thickness
         cv2.rectangle(
             image, 
@@ -123,11 +135,11 @@ class Detection:
         cv2.putText(image, label, (coordinates.left, coordinates.bottom), 0, tl / 3, color.value, thickness=font_thickness, lineType=cv2.LINE_AA)
 
     # Detect an image
-    def detect(self, img, im0s):
-        img = torch.from_numpy(img).to(self.device)
-        img = img.float()
-        img /= 255.0
-        pred = self.model(img, augment=False)[0]
+    def detect(self, processed_image, image):
+        processed_image = torch.from_numpy(processed_image).to(self.device)
+        processed_image = processed_image.float()
+        processed_image /= 255.0
+        pred = self.model(processed_image, augment=False)[0]
         pred = non_max_suppression(
             pred,
             0.4,
@@ -139,8 +151,8 @@ class Detection:
         ppe = []
         id = 1
         for det in pred:
-            im0 = im0s.copy()
-            det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
+            im0 = image.copy()
+            det[:, :4] = scale_coords(processed_image.shape[2:], det[:, :4], im0.shape).round()
             for *xyxy, conf, cls in det:
                 detected_obj = {
                         "id": id,
@@ -206,7 +218,7 @@ class Detection:
         # Plot boxes of the detected objects
         for obj in persons+ppe:
             label = f"{self.names[obj['class_id']]} {obj['confidence']:.2f}"
-            self.plot_box(image_plots, obj["coordinate"], self.colors[obj["class_id"]], label)
+            self.plotBox(image_plots, obj["coordinate"], self.colors[obj["class_id"]], label)
         
         # Resize image to be published from mqtt client
         image_plots = cv2.resize(image_plots, (240, 240), interpolation=cv2.INTER_AREA)
