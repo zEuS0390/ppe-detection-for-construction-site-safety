@@ -50,6 +50,7 @@ class Detection:
         self.camera = camera
         self.recognition = recognition
         self.mqtt_client = mqtt_client
+        self.mqtt_client.client.on_message = self.onClientSet
         self.persons_info: Person = []
         self.names: list = []
         self.model = None
@@ -78,6 +79,13 @@ class Detection:
             self.updateThread.start()
         else:
             print("Missing arguments (camera, recognition, mqtt_client). Abort")
+
+    def onClientSet(self, client, userdata, msg):
+        payload = msg.payload.decode()
+        data = json.loads(payload)
+        if "ppe_preferences" in data:
+            self.ppe_preferences = {class_name.replace("_", " "): status for class_name, status in data["ppe_preferences"].items()}
+            print(self.ppe_preferences)
 
     def loadPersons(self):
         """
