@@ -219,9 +219,6 @@ class Detection:
         for obj in persons+ppe:
             label = f"{self.names[obj['class_id']]} {obj['confidence']:.2f}"
             self.plotBox(image_plots, obj["coordinate"], self.colors[obj["class_id"]], label)
-        
-        # Resize image to be published from mqtt client
-        image_plots = cv2.resize(image_plots, (240, 240), interpolation=cv2.INTER_AREA)
 
         # Check overlaps of each detected ppe item
         for ppe_item in ppe:
@@ -236,9 +233,14 @@ class Detection:
         recognized_persons = []
         for person_index, person_coordinate in person_indices:
             person_info = self.persons_info[int(person_index)] if person_index != -1 else {}
-            overlaps = self.checkOverlaps(Box(*person_coordinate), persons)
+            box = Box(*person_coordinate)
+            self.plotbox(image_plots, box, self.colors[11], person_info["first_name"] if len(person_info) > 0 else "Unknown")
+            overlaps = self.checkOverlaps(box, persons)
             person_info["overlaps"] = overlaps
             recognized_persons.append(person_info)
+
+        # Resize image to be published from mqtt client
+        image_plots = cv2.resize(image_plots, (240, 240), interpolation=cv2.INTER_AREA)
 
         # Evaluate violations of each person
         violators = []
