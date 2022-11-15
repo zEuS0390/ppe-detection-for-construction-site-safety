@@ -31,6 +31,7 @@ class Detection:
         - plot_box(image: np.ndarray, coordinates: Box, color: Color, label: str) -> None
         - detect(img, im0s) -> tuple
         - saveViolations(detected_persons: dict, violations: list) -> None
+        - checkOverlaps(bbox: Box, bboxes: list) -> list
         - checkViolations(processed_image: np.ndarray, image: np.ndarray) -> dict
         - update(interval: int=12) -> None
     """
@@ -48,7 +49,7 @@ class Detection:
         self.camera = camera
         self.recognition = recognition
         self.mqtt_client = mqtt_client
-        self.persons: Person = []
+        self.persons_info: Person = []
         self.names: list = []
         self.model = None
         self.isDetecting = True
@@ -77,10 +78,10 @@ class Detection:
             print("Missing arguments (camera, recognition, mqtt_client). Abort")
 
     def load_persons(self):
-        self.persons = loadPersons(self.db)
+        self.persons_info = loadPersons(self.db)
         string = ""
-        for person in self.persons:
-            string += f"{person} {self.persons[person]['first_name']} loaded.\n"
+        for person in self.persons_info:
+            string += f"{person} {self.persons_info[person]['first_name']} loaded.\n"
         print(string, end="")
 
     def load_colors(self):
@@ -134,28 +135,37 @@ class Detection:
             classes=0,
             agnostic=False
         )
+        persons = []
+        ppe = []
+        id = 1
         for det in pred:
             im0 = im0s.copy()
             det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
-            people = []
-            ppe = []
             for *xyxy, conf, cls in det:
                 detected_obj = {
-                        "coordinate": ((int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))),
+                        "id": id,
+                        "coordinate": Box(
+                            top=int(xyxy[1]), 
+                            right=int(xyxy[2]), 
+                            bottom=int(xyxy[3]), 
+                            left=int(xyxy[0])
+                        ),
                         "confidence": float(conf), 
                         "class_id": int(cls)
                 }
+                id+=1
                 if Class(int(cls)) == Class.PERSON:
-                    people.append(detected_obj)
+                    persons.append(detected_obj)
                 else:
                     ppe.append(detected_obj)
-        return people, ppe
+        return persons, ppe
 
-    def saveViolations(self, detected_persons, violations):
+    def saveViolations(self, persons, violations):
         """
         Save violations of person/s to the database
         """
-        for person in detected_persons["names"]:
+        violations = [violation["class_name"] for violation in violations]
+        for person in persons:
             if len(person) > 0:
                 insertViolator(
                     self.db,
@@ -164,6 +174,13 @@ class Detection:
                     detectedppeclasses=violations,
                     verbose=True
                 )
+
+    def checkOverlaps(self, bbox: Box, bboxes: list):
+        overlaps = []
+        for other_bbox in bboxes:
+            if isColliding(bbox, other_bbox["coordinate"]):
+                overlaps.append(other_bbox["id"])
+        return overlaps
 
     def checkViolations(self, processed_image, image):
         """
@@ -181,65 +198,65 @@ class Detection:
         message = {}
         detection_result, detection_time = getElapsedTime(self.detect, processed_image, image)
         string += f"Detection time: {detection_time:.2f}\n"
-        violators = []
+
         image_plots = image.copy()
+        persons = detection_result[0]
+        ppe = detection_result[1]
 
         # Plot boxes of the detected objects
-        for obj in detection_result[0]+detection_result[1]:
-            obj_coordinates = Box(
-                top = obj["coordinate"][0][1],
-                right = obj["coordinate"][1][0],
-                bottom = obj["coordinate"][1][1],
-                left = obj["coordinate"][0][0]
-            )
-            class_name = self.names[obj["class_id"]]
-            confidence = obj["confidence"]
-            label = f"{class_name} {confidence:.2f}"
-            self.plot_box(image_plots, obj_coordinates, self.colors[obj["class_id"]], label)
+        for obj in persons+ppe:
+            label = f"{self.names[obj['class_id']]} {obj['confidence']:.2f}"
+            self.plot_box(image_plots, obj["coordinate"], self.colors[obj["class_id"]], label)
         
         # Resize image to be published from mqtt client
         image_plots = cv2.resize(image_plots, (240, 240), interpolation=cv2.INTER_AREA)
 
-        # Evaluate PPE to each person
-        for bbox_person in detection_result[0]:
-            violator = {}
-            person_coordinates = Box(
-                top = bbox_person["coordinate"][0][1],
-                right = bbox_person["coordinate"][1][0],
-                bottom = bbox_person["coordinate"][1][0],
-                left = bbox_person["coordinate"][0][0]
-            )
-            person_indices_result, person_time = getElapsedTime(self.recognition.predict, image, distance_threshold=0.4)
-            string += f"Recognition time: {person_time:.2f}\n"
-            detected_persons = {"names": [], "coordinates": person_coordinates.__dict__}
-            for index, loc in person_indices_result:
-                if index != -1:
-                    name = self.persons[int(index)]
-                else:
-                    name = {}
-                face_coordinates = Box(*loc)
-                if isColliding(face_coordinates, person_coordinates):
-                    detected_persons["names"].append(name)
-            violations = []
-            for ppe in detection_result[1]:
-                ppe_coordinates = Box(
-                    top = ppe["coordinate"][0][1],
-                    right = ppe["coordinate"][1][0],
-                    bottom = ppe["coordinate"][1][1],
-                    left = ppe["coordinate"][0][0]
-                )
-                if isColliding(ppe_coordinates, person_coordinates):
-                    violations.append(
-                        self.names[ppe["class_id"]]
-                )
-            violator["persons"] = detected_persons
-            violator["violations"] = violations
+        # Check overlaps of each detected ppe item
+        for ppe_item in ppe:
+            overlaps = self.checkOverlaps(ppe_item["coordinate"], persons)
+            ppe_item["overlaps"] = overlaps
+        
+        # Recognize faces
+        person_indices, person_time = getElapsedTime(self.recognition.predict, image, distance_threshold=0.4)
+        string += f"Recognition time: {person_time:.2f}\n"
+
+        # Check overlaps of each recognized faces
+        recognized_persons = []
+        for person_index, person_coordinate in person_indices:
+            person_info = self.persons_info[int(person_index)] if person_index != -1 else {}
+            overlaps = self.checkOverlaps(Box(*person_coordinate), persons)
+            person_info["overlaps"] = overlaps
+            recognized_persons.append(person_info)
+
+        # Evaluate violations of each person
+        violators = []
+        for person in persons:
+            violator = {
+                "persons": [],
+                "violations": []
+            } 
+            id = person["id"]
+
+            # Get PPE items that are in the person
+            for ppe_item in ppe:
+                if id in ppe_item["overlaps"]:
+                    ppe_item["confidence"] = round(ppe_item["confidence"], 4)
+                    ppe_item["class_name"] = self.names[ppe_item["class_id"]]
+                    del ppe_item["coordinate"]
+                    del ppe_item["class_id"]
+                    violator["violations"].append(ppe_item)
+
+            # Get recognized faces that are in the person
+            for recognized_person in recognized_persons:
+                if id in recognized_person["overlaps"]:
+                    violator["persons"].append(recognized_person)
+
             violators.append(violator)
 
             # Save violations of person/s to the database
-            if self.db is not None:
-                _, save_time = getElapsedTime(self.saveViolations, detected_persons, violations)
-                string += f"Saving violations time: {save_time:.2f}\n"
+            # if self.db is not None:
+            #     _, save_time = getElapsedTime(self.saveViolations, violator["persons"], violator["violations"])
+            #     string += f"Saving violations time: {save_time:.2f}\n"
 
         message["camera"] = self.camera_details
         message["image"] = imageToBinary(image_plots)
