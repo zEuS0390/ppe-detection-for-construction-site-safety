@@ -34,7 +34,7 @@ class Detection:
         - saveViolations        (detected_persons: dict, violations: list) -> None
         - checkOverlaps         (bbox: Box, bboxes: list) -> list
         - checkViolations       (processed_image: np.ndarray, image: np.ndarray) -> dict
-        - update                (interval: int=12) -> None
+        - update                () -> None
     """
 
     # Initialize
@@ -43,14 +43,16 @@ class Detection:
         db: DatabaseHandler=None,
         camera: Camera=None, 
         recognition: Recognition=None, 
-        mqtt_client: MQTTClient=None
+        mqtt_notif: MQTTClient=None,
+        mqtt_set: MQTTClient=None
     ):
         self.cfg = cfg
         self.db = db
         self.camera = camera
         self.recognition = recognition
-        self.mqtt_client = mqtt_client
-        self.mqtt_client.client.on_message = self.onClientSet
+        self.mqtt_notif = mqtt_notif
+        self.mqtt_set = mqtt_set
+        self.mqtt_set.client.on_message = self.onClientSet
         self.persons_info: Person = []
         self.names: list = []
         self.model = None
@@ -64,6 +66,8 @@ class Detection:
         self.loadClasses()
         self.loadModel()
         self.isRunning = True
+        self.interval = 12
+        self.mqtt_img_resolution = {"width": 240, "height": 240}
         self.camera_details = {
             "name": self.cfg.get("camera", "name"),
             "description": self.cfg.get("camera", "description"),
@@ -75,10 +79,10 @@ class Detection:
         """
         Starts the detection thread. It will not start if one or more required arguments are missing.
         """
-        if self.camera is not None and self.recognition is not None and self.mqtt_client is not None: 
+        if self.camera is not None and self.recognition is not None and self.mqtt_notif is not None and self.mqtt_set is not None: 
             self.updateThread.start()
         else:
-            print("Missing arguments (camera, recognition, mqtt_client). Abort")
+            print("Missing arguments (camera, recognition, mqtt_notif). Abort")
 
     def onClientSet(self, client, userdata, msg):
         payload = msg.payload.decode()
@@ -86,6 +90,10 @@ class Detection:
         if "ppe_preferences" in data:
             self.ppe_preferences = {class_name.replace("_", " "): status for class_name, status in data["ppe_preferences"].items()}
             print(self.ppe_preferences)
+        if "detection_interval" in data:
+            self.interval = data["detection_interval"]
+        if "mqtt_img_resolution" in data:
+            self.mqtt_img_resolution = data["mqtt_img_resolution"]
 
     def loadPersons(self):
         """
@@ -262,7 +270,7 @@ class Detection:
             recognized_persons.append(person_info)
 
         # Resize image to be published from mqtt client
-        image_plots = cv2.resize(image_plots, (240, 240), interpolation=cv2.INTER_AREA)
+        image_plots = cv2.resize(image_plots, (self.mqtt_img_resolution["width"], self.mqtt_img_resolution["height"]), interpolation=cv2.INTER_AREA)
 
         # Evaluate violations of each person
         violators = []
@@ -307,14 +315,14 @@ class Detection:
         return message
 
     @torch.no_grad()
-    def update(self, interval=12):
+    def update(self):
         """
         Function for update thread
         """
         previous_time = time.time()
         while self.isRunning:
             elapsed_time = time.time() - previous_time
-            if elapsed_time >= interval:
+            if elapsed_time >= self.interval:
                 previous_time = time.time()
                 try:
                     processed_frame, original_frame = self.camera.getFrame()
@@ -332,5 +340,5 @@ class Detection:
                     }
                     print(json.dumps(to_print, indent=4, sort_keys=True))
                     payload = json.dumps(violations_result)
-                    self.mqtt_client.publish(payload=payload)
+                    self.mqtt_notif.publish(payload=payload)
             time.sleep(0.03)

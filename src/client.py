@@ -1,6 +1,6 @@
 from paho.mqtt.client import Client, connack_string
 from src.utils import parsePlainConfig
-import time
+import time, os, shutil
 
 class MQTTClient:
 
@@ -10,7 +10,12 @@ class MQTTClient:
         if on_message is not None:
             self.client.on_message = on_message
         try:
-            self.cfg = parsePlainConfig(f"cfg/client/{name}.cfg")
+            samle_cfg_filename = f"cfg/client/sample.cfg"
+            cfg_filename = f"cfg/client/{name}.cfg"
+            if not os.path.exists(cfg_filename):
+                print(f"'{cfg_filename}' does not exist. Creating cfonfiguration.")
+                shutil.copy2(samle_cfg_filename, cfg_filename)
+            self.cfg = parsePlainConfig(cfg_filename)
             self.topic = self.cfg["topic_name"]
             self.broker = self.cfg["broker_ip"]
             self.client = Client(client_id=self.client_id)

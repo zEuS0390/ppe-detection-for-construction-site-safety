@@ -31,14 +31,16 @@ def main():
     # Instantiate objects
     database = DatabaseHandler(cfg=cfg)
     mqtt_notif = MQTTClient("notif")
+    mqtt_set = MQTTClient("set")
     recognition = Recognition(cfg)
     camera = Camera(cfg)
     insertPersons(database, cfg.get("face_recognition", "persons"))
     insertPPEClasses(database, cfg.get("yolor","classes"))
-    detection = Detection(cfg, database, camera, recognition, mqtt_notif)
+    detection = Detection(cfg, database, camera, recognition, mqtt_notif, mqtt_set)
 
     # Start threads
     mqtt_notif.start()
+    mqtt_set.start()
     camera.start()
     detection.start()
 
