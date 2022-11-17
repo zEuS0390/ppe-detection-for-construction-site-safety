@@ -7,6 +7,8 @@ class MQTTClient:
     def __init__(self, name: str, on_message=None, port=1883):
         self.client_id = name
         self.port = port
+        self.rgb = None
+        self.buzzer = None
         if on_message is not None:
             self.client.on_message = on_message
         try:
@@ -52,6 +54,12 @@ class MQTTClient:
 
     def on_message(self, client, userdata, msg):
         print(f"Received message: {msg.payload}")
+        if self.rgb is not None:
+            self.rgb.setColor(True, True, True)
+        if self.buzzer is not None:
+            self.buzzer.play(1, 0.05, 0.05)
+        if self.rgb is not None:
+            self.rgb.setColor(False, False, False)
 
     def publish(self, payload):
         self.client.publish(self.topic, payload=payload)

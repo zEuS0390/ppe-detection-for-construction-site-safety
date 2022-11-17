@@ -11,6 +11,7 @@ import torch.backends.cudnn as cudnn
 from src.utils import imageToBinary, parsePlainConfig
 from src.db.crud import loadPersons, insertViolator
 from src.client import MQTTClient
+from src.hardware import Hardware
 from src.db.tables import Person
 from src.constants import Class
 from src.constants import Color
@@ -40,6 +41,7 @@ class Detection:
     # Initialize
     def __init__(self, 
         cfg: ConfigParser,
+        hardware: Hardware=None,
         db: DatabaseHandler=None,
         camera: Camera=None, 
         recognition: Recognition=None, 
@@ -47,6 +49,7 @@ class Detection:
         mqtt_set: MQTTClient=None
     ):
         self.cfg = cfg
+        self.hardware = hardware
         self.db = db
         self.camera = camera
         self.recognition = recognition
@@ -331,6 +334,8 @@ class Detection:
                     time.sleep(0.03)
                     continue
                 if processed_frame is not None:
+                    self.hardware.ledControl.setColor(True, False, True)
+                    self.hardware.buzzerControl.play(1, 0.1, 0.1)
                     violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, original_frame)
                     print(f"Overall process time: {violations_time:.2f}")
                     to_print = {
@@ -341,4 +346,5 @@ class Detection:
                     print(json.dumps(to_print, indent=4, sort_keys=True))
                     payload = json.dumps(violations_result)
                     self.mqtt_notif.publish(payload=payload)
+                    self.hardware.ledControl.setColor(False, False, False)
             time.sleep(0.03)

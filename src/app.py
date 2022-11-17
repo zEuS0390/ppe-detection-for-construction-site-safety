@@ -33,11 +33,21 @@ class Application:
         database = DatabaseHandler(cfg=cfg)
         mqtt_notif = MQTTClient("notif")
         mqtt_set = MQTTClient("set")
+        mqtt_set.rgb = hardware.ledControl
+        mqtt_set.buzzer = hardware.buzzerControl
         recognition = Recognition(cfg)
         camera = Camera(cfg)
         insertPersons(database, cfg.get("face_recognition", "persons"))
         insertPPEClasses(database, cfg.get("yolor","classes"))
-        detection = Detection(cfg, database, camera, recognition, mqtt_notif, mqtt_set)
+        detection = Detection(
+            cfg, 
+            hardware,
+            database, 
+            camera, 
+            recognition, 
+            mqtt_notif, 
+            mqtt_set
+        )
 
         hardware.ledControl.setColor(False, False, False)
         hardware.buzzerControl.play(1, 0.05, 0.05)
