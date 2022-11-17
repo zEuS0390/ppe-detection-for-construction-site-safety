@@ -7,19 +7,27 @@ from src.detection import Detection
 from src.utils import checkLatestWeights
 from src.recognition import Recognition
 from src.camera import Camera
+from src.hardware import Hardware
 import configparser, time
 
 class Application:
 
     @staticmethod
     def main():
-        
-        # Check latest weights file
-        checkLatestWeights()
-
+       
         # Load app configuration file
         cfg = configparser.ConfigParser()
         cfg.read("./cfg/app.cfg")
+
+        hardware = Hardware(cfg)
+        
+        hardware.ledControl.setColor(False, False, True)
+
+        # Check latest weights file
+        checkLatestWeights()
+
+        hardware.ledControl.setColor(True, True, False)
+        hardware.buzzerControl.play(1, 0.05, 0.05)
 
         # Instantiate objects
         database = DatabaseHandler(cfg=cfg)
@@ -30,6 +38,9 @@ class Application:
         insertPersons(database, cfg.get("face_recognition", "persons"))
         insertPPEClasses(database, cfg.get("yolor","classes"))
         detection = Detection(cfg, database, camera, recognition, mqtt_notif, mqtt_set)
+
+        hardware.ledControl.setColor(False, False, False)
+        hardware.buzzerControl.play(1, 0.05, 0.05)
 
         # Start threads
         mqtt_notif.start()
@@ -42,3 +53,7 @@ class Application:
         except:
             detection.isRunning = False
             camera.isRunning = False
+
+        hardware.ledControl.setColor(True, False, False)
+        hardware.buzzerControl.play(5, 0.05, 0.05)
+        hardware.ledControl.setColor(False, False, False)
