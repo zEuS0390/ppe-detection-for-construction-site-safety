@@ -36,7 +36,7 @@ def checkLatestWeights():
     """
     Checks the latest weights file
     """
-    current_version_file = "data/models/detection/current_version.txt"
+    current_version_file = "data/detection/current_version.txt"
     if not os.path.exists(current_version_file):
         current_id = 0
         with open(current_version_file, "w") as data:
@@ -44,7 +44,7 @@ def checkLatestWeights():
     else:
         with open(current_version_file, "r") as data:
             current_id = int(data.readline())
-    with open("data/models/detection/versions.csv", newline="") as csvfile:
+    with open("data/detection/versions.csv", newline="") as csvfile:
         reader = DictReader(csvfile)
         max = {}
         for row in reader:
@@ -54,10 +54,10 @@ def checkLatestWeights():
         try:
             id = max["id"]
             if int(id) != current_id:
-                weights_files = glob.glob("data/models/detection/*.pt")
+                weights_files = glob.glob("data/detection/*.pt")
                 for weights_file in weights_files:
                     os.remove(weights_file)
-                gdown.download(id=max["gdrive_id"], output=os.path.join("data/models/detection/", ".".join([max["name"], "pt"])))
+                gdown.download(id=max["gdrive_id"], output=os.path.join("data/detection/", ".".join([max["name"], "pt"])))
                 with open(current_version_file, "w") as data:
                     data.write(str(id))
         except Exception as e:
@@ -122,6 +122,7 @@ def getLatestFile(cfg_name, file_extension):
         source_file = os.path.join(source_dir, latest_model)
         destination_file = os.path.join(destination_dir, latest_model)
         if not os.path.exists(destination_file):
+            print(f"{destination_file} does not exist! Downloading latest file.")
             sftp_client.get(source_file, destination_file)
         else:
             print(f"'{destination_file}' already exist!")
