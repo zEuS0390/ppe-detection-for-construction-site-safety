@@ -4,11 +4,11 @@ from src.db.tables import *
 from sqlalchemy import select
 from src.client import MQTTClient
 from src.detection import Detection
-from src.utils import checkLatestWeights
+from src.utils import checkLatestWeights, getLatestFile
 from src.recognition import Recognition
 from src.camera import Camera
 from src.hardware import Hardware
-import configparser, time
+import os, glob, configparser, time
 
 class Application:
 
@@ -20,7 +20,27 @@ class Application:
         cfg.read("./cfg/app.cfg")
 
         hardware = Hardware(cfg)
-        
+
+        face_rec_model = getLatestFile(cfg_name="face_recognition", file_extension=".clf")
+        if face_rec_model is not None:
+            cfg.set("face_recognition", "model", face_rec_model)
+            with open("./cfg/app.cfg", "w") as cfg_file:
+                cfg.write(cfg_file)
+
+        if not os.path.exists(cfg.get("face_recognition", "model")):
+            print("Face recognition model not found")
+            hardware.ledControl.setColor(True, False, False)
+            hardware.buzzerControl.play(5, 0.05, 0.05)
+            hardware.ledControl.setColor(False, False, False)
+            return
+
+        if len(glob.glob(os.path.join(cfg.get("yolor", "weights"), "*.pt"))) == 0:
+            print("Detection model not found.")
+            hardware.ledControl.setColor(True, False, False)
+            hardware.buzzerControl.play(5, 0.05, 0.05)
+            hardware.ledControl.setColor(False, False, False)
+            return
+
         hardware.ledControl.setColor(False, False, True)
 
         # Check latest weights file
@@ -31,22 +51,21 @@ class Application:
 
         # Instantiate objects
         database = DatabaseHandler(cfg=cfg)
-        mqtt_notif = MQTTClient("notif")
-        mqtt_set = MQTTClient("set")
-        mqtt_set.rgb = hardware.ledControl
-        mqtt_set.buzzer = hardware.buzzerControl
-        recognition = Recognition(cfg)
-        camera = Camera(cfg)
         insertPersons(database, cfg.get("face_recognition", "persons"))
         insertPPEClasses(database, cfg.get("yolor","classes"))
+
+        mqtt_notif = MQTTClient("notif")
+        mqtt_set = MQTTClient("set")
+        recognition = Recognition(cfg)
+        camera = Camera(cfg)
         detection = Detection(
-            cfg, 
-            hardware,
-            database, 
-            camera, 
-            recognition, 
-            mqtt_notif, 
-            mqtt_set
+            cfg=cfg, 
+            hardware=hardware,
+            db=database, 
+            camera=camera, 
+            recognition=recognition, 
+            mqtt_notif=mqtt_notif, 
+            mqtt_set=mqtt_set
         )
 
         hardware.ledControl.setColor(False, False, False)
@@ -60,7 +79,7 @@ class Application:
 
         try:
             while True: time.sleep(1)
-        except:
+        except KeyboardInterrupt:
             detection.isRunning = False
             camera.isRunning = False
 
