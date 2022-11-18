@@ -84,6 +84,7 @@ def parsePlainConfig(filepath: str):
         raise e
 
 def getLatestFile(cfg_name, file_extension):
+    print("Getting the latest data files of {0}".format(cfg_name))
     cfg_file = f"cfg/client/sftp/{cfg_name}.cfg"
     cfg = parsePlainConfig(cfg_file)
     hostname = cfg["hostname"]
@@ -104,10 +105,10 @@ def getLatestFile(cfg_name, file_extension):
             password=password
         )
     except paramiko.ssh_exception.NoValidConnectionsError as e:
-        print(f"{e}")
+        print(f"{e}\nCheck if SSH server is online.")
         return
     except paramiko.ssh_exception.AuthenticationException as e:
-        print(f"{e}")
+        print(f"{e}\nCheck if SSH server creredentials are correct.")
         return
 
     sftp_client = ssh_client.open_sftp()

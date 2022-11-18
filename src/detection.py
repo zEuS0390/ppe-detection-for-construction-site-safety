@@ -103,27 +103,31 @@ class Detection:
         """
         Loads all persons inserted in the database
         """
+        string = "Load Persons:\n"
         self.persons_info = loadPersons(self.db)
-        string = ""
         for person in self.persons_info:
-            string += f"{person} {self.persons_info[person]['first_name']} loaded.\n"
+            string += f"\t[LOADED] {person} {self.persons_info[person]['first_name']}\n"
         print(string, end="")
 
     def loadColors(self):
         """
         Loads predefined colors for each class names
         """
-        string = ""
+        string = "Load Colors:\n"
         self.colors = list(Color)
         for color in [(color.name, color.value) for color in self.colors]:
-            string += f"{color[0]} {color[1]} loaded.\n"
+            string += f"\t[LOADED] {color[0]} {color[1]}\n"
+        print(string, end="")
 
     def loadClasses(self):
         """
         Loads class names which were used in the trained model.
         """
+        print("Load Detection Class Names:")
         with open(self.cfg.get("yolor", "classes")) as f:
             self.names = f.read().split('\n')
+            for name in self.names:
+                print(f"\t[LOADED] {name}")
 
     # Load model
     def loadModel(self):
@@ -143,7 +147,9 @@ class Detection:
     def loadPreferences(self):
         preferences_cfg = parsePlainConfig(f"cfg/detection/filter.cfg")
         self.ppe_preferences = {class_name.replace("_", " "): True if status == 'on' else False for class_name, status in preferences_cfg.items()}
-        print(self.ppe_preferences)
+        print("Load PPE Preferences:")
+        for ppe_item, status in self.ppe_preferences.items():
+            print(f"\t[LOADED] '{ppe_item}': {status}")
     
     def plotBox(self, image: np.ndarray, coordinates: Box, color: Color, label: str):
         """

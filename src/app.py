@@ -19,7 +19,7 @@ class Application:
         cfg = configparser.ConfigParser()
         cfg.read("./cfg/app.cfg")
 
-        face_rec_model = getLatestFile(cfg_name="source", file_extension=".clf")
+        face_rec_model = getLatestFile(cfg_name="face_recognition", file_extension=".clf")
         if face_rec_model is not None:
             cfg.set("face_recognition", "model", face_rec_model)
             with open("./cfg/app.cfg", "w") as cfg_file:
