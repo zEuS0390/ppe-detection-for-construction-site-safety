@@ -113,9 +113,13 @@ def getLatestFile(cfg_name, file_extension):
 
     sftp_client = ssh_client.open_sftp()
     model_files = []
-    for file in sftp_client.listdir(source_dir):
-        if os.path.splitext(file)[1] == file_extension:
-            model_files.append(file)
+    try:
+        for file in sftp_client.listdir(source_dir):
+            if os.path.splitext(file)[1] == file_extension:
+                model_files.append(file)
+    except FileNotFoundError as e:
+        print(f"{e}\nCheck if the source directory exists.")
+        return
             
     if len(model_files) > 0:
         latest_model = model_files.pop()

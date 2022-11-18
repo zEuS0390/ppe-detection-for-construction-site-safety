@@ -88,8 +88,10 @@ class Detection:
             print("Missing arguments (camera, recognition, mqtt_notif). Abort")
 
     def onClientSet(self, client, userdata, msg):
+        self.hardware.ledControl.setColor(False, True, True)
+        self.hardware.buzzerControl.play(1, 0.05, 0.05)
+        self.hardware.ledControl.setColor(False, False, False)
         payload = msg.payload.decode()
-        print(payload)
         data = json.loads(payload)
         if "ppe_preferences" in data:
             self.ppe_preferences = {class_name.replace("_", " "): status for class_name, status in data["ppe_preferences"].items()}
