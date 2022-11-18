@@ -1,3 +1,4 @@
+paramiko
 gdown
 paho-mqtt
 sqlalchemy

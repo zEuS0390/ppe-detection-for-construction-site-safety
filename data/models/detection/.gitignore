@@ -2,5 +2,5 @@
 # Most of the them are not necessary to be included in the repository.
 
 *
-!weights/
 !.gitignore
+!versions.csv

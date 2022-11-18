@@ -9,11 +9,9 @@ class MQTTClient:
         self.port = port
         self.rgb = None
         self.buzzer = None
-        if on_message is not None:
-            self.client.on_message = on_message
         try:
-            samle_cfg_filename = f"cfg/client/sample.cfg"
-            cfg_filename = f"cfg/client/{name}.cfg"
+            samle_cfg_filename = f"cfg/client/mqtt/sample.cfg"
+            cfg_filename = f"cfg/client/mqtt/{name}.cfg"
             if not os.path.exists(cfg_filename):
                 print(f"'{cfg_filename}' does not exist. Creating cfonfiguration.")
                 shutil.copy2(samle_cfg_filename, cfg_filename)

@@ -89,6 +89,7 @@ class Detection:
 
     def onClientSet(self, client, userdata, msg):
         payload = msg.payload.decode()
+        print(payload)
         data = json.loads(payload)
         if "ppe_preferences" in data:
             self.ppe_preferences = {class_name.replace("_", " "): status for class_name, status in data["ppe_preferences"].items()}
@@ -294,7 +295,7 @@ class Detection:
                     try:
                         del ppe_item["coordinate"]
                     except Exception as e:
-                        pass
+                        print(f"{e}")
                     violator["violations"].append(ppe_item)
 
             # Get recognized faces that are in the person
@@ -329,8 +330,8 @@ class Detection:
                 previous_time = time.time()
                 try:
                     processed_frame, original_frame = self.camera.getFrame()
-                except:
-                    print("Returned None on getFrame method")
+                except Exception as e:
+                    print(f"Returned None on getFrame method: {e}")
                     time.sleep(0.03)
                     continue
                 if processed_frame is not None:
