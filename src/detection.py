@@ -26,6 +26,7 @@ class Detection:
     """
     Methods:
         - start                 () -> None
+        - onClientSet           (client, userdata, msg) -> None
         - loadPersons           () -> None
         - loadClasses           () -> None
         - loadModel             () -> None
