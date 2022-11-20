@@ -109,7 +109,8 @@ class Detection:
         string = "Load Persons:\n"
         self.persons_info = loadPersons(self.db)
         for person in self.persons_info:
-            string += f"\t[LOADED] {person} {self.persons_info[person]['first_name']}\n"
+#            string += f"\t[LOADED] {person} {self.persons_info[person]['first_name']}\n"
+            string += f"{person} {self.persons_info[person]}\n"
         print(string, end="")
 
     def loadColors(self):
@@ -288,11 +289,12 @@ class Detection:
         # Evaluate violations of each person
         violators = []
         for person in persons:
+            id = person["id"]
             violator = {
-                "persons": [],
+                "id": id, 
+                "person_info": [],
                 "violations": []
             } 
-            id = person["id"]
 
             # Get PPE items that are in the person
             for ppe_item in ppe:
@@ -310,7 +312,7 @@ class Detection:
             # Get recognized faces that are in the person
             for recognized_person in recognized_persons:
                 if id in recognized_person["overlaps"]:
-                    violator["persons"].append(recognized_person)
+                    violator["person_info"].append(recognized_person)
 
             violators.append(violator)
 

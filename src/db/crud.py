@@ -55,7 +55,8 @@ def loadPersons(db: DatabaseHandler):
         person = {}
         for column in col.__table__.columns:
             person[column.name] = getattr(col, column.name)
-        persons[person["id"]] = person
+        persons[person["id"]] = person # Use id from the database as key
+        del person["id"] # Delete the id from the database because it is not necessary to be included in MQTT JSON data
     return persons
 
 def updatePerson(db: DatabaseHandler, person_id: int, first_name: str="", middle_name: str="", last_name: str="", job_title: str=""):
