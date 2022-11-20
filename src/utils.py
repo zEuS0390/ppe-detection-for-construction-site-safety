@@ -92,17 +92,19 @@ def getLatestFile(cfg_name, file_extension):
     source_dir = cfg["source_dir"]
     destination_dir = cfg["destination_dir"]
     username = cfg["username"]
-    password = cfg["password"]
+    private_key_file = cfg["private_key_file"]
 
     ssh_client = paramiko.SSHClient()
-    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy()) 
+    RSAPKey = paramiko.RSAKey.from_private_key_file(private_key_file)
     
     try:
         ssh_client.connect(
             hostname=hostname,
-            port=port,
             username=username,
-            password=password
+            pkey=RSAPKey,
+            allow_agent=False,
+            look_for_keys=False
         )
     except paramiko.ssh_exception.NoValidConnectionsError as e:
         print(f"{e}\nCheck if SSH server is online.")
