@@ -34,17 +34,17 @@ class Application:
             hardware.ledControl.setColor(False, False, False)
             return
 
+        hardware.ledControl.setColor(False, False, True)
+
+        # Check latest weights file
+        checkLatestWeights()
+
         if len(glob.glob(os.path.join(cfg.get("yolor", "weights"), "*.pt"))) == 0:
             print("Detection model not found.")
             hardware.ledControl.setColor(True, False, False)
             hardware.buzzerControl.play(5, 0.05, 0.05)
             hardware.ledControl.setColor(False, False, False)
             return
-
-        hardware.ledControl.setColor(False, False, True)
-
-        # Check latest weights file
-        checkLatestWeights()
 
         hardware.ledControl.setColor(True, True, False)
         hardware.buzzerControl.play(1, 0.05, 0.05)
