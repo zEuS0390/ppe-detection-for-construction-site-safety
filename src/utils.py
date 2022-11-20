@@ -33,9 +33,7 @@ def getElapsedTime(func, *args, **kwargs):
     return (result, elapsed_time)
 
 def checkLatestWeights():
-    """
-    Checks the latest weights file
-    """
+    # Checks the latest weights file
     current_version_file = "data/detection/current_version.txt"
     if not os.path.exists(current_version_file):
         current_id = 0
@@ -63,6 +61,32 @@ def checkLatestWeights():
         except Exception as e:
             print(e)
 
+def getDetectionModel(cfg):
+    weights_dir = cfg.get("yolor", "weights")
+    versions = sorted(os.listdir(weights_dir))
+    if len(versions) > 0:
+        latest_name = versions.pop()
+        latest_dir = os.path.join(weights_dir, latest_name)
+        files = os.listdir(latest_dir)
+        for file in files:
+            if file.endswith(".pt"):
+                return os.path.join(latest_dir, file)
+
+def getRecognitionData(cfg):
+    recognition_model_dir = cfg.get("face_recognition", "model")
+    versions = sorted(os.listdir(recognition_model_dir))
+    if len(versions) > 0:
+        latest_name = versions.pop()
+        latest_dir = os.path.join(recognition_model_dir, latest_name)
+        files = os.listdir(latest_dir)
+        result = {}
+        for file in files:
+            if file.endswith(".clf"):
+                result["model"] = os.path.join(latest_dir, file)
+            if file.endswith(".csv"):
+                result["info"] = os.path.join(latest_dir, file)
+        return result
+
 def getIPAddress():
     ip_addr = subprocess.check_output(['hostname', '-I']).split()[0].decode()
     return ip_addr
@@ -83,7 +107,7 @@ def parsePlainConfig(filepath: str):
     except Exception as e:
         raise e
 
-def getLatestFile(cfg_name, file_extension):
+def getLatestFiles(cfg_name, target_names: list):
     print("Getting the latest data files of {0}".format(cfg_name))
     cfg_file = f"cfg/client/sftp/{cfg_name}.cfg"
     cfg = parsePlainConfig(cfg_file)
@@ -114,28 +138,43 @@ def getLatestFile(cfg_name, file_extension):
         return
 
     sftp_client = ssh_client.open_sftp()
-    model_files = []
+    files = []
     try:
-        for file in sftp_client.listdir(source_dir):
-            if os.path.splitext(file)[1] == file_extension:
-                model_files.append(file)
+        files = sftp_client.listdir(source_dir)
     except FileNotFoundError as e:
         print(f"{e}\nCheck if the source directory exists.")
         return
             
-    if len(model_files) > 0:
-        latest_model = model_files.pop()
-        print("Latest Model: ", latest_model)
-        source_file = os.path.join(source_dir, latest_model)
-        destination_file = os.path.join(destination_dir, latest_model)
-        if not os.path.exists(destination_file):
-            print(f"{destination_file} does not exist! Downloading latest file.")
-            sftp_client.get(source_file, destination_file)
-        else:
-            print(f"'{destination_file}' already exist!")
+    if len(files) > 0:
+        for target_name in target_names:
+            try:
+                index = files.index(target_name)
+            except ValueError as e:
+                print(f"{e}")
+                continue
+            try:
+                target_dir = sftp_client.listdir(os.path.join(source_dir, target_name))
+            except FileNotFoundError as e:
+                print(f"{e}")
+                continue
+            if len(target_dir) > 0:
+                latest = target_dir.pop()
+                if latest in os.listdir(os.path.join(destination_dir, target_name)):
+                    print(f"Download '{latest}' [ALREADY EXIST]")
+                    continue
+                print(f"Download '{latest}'")
+                latest_files = sftp_client.listdir(os.path.join(source_dir, target_name, latest))
+                for file in latest_files:
+                    source_latest_dir = os.path.join(source_dir, target_name, latest)
+                    destination_latest_dir = os.path.join(destination_dir, target_name, latest) 
+                    source_file = os.path.normpath(os.path.join(source_latest_dir, file))
+                    destination_file = os.path.join(destination_latest_dir, file)
+                    if not os.path.exists(destination_latest_dir):
+                        os.mkdir(destination_latest_dir)
+                    sftp_client.get(source_file, destination_file)
+                    print(f"\t* [DOWNLOADED] {file}")
         sftp_client.close()
         ssh_client.close()
-        return destination_file
     else:
         sftp_client.close()
         ssh_client.close()

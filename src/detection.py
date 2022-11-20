@@ -8,7 +8,7 @@ import glob, os, torch, threading, time
 from configparser import ConfigParser
 from src.box import Box, isColliding
 import torch.backends.cudnn as cudnn
-from src.utils import imageToBinary, parsePlainConfig
+from src.utils import imageToBinary, parsePlainConfig, getDetectionModel
 from src.db.crud import loadPersons, insertViolator
 from src.client import MQTTClient
 from src.hardware import Hardware
@@ -109,8 +109,7 @@ class Detection:
         string = "Load Persons:\n"
         self.persons_info = loadPersons(self.db)
         for person in self.persons_info:
-#            string += f"\t[LOADED] {person} {self.persons_info[person]['first_name']}\n"
-            string += f"{person} {self.persons_info[person]}\n"
+            string += f"\t[LOADED] {person} {self.persons_info[person]['first_name']}\n"
         print(string, end="")
 
     def loadColors(self):
@@ -138,15 +137,13 @@ class Detection:
         """
         Loads the detection model.
         """
-        weights = glob.glob(os.path.join(self.cfg.get("yolor", "weights"), "*.pt"))
-        if len(weights) == 0:
-            raise Exception("No weights found.")
-        elif len(weights) > 1:
-            raise Exception("Too many weights found.")
-        else:
+        weights = getDetectionModel(self.cfg)
+        if weights is not None:
             self.model = Darknet(self.cfg.get("yolor", "cfg"), self.cfg.getint("yolor", "img_size")).cpu()
-            self.model.load_state_dict(torch.load(weights[0], map_location=self.device)['model'])
+            self.model.load_state_dict(torch.load(weights, map_location=self.device)['model'])
             self.model.to(self.device).eval()
+        else:
+            raise Exception("No weights found")
 
     def loadPreferences(self):
         preferences_cfg = parsePlainConfig(f"cfg/detection/filter.cfg")

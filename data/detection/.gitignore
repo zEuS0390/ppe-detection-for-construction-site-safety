@@ -1,6 +1,0 @@
-# This folder contains all data files that are related to the application.
-# Most of the them are not necessary to be included in the repository.
-
-*
-!.gitignore
-!versions.csv

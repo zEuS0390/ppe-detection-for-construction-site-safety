@@ -1,6 +1,7 @@
 from face_recognition.face_recognition_cli import image_files_in_folder
 import os, math, pickle, face_recognition
 from configparser import ConfigParser
+from src.utils import getRecognitionData
 from sklearn import neighbors
 
 class Recognition:
@@ -12,8 +13,10 @@ class Recognition:
         self.load_model()
 
     def load_model(self):
-        with open(self.cfg.get("face_recognition", "model"), "rb") as file:
-            self.knn_clf = pickle.load(file)
+        recognition_data = getRecognitionData(self.cfg)
+        if "model" in recognition_data:
+            with open(recognition_data["model"], "rb") as file:
+                self.knn_clf = pickle.load(file)
 
     def predict(self, frame, distance_threshold=0.4):
         # Load image file and find face locations

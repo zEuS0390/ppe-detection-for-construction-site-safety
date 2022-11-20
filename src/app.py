@@ -4,7 +4,7 @@ from src.db.tables import *
 from sqlalchemy import select
 from src.client import MQTTClient
 from src.detection import Detection
-from src.utils import checkLatestWeights, getLatestFile
+from src.utils import getLatestFiles, getRecognitionData
 from src.recognition import Recognition
 from src.camera import Camera
 from src.hardware import Hardware
@@ -21,37 +21,17 @@ class Application:
 
         hardware = Hardware(cfg)
 
-        face_rec_model = getLatestFile(cfg_name="face_recognition", file_extension=".clf")
-        if face_rec_model is not None:
-            cfg.set("face_recognition", "model", face_rec_model)
-            with open("./cfg/app.cfg", "w") as cfg_file:
-                cfg.write(cfg_file)
-
-        if not os.path.exists(cfg.get("face_recognition", "model")):
-            print("Face recognition model not found")
-            hardware.ledControl.setColor(True, False, False)
-            hardware.buzzerControl.play(5, 0.05, 0.05)
-            hardware.ledControl.setColor(False, False, False)
-            return
-
         hardware.ledControl.setColor(False, False, True)
 
-        # Check latest weights file
-        checkLatestWeights()
-
-        if len(glob.glob(os.path.join(cfg.get("yolor", "weights"), "*.pt"))) == 0:
-            print("Detection model not found.")
-            hardware.ledControl.setColor(True, False, False)
-            hardware.buzzerControl.play(5, 0.05, 0.05)
-            hardware.ledControl.setColor(False, False, False)
-            return
+        getLatestFiles(cfg_name="face_recognition", target_names=["face_recognition", "detection"])
+        recognition = getRecognitionData(cfg)
 
         hardware.ledControl.setColor(True, True, False)
         hardware.buzzerControl.play(1, 0.05, 0.05)
 
         # Instantiate objects
         database = DatabaseHandler(cfg=cfg)
-        insertPersons(database, cfg.get("face_recognition", "persons"))
+        insertPersons(database, recognition["info"])
         insertPPEClasses(database, cfg.get("yolor","classes"))
 
         mqtt_notif = MQTTClient("notif")
