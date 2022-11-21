@@ -282,6 +282,8 @@ class Detection:
 
         # Resize image to be published from mqtt client
         image_plots = cv2.resize(image_plots, (self.mqtt_img_resolution["width"], self.mqtt_img_resolution["height"]), interpolation=cv2.INTER_AREA)
+        
+        total_violations = 0
 
         # Evaluate violations of each person
         violators = []
@@ -298,6 +300,11 @@ class Detection:
                 confidence = round(ppe_item["confidence"], 4)
                 class_name = ppe_item["class_name"]
                 if id in ppe_item["overlaps"]:
+
+                    # Do not include ppe_items that have multiple overlaps
+                    if len(ppe_item["overlaps"]) == 1:
+                        total_violations += 1
+
                     ppe_item["confidence"] = confidence
                     ppe_item["class_name"] = class_name
                     try:
@@ -320,6 +327,8 @@ class Detection:
 
         message["camera"] = self.camera_details
         message["image"] = imageToBinary(image_plots)
+        message["total_violators"] = len(violators)
+        message["total_violations"] = total_violations
         message["violators"] = violators
         message["timestamp"] = datetime.now().strftime(r"%m/%d/%y %H:%M:%S")
         
@@ -349,6 +358,8 @@ class Detection:
                     print(f"Overall process time: {violations_time:.2f}")
                     to_print = {
                         "camera": violations_result["camera"],
+                        "total_violators": violations_result["total_violators"],
+                        "total_violations": violations_result["total_violations"],
                         "violators": violations_result["violators"],
                         "timestamp": violations_result["timestamp"]
                     }
