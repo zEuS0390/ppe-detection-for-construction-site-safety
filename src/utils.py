@@ -1,6 +1,5 @@
-import cv2, base64, os, glob, time, subprocess
+import cv2, base64, os, glob, time, subprocess, paramiko,socket
 from csv import DictReader
-import paramiko
 
 def imageToBinary(image):
     """
@@ -99,13 +98,17 @@ def getLatestFiles(cfg_name, target_names: list):
             username=username,
             pkey=RSAPKey,
             allow_agent=False,
-            look_for_keys=False
+            look_for_keys=False,
+            timeout=10
         )
     except paramiko.ssh_exception.NoValidConnectionsError as e:
         print(f"{e}\nCheck if SSH server is online.")
         return
     except paramiko.ssh_exception.AuthenticationException as e:
         print(f"{e}\nCheck if SSH server creredentials are correct.")
+        return
+    except socket.timeout as e:
+        print(f"{e}\nCheck if SSH server is online.")
         return
 
     sftp_client = ssh_client.open_sftp()
