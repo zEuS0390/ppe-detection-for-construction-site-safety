@@ -33,7 +33,7 @@ class Detection:
     Methods:
         - start                 () -> None
         - onClientSet           (client, userdata, msg) -> None
-        - loadData()            () -> None
+        - loadData              () -> None
         - loadCameraDetails     () -> None
         - loadPersons           () -> None
         - loadClasses           () -> None
