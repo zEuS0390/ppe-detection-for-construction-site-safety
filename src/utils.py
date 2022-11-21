@@ -118,6 +118,8 @@ def getLatestFiles(cfg_name, target_names: list):
             
     if len(files) > 0:
         for target_name in target_names:
+            if not os.path.exists(os.path.join(destination_dir, target_name)):
+                os.mkdir(os.path.join(destination_dir, target_name))
             try:
                 index = files.index(target_name)
             except ValueError as e:
