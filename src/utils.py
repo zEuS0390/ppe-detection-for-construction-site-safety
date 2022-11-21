@@ -1,4 +1,4 @@
-import cv2, base64, os, gdown, glob, time, subprocess
+import cv2, base64, os, glob, time, subprocess
 from csv import DictReader
 import paramiko
 
@@ -32,37 +32,8 @@ def getElapsedTime(func, *args, **kwargs):
     elapsed_time = end_time - start_time
     return (result, elapsed_time)
 
-def checkLatestWeights():
-    # Checks the latest weights file
-    current_version_file = "data/detection/current_version.txt"
-    if not os.path.exists(current_version_file):
-        current_id = 0
-        with open(current_version_file, "w") as data:
-            data.write(str(current_id))
-    else:
-        with open(current_version_file, "r") as data:
-            current_id = int(data.readline())
-    with open("data/detection/versions.csv", newline="") as csvfile:
-        reader = DictReader(csvfile)
-        max = {}
-        for row in reader:
-            id = int(row["id"])
-            if id > 0:
-                max = row
-        try:
-            id = max["id"]
-            if int(id) != current_id:
-                weights_files = glob.glob("data/detection/*.pt")
-                for weights_file in weights_files:
-                    os.remove(weights_file)
-                gdown.download(id=max["gdrive_id"], output=os.path.join("data/detection/", ".".join([max["name"], "pt"])))
-                with open(current_version_file, "w") as data:
-                    data.write(str(id))
-        except Exception as e:
-            print(e)
-
 def getDetectionModel(cfg):
-    weights_dir = cfg.get("yolor", "weights")
+    weights_dir = cfg.get("yolor", "weights_dir")
     versions = sorted(os.listdir(weights_dir))
     if len(versions) > 0:
         latest_name = versions.pop()
@@ -73,7 +44,7 @@ def getDetectionModel(cfg):
                 return os.path.join(latest_dir, file)
 
 def getRecognitionData(cfg):
-    recognition_model_dir = cfg.get("face_recognition", "model")
+    recognition_model_dir = cfg.get("face_recognition", "models_dir")
     versions = sorted(os.listdir(recognition_model_dir))
     if len(versions) > 0:
         latest_name = versions.pop()
@@ -159,7 +130,8 @@ def getLatestFiles(cfg_name, target_names: list):
                 continue
             if len(target_dir) > 0:
                 latest = target_dir.pop()
-                if latest in os.listdir(os.path.join(destination_dir, target_name)):
+                destination_versions = os.listdir(os.path.join(destination_dir, target_name))
+                if latest in destination_versions:
                     print(f"Download '{latest}' [ALREADY EXIST]")
                     continue
                 print(f"Download '{latest}'")
@@ -173,6 +145,8 @@ def getLatestFiles(cfg_name, target_names: list):
                         os.mkdir(destination_latest_dir)
                     sftp_client.get(source_file, destination_file)
                     print(f"\t* [DOWNLOADED] {file}")
+                for version in destination_versions:
+                    os.rmdir(version)
         sftp_client.close()
         ssh_client.close()
     else:
