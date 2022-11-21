@@ -1,20 +1,26 @@
 from yolor.utils.general import non_max_suppression, scale_coords
 from src.utils import getElapsedTime, getIPAddress
 from yolor.utils.torch_utils import select_device
-from src.db.database import DatabaseHandler
 from yolor.models.models import Darknet
 from src.recognition import Recognition
-import glob, os, torch, threading, time
 from configparser import ConfigParser
 from src.box import Box, isColliding
 import torch.backends.cudnn as cudnn
-from src.utils import imageToBinary, parsePlainConfig, getDetectionModel
-from src.db.crud import loadPersons, insertViolator
+from src.utils import (
+    imageToBinary, 
+    parsePlainConfig, 
+    getDetectionModel
+)
+from src.db.crud import DatabaseCRUD
 from src.client import MQTTClient
 from src.hardware import Hardware
 from src.db.tables import Person
-from src.constants import Class
-from src.constants import Color
+import torch, threading, time
+from src.constants import (
+    Class, 
+    BGRColor, 
+    DEFAULT_MQTT_IMG_SIZE
+)
 from src.camera import Camera
 from datetime import datetime
 import numpy as np
@@ -27,6 +33,8 @@ class Detection:
     Methods:
         - start                 () -> None
         - onClientSet           (client, userdata, msg) -> None
+        - loadData()            () -> None
+        - loadCameraDetails     () -> None
         - loadPersons           () -> None
         - loadClasses           () -> None
         - loadModel             () -> None
@@ -39,15 +47,24 @@ class Detection:
         - update                () -> None
     """
 
+    persons_info: Person = []
+    names: list = []
+    model = None
+    isDetecting = True
+    isRunning = True
+    interval = 12
+    mqtt_img_size = DEFAULT_MQTT_IMG_SIZE
+    camera_details = {}
+
     # Initialize
     def __init__(self, 
         cfg: ConfigParser,
-        hardware: Hardware=None,
-        db: DatabaseHandler=None,
-        camera: Camera=None, 
-        recognition: Recognition=None, 
-        mqtt_notif: MQTTClient=None,
-        mqtt_set: MQTTClient=None
+        hardware: Hardware = None,
+        db: DatabaseCRUD = None,
+        camera: Camera = None, 
+        recognition: Recognition = None, 
+        mqtt_notif: MQTTClient = None,
+        mqtt_set: MQTTClient = None
     ):
         self.cfg = cfg
         self.hardware = hardware
@@ -57,57 +74,58 @@ class Detection:
         self.mqtt_notif = mqtt_notif
         self.mqtt_set = mqtt_set
         self.mqtt_set.client.on_message = self.onClientSet
-        self.persons_info: Person = []
-        self.names: list = []
-        self.model = None
-        self.isDetecting = True
         self.device = select_device(self.cfg.get("yolor", "device"))
         cudnn.benchmark = True
-        if self.db is not None:
-            self.loadPersons()
-        self.loadPreferences()
-        self.loadColors()
-        self.loadClasses()
-        self.loadModel()
-        self.isRunning = True
-        self.interval = 12
-        self.mqtt_img_resolution = {"width": 240, "height": 240}
-        self.camera_details = {
-            "name": self.cfg.get("camera", "name"),
-            "description": self.cfg.get("camera", "description"),
-            "ip_address": getIPAddress()
-        }
-        self.updateThread = threading.Thread(target=self.update)
+        self.loadData()
         
     def start(self):
         """
         Starts the detection thread. It will not start if one or more required arguments are missing.
         """
-        if self.camera is not None and self.recognition is not None and self.mqtt_notif is not None and self.mqtt_set is not None: 
+        if self.camera is not None and self.recognition is not None and self.mqtt_notif is not None and self.mqtt_set is not None:
+            self.updateThread = threading.Thread(target=self.update)
             self.updateThread.start()
         else:
             print("Missing arguments (camera, recognition, mqtt_notif). Abort")
 
     def onClientSet(self, client, userdata, msg):
-        self.hardware.ledControl.setColor(False, True, True)
-        self.hardware.buzzerControl.play(1, 0.05, 0.05)
-        self.hardware.ledControl.setColor(False, False, False)
+        self.hardware.setColorRGB(False, True, True)
+        self.hardware.playBuzzer(1, 0.05, 0.05)
+        self.hardware.setColorRGB(False, False, False)
         payload = msg.payload.decode()
-        data = json.loads(payload)
-        if "ppe_preferences" in data:
-            self.ppe_preferences = {class_name.replace("_", " "): status for class_name, status in data["ppe_preferences"].items()}
-            print(self.ppe_preferences)
-        if "detection_interval" in data:
-            self.interval = data["detection_interval"]
-        if "mqtt_img_resolution" in data:
-            self.mqtt_img_resolution = data["mqtt_img_resolution"]
+        try:
+            data = json.loads(payload)
+            if "ppe_preferences" in data:
+                self.ppe_preferences = {class_name.replace("_", " "): status for class_name, status in data["ppe_preferences"].items()}
+                print(self.ppe_preferences)
+            if "detection_interval" in data:
+                self.interval = data["detection_interval"]
+            if "mqtt_img_resolution" in data:
+                self.mqtt_img_size[0] = data["mqtt_img_resolution"]["width"]
+                self.mqtt_img_size[1] = data["mqtt_img_resolution"]["height"]
+        except Exception as e:
+            print(f"MQTT Client Error: {e}")
+
+    def loadData(self):
+        if self.db is not None:
+            self.loadPersons()
+        self.loadCameraDetails()
+        self.loadPreferences()
+        self.loadColors()
+        self.loadClasses()
+        self.loadModel()
+
+    def loadCameraDetails(self):
+        self.camera_details["name"] = self.cfg.get("camera", "name"),
+        self.camera_details["description"] = self.cfg.get("camera", "description"),
+        self.camera_details["ip_address"] = getIPAddress()
 
     def loadPersons(self):
         """
         Loads all persons inserted in the database
         """
         string = "Load Persons:\n"
-        self.persons_info = loadPersons(self.db)
+        self.persons_info = self.db.loadPersons()
         for person in self.persons_info:
             string += f"\t[LOADED] {person} {self.persons_info[person]['first_name']}\n"
         print(string, end="")
@@ -117,7 +135,7 @@ class Detection:
         Loads predefined colors for each class names
         """
         string = "Load Colors:\n"
-        self.colors = list(Color)
+        self.colors = list(BGRColor)
         for color in [(color.name, color.value) for color in self.colors]:
             string += f"\t[LOADED] {color[0]} {color[1]}\n"
         print(string, end="")
@@ -152,7 +170,7 @@ class Detection:
         for ppe_item, status in self.ppe_preferences.items():
             print(f"\t[LOADED] '{ppe_item}': {status}")
     
-    def plotBox(self, image: np.ndarray, coordinates: Box, color: Color, label: str):
+    def plotBox(self, image: np.ndarray, coordinates: Box, color: BGRColor, label: str):
         """
         Plot bounding boxes and labels in the image.
         """
@@ -218,8 +236,7 @@ class Detection:
         violations = [violation["class_name"] for violation in violations]
         for person in persons:
             if len(person) > 0:
-                insertViolator(
-                    self.db,
+                self.insertViolator(
                     person_id=person["person_id"],
                     coordinates="(0,0,0,0)",
                     detectedppeclasses=violations,
@@ -281,7 +298,7 @@ class Detection:
             recognized_persons.append(person_info)
 
         # Resize image to be published from mqtt client
-        image_plots = cv2.resize(image_plots, (self.mqtt_img_resolution["width"], self.mqtt_img_resolution["height"]), interpolation=cv2.INTER_AREA)
+        image_plots = cv2.resize(image_plots, (self.mqtt_img_size[0], self.mqtt_img_size[1]), interpolation=cv2.INTER_AREA)
         
         total_violations = 0
 
@@ -352,8 +369,8 @@ class Detection:
                     time.sleep(0.03)
                     continue
                 if processed_frame is not None:
-                    self.hardware.ledControl.setColor(True, False, True)
-                    self.hardware.buzzerControl.play(1, 0.1, 0.1)
+                    self.hardware.setColorRGB(True, False, True)
+                    self.hardware.playBuzzer(1, 0.1, 0.1)
                     violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, original_frame)
                     print(f"Overall process time: {violations_time:.2f}")
                     to_print = {
@@ -366,5 +383,5 @@ class Detection:
                     print(json.dumps(to_print, indent=4, sort_keys=True))
                     payload = json.dumps(violations_result)
                     self.mqtt_notif.publish(payload=payload)
-                    self.hardware.ledControl.setColor(False, False, False)
+                    self.hardware.setColorRGB(False, False, False)
             time.sleep(0.03)

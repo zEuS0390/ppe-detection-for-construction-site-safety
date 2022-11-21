@@ -31,7 +31,7 @@ class MQTTClient:
                 break
             except Exception as e:
                 print(f"{e}")
-            time.sleep(0.03)
+            time.sleep(1)
         self.client.loop_start()
 
     def stop(self):

@@ -1,5 +1,8 @@
 from enum import Enum
 
+APP_CFG_FILE = "./cfg/app.cfg"
+DEFAULT_MQTT_IMG_SIZE = [640, 480]
+
 class Class(Enum):
     HELMET = 0
     NO_HELMET = 1
@@ -13,7 +16,7 @@ class Class(Enum):
     NO_BOOTS = 9
     PERSON = 10
 
-class Color(Enum):
+class BGRColor(Enum):
     """
     Color in BGR format
     """
@@ -29,3 +32,16 @@ class Color(Enum):
     MAGENTA = (255, 0, 255)             # 9
     ROSE = (127, 0, 255)                # 10
     BISQUE = (242, 210, 189)            # 11
+
+class RGBColor(Enum):
+    """
+    Color in RGB format
+    """
+    RED  = (255, 0, 0)
+    GREEN = (0, 255, 0)
+    BLUE = (0, 0, 255)
+    WHITE = (255, 255, 255)
+    NONE = (0, 0, 0)
+    YELLOW = (255, 255, 0)
+    CYAN = (0, 255, 255)
+    PURPLE = (255, 0, 255)

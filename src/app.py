@@ -1,55 +1,44 @@
-from src.db.database import DatabaseHandler
-from src.db.crud import *
-from src.db.tables import *
-from sqlalchemy import select
+from src.db.crud import DatabaseCRUD
 from src.client import MQTTClient
 from src.detection import Detection
 from src.utils import getLatestFiles, getRecognitionData
 from src.recognition import Recognition
 from src.camera import Camera
 from src.hardware import Hardware
-import os, glob, configparser, time
+from src.constants import APP_CFG_FILE, RGBColor
+import configparser, time
 
 class Application:
 
     @staticmethod
     def main():
-       
+
         # Load app configuration file
         cfg = configparser.ConfigParser()
-        cfg.read("./cfg/app.cfg")
-
-        hardware = Hardware(cfg)
-
-        hardware.ledControl.setColor(False, False, True)
-
-        getLatestFiles(cfg_name="face_recognition", target_names=["face_recognition", "detection"])
-        recognition = getRecognitionData(cfg)
-
-        hardware.ledControl.setColor(True, True, False)
-        hardware.buzzerControl.play(1, 0.05, 0.05)
+        cfg.read(APP_CFG_FILE)
 
         # Instantiate objects
-        database = DatabaseHandler(cfg=cfg)
-        insertPersons(database, recognition["info"])
-        insertPPEClasses(database, cfg.get("yolor","classes"))
+        hardware = Hardware(cfg)
 
+        hardware.setColorRGB(*RGBColor.YELLOW.value)
+        hardware.playBuzzer(1, 0.05, 0.05)
+
+        dbHandler = DatabaseCRUD(cfg)
+        camera = Camera(cfg)
+        recognition = Recognition(cfg)
         mqtt_notif = MQTTClient("notif")
         mqtt_set = MQTTClient("set")
-        recognition = Recognition(cfg)
-        camera = Camera(cfg)
-        detection = Detection(
-            cfg=cfg, 
-            hardware=hardware,
-            db=database, 
-            camera=camera, 
-            recognition=recognition, 
-            mqtt_notif=mqtt_notif, 
-            mqtt_set=mqtt_set
-        )
 
-        hardware.ledControl.setColor(False, False, False)
-        hardware.buzzerControl.play(1, 0.05, 0.05)
+        hardware.setColorRGB(*RGBColor.BLUE.value)
+        hardware.playBuzzer(1, 0.05, 0.05)
+
+        getLatestFiles("face_recognition", ["face_recognition", "detection"])
+        dbHandler.insertPersons(getRecognitionData(cfg)["info"])
+        dbHandler.insertPPEClasses(cfg.get("yolor","classes"))
+
+        detection = Detection(
+            cfg, hardware, dbHandler, camera, recognition, mqtt_notif, mqtt_set
+        )
 
         # Start threads
         mqtt_notif.start()
@@ -57,12 +46,16 @@ class Application:
         camera.start()
         detection.start()
 
+        hardware.setColorRGB(*RGBColor.NONE.value)
+        hardware.playBuzzer(1, 0.05, 0.05)
+
         try:
             while True: time.sleep(1)
         except KeyboardInterrupt:
             detection.isRunning = False
             camera.isRunning = False
+        
+        hardware.setColorRGB(*RGBColor.RED.value)
+        hardware.playBuzzer(5, 0.05, 0.05)
+        hardware.setColorRGB(*RGBColor.NONE.value)
 
-        hardware.ledControl.setColor(True, False, False)
-        hardware.buzzerControl.play(5, 0.05, 0.05)
-        hardware.ledControl.setColor(False, False, False)

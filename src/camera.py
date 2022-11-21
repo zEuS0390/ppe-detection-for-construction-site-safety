@@ -34,13 +34,13 @@ class Camera:
             except Exception as e:
                 print(f"{e}")
             time.sleep(1)
-        self.updateThread = Thread(target=self.update)    
         self.isRunning = True
         self.det = []
         self.q = Queue()
         self.q.put(self.cap.read()[1])
 
     def start(self):
+        self.updateThread = Thread(target=self.update)
         self.updateThread.start()
 
     def update(self):
