@@ -244,6 +244,7 @@ class Detection:
                     commit=False
                 )
         self.db.n_operations += 1
+        # Perform commit when n_operations value reaches 5
         if self.db.n_operations >= 5:
             print("Committing database operations...")
             self.db.n_operations = 0
