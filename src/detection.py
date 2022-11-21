@@ -236,12 +236,19 @@ class Detection:
         violations = [violation["class_name"] for violation in violations]
         for person in persons:
             if len(person) > 0:
-                self.insertViolator(
+                self.db.insertViolator(
                     person_id=person["person_id"],
                     coordinates="(0,0,0,0)",
                     detectedppeclasses=violations,
-                    verbose=True
+                    verbose=True,
+                    commit=False
                 )
+        self.db.n_operations += 1
+        if self.db.n_operations >= 5:
+            print("Committing database operations...")
+            self.db.n_operations = 0
+            self.db.session.commit()
+            self.db.session.close()
 
     def checkOverlaps(self, bbox: Box, bboxes: list):
         overlaps = []
@@ -338,9 +345,9 @@ class Detection:
             violators.append(violator)
 
             # Save violations of person/s to the database
-            # if self.db is not None:
-            #     _, save_time = getElapsedTime(self.saveViolations, violator["persons"], violator["violations"])
-            #     string += f"Saving violations time: {save_time:.2f}\n"
+            if self.db is not None:
+                _, save_time = getElapsedTime(self.saveViolations, violator["person_info"], violator["violations"])
+                string += f"Saving violations time: {save_time:.2f}\n"
 
         message["camera"] = self.camera_details
         message["image"] = imageToBinary(image_plots)

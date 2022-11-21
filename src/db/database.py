@@ -19,6 +19,7 @@ class DatabaseHandler:
             self.dbname = "sqlite:///data/appdb.sqlite"
         self.engine = create_engine(
             url=self.dbname, 
+            connect_args={"check_same_thread": False},
             echo=echo, 
             future=True
         )
@@ -26,3 +27,4 @@ class DatabaseHandler:
         session_factory = sessionmaker(autoflush=True, autocommit=False, bind=self.engine)
         scoped = scoped_session(session_factory)
         self.session = scoped()
+        self.n_operations = 0 # Number of SQL operations to track before committing them
