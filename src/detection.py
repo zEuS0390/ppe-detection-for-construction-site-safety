@@ -235,7 +235,7 @@ class Detection:
         """
         violations = [violation["class_name"] for violation in violations]
         for person in persons:
-            if len(person) > 0:
+            if len(person) > 1:
                 self.db.insertViolator(
                     person_id=person["person_id"],
                     coordinates="(0,0,0,0)",
