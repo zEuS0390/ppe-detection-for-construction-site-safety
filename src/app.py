@@ -20,21 +20,22 @@ class Application:
         # Instantiate objects
         hardware = Hardware(cfg)
 
+        hardware.setColorRGB(*RGBColor.BLUE.value)
+        hardware.playBuzzer(1, 0.05, 0.05)
+
+        getLatestFiles("data", ["face_recognition", "detection"])
+
         hardware.setColorRGB(*RGBColor.YELLOW.value)
         hardware.playBuzzer(1, 0.05, 0.05)
 
         dbHandler = DatabaseCRUD(cfg)
+        dbHandler.insertPersons(getRecognitionData(cfg)["info"])
+        dbHandler.insertPPEClasses(cfg.get("yolor","classes"))
+
         camera = Camera(cfg)
         recognition = Recognition(cfg)
         mqtt_notif = MQTTClient("notif")
         mqtt_set = MQTTClient("set")
-
-        hardware.setColorRGB(*RGBColor.BLUE.value)
-        hardware.playBuzzer(1, 0.05, 0.05)
-
-        getLatestFiles("face_recognition", ["face_recognition", "detection"])
-        dbHandler.insertPersons(getRecognitionData(cfg)["info"])
-        dbHandler.insertPPEClasses(cfg.get("yolor","classes"))
 
         detection = Detection(
             cfg, hardware, dbHandler, camera, recognition, mqtt_notif, mqtt_set
