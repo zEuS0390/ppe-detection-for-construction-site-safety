@@ -110,7 +110,8 @@ class Detection:
         if self.db is not None:
             self.loadPersons()
         self.loadCameraDetails()
-        self.loadPreferences()
+        self.loadDetectionCFG()
+        # self.loadPreferences()
         self.loadColors()
         self.loadClasses()
         self.loadModel()
@@ -163,13 +164,15 @@ class Detection:
         else:
             raise Exception("No weights found")
 
-    def loadPreferences(self):
-        preferences_cfg = parsePlainConfig(f"cfg/detection/filter.cfg")
-        self.ppe_preferences = {class_name.replace("_", " "): True if status == 'on' else False for class_name, status in preferences_cfg.items()}
-        print("Load PPE Preferences:")
+    def loadDetectionCFG(self):
+        detection_cfg = ConfigParser()
+        detection_cfg.read("cfg/detection/config.cfg")
+        self.ppe_preferences = {key.replace("_", " "): detection_cfg.getboolean("ppe_preferences", key) for key, _ in detection_cfg.items("ppe_preferences")}
+
+        self.publish_if_violators_exist = detection_cfg.getboolean("mqtt", "publish_if_violators_exist")
         for ppe_item, status in self.ppe_preferences.items():
             print(f"\t[LOADED] '{ppe_item}': {status}")
-    
+
     def plotBox(self, image: np.ndarray, coordinates: Box, color: BGRColor, label: str):
         """
         Plot bounding boxes and labels in the image.
@@ -279,13 +282,6 @@ class Detection:
         persons = detection_result[0]
         ppe = detection_result[1]
 
-        # Plot boxes of the detected objects
-        for obj in persons+ppe:
-            confidence = obj['confidence']
-            class_name = obj["class_name"]
-            label = f"{class_name} {confidence:.2f}"
-            self.plotBox(image_plots, obj["coordinate"], self.colors[self.names.index(class_name)], label)
-
         # Check overlaps of each detected ppe item
         for ppe_item in ppe:
             overlaps = self.checkOverlaps(ppe_item["coordinate"], persons)
@@ -309,6 +305,7 @@ class Detection:
         image_plots = cv2.resize(image_plots, (self.mqtt_img_size[0], self.mqtt_img_size[1]), interpolation=cv2.INTER_AREA)
         
         total_violations = 0
+        class_bbox_drawn = []
 
         # Evaluate violations of each person
         violators = []
@@ -325,6 +322,15 @@ class Detection:
                 confidence = round(ppe_item["confidence"], 4)
                 class_name = ppe_item["class_name"]
                 if id in ppe_item["overlaps"]:
+
+                    # Draw PPE if not drawn yet
+                    if ppe_item["id"] not in class_bbox_drawn:
+                        label = f"{class_name} {confidence:.2f}"
+                        class_bbox_drawn.append(ppe_item["id"])
+                        try:
+                            self.plotBox(image_plots, ppe_item["coordinate"], self.colors[self.names.index(ppe_item["class_name"])], label)
+                        except:
+                            pass
 
                     # Do not include ppe_items that have multiple overlaps
                     if len(ppe_item["overlaps"]) == 1:
@@ -382,14 +388,22 @@ class Detection:
                     violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, original_frame)
                     print(f"Overall process time: {violations_time:.2f}")
                     to_print = {
-                        "camera": violations_result["camera"],
-                        "total_violators": violations_result["total_violators"],
-                        "total_violations": violations_result["total_violations"],
-                        "violators": violations_result["violators"],
-                        "timestamp": violations_result["timestamp"]
-                    }
-                    print(json.dumps(to_print, indent=4, sort_keys=True))
-                    payload = json.dumps(violations_result)
-                    self.mqtt_notif.publish(payload=payload)
+                            "camera": violations_result["camera"],
+                            "total_violators": violations_result["total_violators"],
+                            "total_violations": violations_result["total_violations"],
+                            "violators": violations_result["violators"],
+                            "timestamp": violations_result["timestamp"]
+                        }
+                    if self.publish_if_violators_exist == True:
+                        if violations_result["total_violators"] > 0:
+                            print(json.dumps(to_print, indent=4, sort_keys=True))
+                            payload = json.dumps(violations_result)
+                            self.mqtt_notif.publish(payload=payload)
+                    else:
+                        print(json.dumps(to_print, indent=4, sort_keys=True))
+                        payload = json.dumps(violations_result)
+                        self.mqtt_notif.publish(payload=payload)
+
+
                     self.hardware.setColorRGB(False, False, False)
             time.sleep(0.03)
