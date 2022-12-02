@@ -110,6 +110,9 @@ def getLatestFiles(cfg_name, target_names: list):
     except socket.timeout as e:
         print(f"{e}\nCheck if SSH server is online.")
         return
+    except OSError as e:
+        print(f"{e}")
+        return
 
     sftp_client = ssh_client.open_sftp()
     files = []

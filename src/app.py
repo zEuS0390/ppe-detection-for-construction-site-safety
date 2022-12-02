@@ -36,7 +36,7 @@ class Application:
         recognition = Recognition(cfg)
         mqtt_notif = MQTTClient("notif")
         mqtt_set = MQTTClient("set")
-
+        
         detection = Detection(
             cfg, hardware, dbHandler, camera, recognition, mqtt_notif, mqtt_set
         )
