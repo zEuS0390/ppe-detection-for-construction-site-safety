@@ -361,7 +361,7 @@ class Detection:
         message["total_violators"] = len(violators)
         message["total_violations"] = total_violations
         message["violators"] = violators
-        message["timestamp"] = datetime.now().strftime(r"%m/%d/%y %H:%M:%S")
+        message["timestamp"] = datetime.now().strftime(r"%y-%m-%d %H:%M:%S")
         
         print(string, end="")
         return message
