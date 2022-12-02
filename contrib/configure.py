@@ -1,8 +1,11 @@
 from configparser import ConfigParser
+from getpass import getpass
 import os
 
 APP_CFG_FILENAME = "cfg/app.cfg"
 DETECTION_CFG_FILENAME = "cfg/detection/config.cfg"
+MQTT_CLIENT_NOTIF_FILENAME = "cfg/client/mqtt/notif.cfg"
+MQTT_CLIENT_SET_FILENAME = "cfg/client/mqtt/set.cfg"
 
 app_cfg = ConfigParser()
 app_cfg.read(APP_CFG_FILENAME)
@@ -25,6 +28,28 @@ def parsePlainConfig(filepath: str):
                 value = line[separator_index+1:].strip()
                 cfg[key] = value
             return cfg
+    except Exception as e:
+        raise e
+
+def setPlainConfig(filepath, target_key, new_value):
+    if not os.path.exists(filepath):
+        raise Exception(f"'{filepath}' does not exist.")
+    try:
+        cfg = {}
+        with open(filepath, "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                separator_index = line.find(":")
+                key = line[:separator_index]
+                value = line[separator_index+1:].strip()
+                cfg[key] = value
+        if target_key in cfg:
+            cfg[target_key] = new_value
+            with open(filepath, "w") as file:
+                content = ""
+                for key, value in cfg.items():
+                    content += ": ".join([key, value]) + "\n"
+                file.write(content)
     except Exception as e:
         raise e
 
@@ -103,7 +128,35 @@ class Configure:
         self.selectOption()
 
     def configureMQTTConnection(self):
-        pass
+        clear()
+        def setClientName():
+            client_name = input("Enter client name: ")
+            client_name.replace(" ", "-")
+            setPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "client_id_name", client_name+"-notif")
+            setPlainConfig(MQTT_CLIENT_SET_FILENAME, "client_id_name", client_name+"-set")
+            setPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "topic_name", client_name+"/notif")
+            setPlainConfig(MQTT_CLIENT_SET_FILENAME, "topic_name", client_name+"/set")
+        def setHostName():
+            ipaddr = input("Enter hostname: ")
+            setPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "broker_ip", ipaddr)
+            setPlainConfig(MQTT_CLIENT_SET_FILENAME, "broker_ip", ipaddr)
+        def setUserName():
+            username = input("Enter user name: ")
+            setPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "username", username)
+            setPlainConfig(MQTT_CLIENT_SET_FILENAME, "username", username)
+        def setPassword():
+            password = getpass("Enter password: ")
+            setPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "password", password)
+            setPlainConfig(MQTT_CLIENT_SET_FILENAME, "password", password)
+        options = [
+            ("client name", setClientName),
+            ("hostname", setHostName),
+            ("username", setUserName),
+            ("password", setPassword)
+        ]
+        self.displayOptions("MQTT Connection", options)
+        self.executeSelectedOption(options)
+        self.selectOption()
 
     def configureSFTPConnection(self):
         pass
