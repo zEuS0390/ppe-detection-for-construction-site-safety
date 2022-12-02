@@ -32,7 +32,7 @@ class Application:
         hardware.setColorRGB(*RGBColor.BLUE.value)
         hardware.playBuzzer(1, 0.05, 0.05)
 
-        getLatestFiles("face_recognition", ["face_recognition", "detection"])
+        getLatestFiles("data", ["face_recognition", "detection"])
         dbHandler.insertPersons(getRecognitionData(cfg)["info"])
         dbHandler.insertPPEClasses(cfg.get("yolor","classes"))
 
