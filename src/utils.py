@@ -1,5 +1,4 @@
-import cv2, base64, os, glob, time, subprocess, paramiko,socket
-from csv import DictReader
+import cv2, base64, os, time, subprocess, paramiko, socket
 
 def imageToBinary(image):
     """
