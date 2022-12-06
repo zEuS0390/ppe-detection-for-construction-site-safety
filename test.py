@@ -1,5 +1,5 @@
 import unittest, configparser, os
-from src.db.tables import Person, Violator
+from src.db.tables import Person, Violator, ViolationDetails
 from src.db.crud import DatabaseCRUD
 from sqlalchemy import func
 from faker import Faker
@@ -32,14 +32,16 @@ class TestConfigFiles(unittest.TestCase):
 # Test Database CRUD Functions
 class TestDatabaseCRUD(unittest.TestCase):
 
+    cfg = configparser.ConfigParser()
+    db = DatabaseCRUD(db_URL=f"sqlite:///{DB_FILE}")
+    faker = Faker()
+
     def setUp(self):
-        self.cfg = configparser.ConfigParser()
         self.cfg.read(CONFIG_FILE)
-        self.db = DatabaseCRUD(db_URL=f"sqlite:///{DB_FILE}")
-        self.faker = Faker()
 
     @classmethod
     def tearDownClass(cls):
+        cls.db.session.close()
         os.remove(PERSONS_FILE)
         os.remove(DB_FILE)
 
@@ -64,31 +66,40 @@ class TestDatabaseCRUD(unittest.TestCase):
         self.db.insertPersons(PERSONS_FILE)
 
     def test_step_2_insert_violator(self):
+
+        # Create violation details
+        violationdetails = ViolationDetails()
+        self.db.session.add(violationdetails)
+        self.db.session.flush()
+        violationdetails_id = violationdetails.id
+        self.db.session.commit()
+        self.db.session.close()
+
         # Insert violator entry with the correct inputs
         person_id = int("1")
         detected = ["no helmet", "no glasses", "no gloves", "no boots"]
-        result = self.db.insertViolator(person_id, "(0, 0, 100, 400)", detected)
+        result = self.db.insertViolator(violationdetails_id, person_id, "(0, 0, 100, 400)", detected)
         self.assertTrue(result)
 
         # Insert violator entry with the same name (NOTE: This case is possible when there are multiple recognized faces)
-        person_id = int("1")
+        person_id = int("4")
         detected = ["no helmet", "no glasses", "no gloves", "no boots"]
-        result = self.db.insertViolator(person_id, "(0, 0, 100, 400)", detected)
+        result = self.db.insertViolator(violationdetails_id, person_id, "(0, 0, 100, 400)", detected)
         self.assertTrue(result)
 
-        # Check the number of rows in the Violator. The result should be 2, because insertion is performed twice
+        # # Check the number of rows in the Violator. The result should be 2, because insertion is performed twice
         count = self.db.session.query(func.count(Violator.id)).scalar()
         self.assertEqual(count, 2)
 
-        # The person of violator should obtain the selected person_id 
+        # # The person of violator should obtain the selected person_id 
         person_id = "1"
         person = self.db.session.query(Person).join(Violator).filter(Person.person_id==person_id).first()
         self.assertIsInstance(person, Person)
-        
+
         # Insert violator entry with non existing person_id and unknown ppe classes
         person_id = "-1"
         detected = ["no helmet", "pencil", "cap"]
-        result = self.db.insertViolator(person_id, "(0, 0, 100, 400)", detected)
+        result = self.db.insertViolator(violationdetails_id, person_id, "(0, 0, 100, 400)", detected)
         self.assertFalse(result)
 
     def test_step_3_update_person(self):
@@ -112,8 +123,14 @@ class TestDatabaseCRUD(unittest.TestCase):
         result = self.db.deleteViolator("1")
         self.assertTrue(result)
 
+        result = self.db.deleteViolator("4")
+        self.assertTrue(result)
+
         # Delete the same violator once again
         result = self.db.deleteViolator("1")
+        self.assertFalse(result)
+
+        result = self.db.deleteViolator("4")
         self.assertFalse(result)
 
         count = self.db.session.query(func.count(Violator.id)).scalar()

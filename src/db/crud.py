@@ -3,7 +3,8 @@ from .tables import (
     PPEClass, 
     Violator, 
     DetectedPPEClass,
-    Person
+    Person,
+    ViolationDetails
 )
 import csv
 
@@ -84,12 +85,14 @@ class DatabaseCRUD(DatabaseHandler):
             return True
         return False
 
-    def insertViolator(self, person_id: int, coordinates: str, detectedppeclasses: list, verbose=False, commit=True):
+    def insertViolator(self, violationdetails_id: int, person_id: int, coordinates: str, detectedppeclasses: list, verbose=False, commit=True):
+        violationdetails = self.session.query(ViolationDetails).filter_by(id=violationdetails_id).first()
         person = self.session.query(Person).filter_by(person_id=person_id).first()
-        if person is not None:
+        if person is not None and violationdetails is not None:
             violator = Violator()
             violator.person = person
             violator.coordinates = coordinates
+            violator.violationdetails = violationdetails
             for ppeclass_name in detectedppeclasses:
                 ppeclass = self.session.query(PPEClass).filter_by(name=ppeclass_name).first()
                 if ppeclass is not None:
