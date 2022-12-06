@@ -4,6 +4,8 @@ virtualenv .venv/
 
 . .venv/bin/activate && pip install -r requirements.txt
 
+# ----------------------------------------------
+
 # Clone YOLOR repository
 git clone "https://github.com/WongKinYiu/yolor.git"
 rm -rf "./yolor/.git"
@@ -47,5 +49,11 @@ sed -i "19s/from *utils./from yolor.utils./1" "./yolor/utils/plots.py"
 echo "19s/from *utils./from yolor.utils./1 > ./yolor/utils/plots.py"
 sed -i "20s/from *utils./from yolor.utils./1" "./yolor/utils/plots.py"
 echo "20s/from *utils./from yolor.utils./1 > ./yolor/utils/plots.py"
+
+# ----------------------------------------------
+
+cp "cfg/client/mqtt/sample.cfg" "cfg/client/mqtt/notif.cfg"
+cp "cfg/client/mqtt/sample.cfg" "cfg/client/mqtt/set.cfg"
+cp "cfg/client/sftp/sample.cfg" "cfg/client/sftp/data.cfg"
 
 # read -p "Press enter to exit..."
