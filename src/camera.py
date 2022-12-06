@@ -1,6 +1,7 @@
 from yolor.utils.datasets import letterbox
 from configparser import ConfigParser
 from threading import Thread
+from datetime import datetime
 from queue import Queue
 import numpy as np
 import cv2, time
@@ -15,6 +16,7 @@ class Camera:
         self.cfg = cfg
         self.device: str = cfg.get("camera", "device")
         self.rtsp_enabled = self.cfg.getboolean("camera", "rtsp_enabled")
+        self.record_enabled = self.cfg.getboolean("camera", "record_enabled")
         while True:
             try:
                 if self.device.isdigit():
@@ -34,6 +36,12 @@ class Camera:
             except Exception as e:
                 print(f"{e}")
             time.sleep(1)
+        if self.record_enabled == True:
+            fps = 20
+            frame_size = (640, 480)
+            date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
+            self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            self.writer = cv2.VideoWriter(f"data/recordings/recording_{date_and_time}.mp4", self.fourcc, fps, frame_size)
         self.isRunning = True
         self.det = []
         self.q = Queue()
@@ -53,7 +61,11 @@ class Camera:
                 self.q.put(read_frame)
             else:
                 self.frame = read_frame
+            if self.record_enabled:
+                self.writer.write(read_frame)
             time.sleep(0.03)
+        self.cap.release()
+        self.writer.release()
 
     def getFrame(self):
         """
