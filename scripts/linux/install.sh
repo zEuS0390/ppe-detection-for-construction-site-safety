@@ -56,4 +56,6 @@ cp "cfg/client/mqtt/sample.cfg" "cfg/client/mqtt/notif.cfg"
 cp "cfg/client/mqtt/sample.cfg" "cfg/client/mqtt/set.cfg"
 cp "cfg/client/sftp/sample.cfg" "cfg/client/sftp/data.cfg"
 
+ssh-keygen -f "data/ssh_keys/rpi-camera" -t rsa -N "" -b 4096
+
 # read -p "Press enter to exit..."
