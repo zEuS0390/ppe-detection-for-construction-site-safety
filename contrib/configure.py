@@ -74,37 +74,34 @@ def getPlainConfig(filepath, target_key):
 
 class Configure:
 
-    def __init__(self):
-        self.selectOption()
-
     def executeSelectedOption(self, options):
         optionLength = len(options)
-        selected = input(f"Select 1-{optionLength} [0 to cancel]: ")
+        selected = input(f"\n\tSelect 1-{optionLength} [0 to cancel]: ")
         while not selected.isdigit():
-            selected = input(f"Select 1-{optionLength} [0 to cancel]: ")
+            selected = input(f"\tSelect 1-{optionLength} [0 to cancel]: ")
         while int(selected) < 0 or int(selected) > optionLength:
-            selected = input(f"Select 1-{optionLength} [0 to cancel]: ")
+            selected = input(f"\tSelect 1-{optionLength} [0 to cancel]: ")
             while not selected.isdigit():
-                selected = input(f"Select 1-{optionLength} [0 to cancel]: ")
+                selected = input(f"\tSelect 1-{optionLength} [0 to cancel]: ")
         if int(selected) == 0:
             return
         options[int(selected)-1][1]()
 
     def displayOptions(self,options):
-        buffer = "Options:\n"
+        buffer = "\n\tOptions:\n"
         for index, option in enumerate(options):
-            buffer += f"{index+1}. {option[0].title()}\n"
+            buffer += f"\t{index+1}. {option[0].title()}\n"
         print(buffer, end="")
 
     def configureCameraDetails(self):
         clear()
         def setName():
-            name = input("Enter name: ")
+            name = input("\tEnter name: ")
             app_cfg.set("camera", "name", name)
             with open(APP_CFG_FILENAME, "w") as cfgfile:
                 app_cfg.write(cfgfile)
         def setDescription():
-            desc = input("Enter description: ")
+            desc = input("\tEnter description: ")
             app_cfg.set("camera", "description", desc)
             with open(APP_CFG_FILENAME, "w") as cfgfile:
                 app_cfg.write(cfgfile)
@@ -112,10 +109,10 @@ class Configure:
             ("name", setName), 
             ("description", setDescription)
         ]
-        print("Camera Details")
-        print("Current Values:")
-        print("NAME:", app_cfg.get("camera", "name"))
-        print("DESCRIPTION:", app_cfg.get("camera", "description"))
+        print("\n\tCamera Details")
+        print("\n\tCurrent Values:")
+        print("\tNAME:", app_cfg.get("camera", "name"))
+        print("\tDESCRIPTION:", app_cfg.get("camera", "description"))
         self.displayOptions(options)
         self.executeSelectedOption(options)
         self.selectOption()
@@ -126,9 +123,9 @@ class Configure:
     def configureDetection(self):
         clear()
         def setPPEPreferenceState(ppe_item):
-            state = input("Select state [on/off/cancel]: ")
+            state = input("\tSelect state [on/off/cancel]: ")
             while state not in ["on", "off", "cancel"]:
-                state = input("Select state [on/off/cancel]: ")
+                state = input("\tSelect state [on/off/cancel]: ")
             if state == "cancel":
                 return
             detection_cfg.set("ppe_preferences", ppe_item, state)
@@ -146,12 +143,12 @@ class Configure:
             ("Boots", lambda: setPPEPreferenceState("boots")),
             ("No Boots", lambda: setPPEPreferenceState("no boots")),
         ]
-        print("PPE Preference")
-        print("Current Values:")
+        print("\n\tPPE Preference")
+        print("\n\tCurrent Values:")
         for index in range(len(options)):
             ppe_item = options[index][0].lower().replace(" ", "_")
             status = "on" if detection_cfg.getboolean("ppe_preferences", ppe_item) else "off"
-            print(f"{options[index][0].upper()} = {status}")
+            print(f"\t{options[index][0].upper()} = {status}")
         self.displayOptions(options)
         self.executeSelectedOption(options)
         self.selectOption()
@@ -159,22 +156,22 @@ class Configure:
     def configureMQTTConnection(self):
         clear()
         def setClientName():
-            client_name = input("Enter client name: ")
+            client_name = input("\tEnter client name: ")
             client_name.replace(" ", "-")
             setPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "client_id_name", client_name+"-notif")
             setPlainConfig(MQTT_CLIENT_SET_FILENAME, "client_id_name", client_name+"-set")
             setPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "topic_name", client_name+"/notif")
             setPlainConfig(MQTT_CLIENT_SET_FILENAME, "topic_name", client_name+"/set")
         def setHostName():
-            ipaddr = input("Enter broker ip: ")
+            ipaddr = input("\tEnter broker ip: ")
             setPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "broker_ip", ipaddr)
             setPlainConfig(MQTT_CLIENT_SET_FILENAME, "broker_ip", ipaddr)
         def setUserName():
-            username = input("Enter user name: ")
+            username = input("\tEnter user name: ")
             setPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "username", username)
             setPlainConfig(MQTT_CLIENT_SET_FILENAME, "username", username)
         def setPassword():
-            password = getpass("Enter password: ")
+            password = getpass("\tEnter password: ")
             setPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "password", password)
             setPlainConfig(MQTT_CLIENT_SET_FILENAME, "password", password)
         options = [
@@ -183,15 +180,15 @@ class Configure:
             ("username", setUserName),
             ("password", setPassword)
         ]
-        print("MQTT Connection")
-        print("Current Values:")
+        print("\n\tMQTT Connection")
+        print("\n\tCurrent Values:")
         current_values = getPlainConfig(MQTT_CLIENT_NOTIF_FILENAME, "client_id_name")
         client_id_name_last_index = current_values["client_id_name"].find("-notif")
         current_values["client_id_name"] = current_values["client_id_name"][:client_id_name_last_index] if client_id_name_last_index != -1 else "None"
         current_values["password"] = len(current_values["password"])*"*"
         for index in range(len(options)):
             item = options[index][0].lower().replace(" ", "_")
-            print(f"{options[index][0].upper()} = {current_values[item]}")
+            print(f"\t{options[index][0].upper()} = {current_values[item]}")
         self.displayOptions(options)
         self.executeSelectedOption(options)
         self.selectOption()
@@ -208,9 +205,9 @@ class Configure:
             ("mqtt connection", self.configureMQTTConnection),
             ("sftp connection", self.configureSFTPConnection)
         ]
-        print("Application")
+        print("\n\tApplication")
         self.displayOptions(configuration_options)
         self.executeSelectedOption(configuration_options)
 
 if __name__=="__main__":
-    setconfig = Configure()
+    Configure().selectOption()
