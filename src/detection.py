@@ -111,7 +111,6 @@ class Detection:
             self.loadPersons()
         self.loadCameraDetails()
         self.loadDetectionCFG()
-        # self.loadPreferences()
         self.loadColors()
         self.loadClasses()
         self.loadModel()
