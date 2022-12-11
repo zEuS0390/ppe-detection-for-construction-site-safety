@@ -59,18 +59,14 @@ class Detection:
     # Initialize
     def __init__(self, 
         cfg: ConfigParser,
-        hardware: Hardware = None,
-        db: DatabaseCRUD = None,
-        camera: Camera = None, 
-        recognition: Recognition = None, 
         mqtt_notif: MQTTClient = None,
         mqtt_set: MQTTClient = None
     ):
         self.cfg = cfg
-        self.hardware = hardware
-        self.db = db
-        self.camera = camera
-        self.recognition = recognition
+        self.hardware = Hardware.getInstance()
+        self.db = DatabaseCRUD.getInstance()
+        self.camera = Camera.getInstance()
+        self.recognition = Recognition.getInstance()
         self.mqtt_notif = mqtt_notif
         self.mqtt_set = mqtt_set
         self.mqtt_set.client.on_message = self.onClientSet

@@ -1,11 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from src.db.tables import mapper_registry
+from src.singleton import Singleton
 from configparser import ConfigParser
 
 # Using SQLAlchemy 2.0
 
-class DatabaseHandler:
+class DatabaseHandler(metaclass=Singleton):
 
     isRunning = True
 

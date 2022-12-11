@@ -38,7 +38,7 @@ class Application:
         mqtt_set = MQTTClient("set")
         
         detection = Detection(
-            cfg, hardware, dbHandler, camera, recognition, mqtt_notif, mqtt_set
+            cfg, mqtt_notif, mqtt_set
         )
 
         # Start threads

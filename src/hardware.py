@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+from src.singleton import Singleton
 try:
     import RPi.GPIO as GPIO
 except ImportError:
@@ -15,7 +16,7 @@ except ImportError:
         def cleanup(*args, **kwargs): ...
 import time
 
-class Hardware:
+class Hardware(metaclass=Singleton):
 
     def __init__(self, cfg: ConfigParser):
         self.isrgbenabled = cfg.getboolean("hardware", "rgb_enabled")

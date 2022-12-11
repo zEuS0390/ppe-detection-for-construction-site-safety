@@ -2,13 +2,14 @@ from yolor.utils.datasets import letterbox
 from configparser import ConfigParser
 from threading import Thread
 from datetime import datetime
+from src.singleton import Singleton
 from queue import Queue
 import numpy as np
 import cv2, time
 import os
 
 # Camera Class
-class Camera:
+class Camera(metaclass=Singleton):
 
     # Initialize
     def __init__(self, cfg: ConfigParser):
