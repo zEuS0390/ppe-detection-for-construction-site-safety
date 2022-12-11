@@ -14,7 +14,7 @@ from src.utils import (
 from src.db.crud import DatabaseCRUD
 from src.client import MQTTClient
 from src.hardware import Hardware
-from src.db.tables import Person
+from src.db.tables import Person, ViolationDetails
 import torch, threading, time
 from src.constants import (
     Class, 
@@ -232,9 +232,19 @@ class Detection:
         Save violations of person/s to the database
         """
         violations = [violation["class_name"] for violation in violations]
+
+        # Create violation details
+        violationdetails = ViolationDetails()
+        self.db.session.add(violationdetails)
+        self.db.session.flush()
+        violationdetails_id = violationdetails.id
+        self.db.session.commit()
+        self.db.session.close()
+
         for person in persons:
             if len(person) > 1:
                 self.db.insertViolator(
+                    violationdetails_id=violationdetails_id,
                     person_id=person["person_id"],
                     coordinates="(0,0,0,0)",
                     detectedppeclasses=violations,
