@@ -63,10 +63,10 @@ class Detection:
         mqtt_set: MQTTClient = None
     ):
         self.cfg = cfg
-        self.hardware = Hardware.getInstance()
-        self.db = DatabaseCRUD.getInstance()
-        self.camera = Camera.getInstance()
-        self.recognition = Recognition.getInstance()
+        self.hardware: Hardware = Hardware.getInstance()
+        self.db: DatabaseCRUD = DatabaseCRUD.getInstance()
+        self.camera: Camera = Camera.getInstance()
+        self.recognition: Recognition = Recognition.getInstance()
         self.mqtt_notif = mqtt_notif
         self.mqtt_set = mqtt_set
         self.mqtt_set.client.on_message = self.onClientSet
