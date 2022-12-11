@@ -12,6 +12,7 @@ from src.utils import (
     getDetectionModel
 )
 from src.db.crud import DatabaseCRUD
+from src.singleton import Singleton
 from src.client import MQTTClient
 from src.hardware import Hardware
 from src.db.tables import Person, ViolationDetails
@@ -27,7 +28,7 @@ import numpy as np
 import json
 import cv2
 
-class Detection:
+class Detection(metaclass=Singleton):
     
     """
     Methods:
