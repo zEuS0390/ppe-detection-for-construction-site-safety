@@ -4,8 +4,8 @@ from src.detection import Detection
 from src.utils import getLatestFiles, getRecognitionData
 from src.recognition import Recognition
 from src.camera import Camera
-from src.hardware import Hardware
-from src.constants import APP_CFG_FILE, RGBColor
+from src.indicator import Indicator
+from src.constants import APP_CFG_FILE
 import configparser, time
 
 class Application:
@@ -18,16 +18,12 @@ class Application:
         cfg.read(APP_CFG_FILE)
 
         # Instantiate objects
-        hardware = Hardware(cfg)
+        indicator = Indicator(cfg)
 
-        hardware.setColorRGB(*RGBColor.BLUE.value)
-        hardware.playBuzzer(1, 0.05, 0.05)
-
+        indicator.info_downloading_files()
         getLatestFiles("data", ["face_recognition", "detection"])
 
-        hardware.setColorRGB(*RGBColor.YELLOW.value)
-        hardware.playBuzzer(1, 0.05, 0.05)
-
+        indicator.info_creating_objects()
         dbHandler = DatabaseCRUD(cfg)
         dbHandler.insertPersons(getRecognitionData(cfg)["info"])
         dbHandler.insertPPEClasses(cfg.get("yolor","classes"))
@@ -47,8 +43,7 @@ class Application:
         camera.start()
         detection.start()
 
-        hardware.setColorRGB(*RGBColor.NONE.value)
-        hardware.playBuzzer(1, 0.05, 0.05)
+        indicator.info_none()
 
         try:
             while True: time.sleep(1)
@@ -56,7 +51,5 @@ class Application:
             detection.isRunning = False
             camera.isRunning = False
         
-        hardware.setColorRGB(*RGBColor.RED.value)
-        hardware.playBuzzer(5, 0.05, 0.05)
-        hardware.setColorRGB(*RGBColor.NONE.value)
+        indicator.info_stopping_application()
 

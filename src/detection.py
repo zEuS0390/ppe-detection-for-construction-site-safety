@@ -14,7 +14,7 @@ from src.utils import (
 from src.db.crud import DatabaseCRUD
 from src.singleton import Singleton
 from src.client import MQTTClient
-from src.hardware import Hardware
+from src.indicator import Indicator
 from src.db.tables import Person, ViolationDetails
 import torch, threading, time
 from src.constants import (
@@ -64,7 +64,7 @@ class Detection(metaclass=Singleton):
         mqtt_set: MQTTClient = None
     ):
         self.cfg = cfg
-        self.hardware: Hardware = Hardware.getInstance()
+        self.indicator: Indicator = Indicator.getInstance()
         self.db: DatabaseCRUD = DatabaseCRUD.getInstance()
         self.camera: Camera = Camera.getInstance()
         self.recognition: Recognition = Recognition.getInstance()
@@ -86,9 +86,8 @@ class Detection(metaclass=Singleton):
             print("Missing arguments (camera, recognition, mqtt_notif). Abort")
 
     def onClientSet(self, client, userdata, msg):
-        self.hardware.setColorRGB(False, True, True)
-        self.hardware.playBuzzer(1, 0.05, 0.05)
-        self.hardware.setColorRGB(False, False, False)
+        self.indicator.info_receiving_msg_mqtt()
+        self.indicator.info_none(buzzer=False)
         payload = msg.payload.decode()
         try:
             data = json.loads(payload)
@@ -389,8 +388,7 @@ class Detection(metaclass=Singleton):
                     time.sleep(0.03)
                     continue
                 if processed_frame is not None:
-                    self.hardware.setColorRGB(True, False, True)
-                    self.hardware.playBuzzer(1, 0.1, 0.1)
+                    self.indicator.info_detecting()
                     violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, original_frame)
                     print(f"Overall process time: {violations_time:.2f}")
                     to_print = {
@@ -409,7 +407,5 @@ class Detection(metaclass=Singleton):
                         print(json.dumps(to_print, indent=4, sort_keys=True))
                         payload = json.dumps(violations_result)
                         self.mqtt_notif.publish(payload=payload)
-
-
-                    self.hardware.setColorRGB(False, False, False)
+                    self.indicator.info_none(buzzer=False)
             time.sleep(0.03)
