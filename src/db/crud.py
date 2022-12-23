@@ -9,6 +9,17 @@ from .tables import (
 import csv
 
 class DatabaseCRUD(DatabaseHandler):
+    
+    """
+    Methods:
+        - insertPPEClasses  (filepath: str)
+        - insertPersons     (filepath: str, verbose=False)
+        - loadPersons       ()
+        - updatePerson      (person_id: int, first_name: str = "", middle_name: str = "", last_name: str = "", job_title: str = "")
+        - deletePerson      (person_id: int)
+        - insertViolator    (violationdetails_id: int, person_id: int, coordinates: str, detectedppeclasses: list, verbose: bool = False, commit: bool = True)
+        - deleteViolator    (person_id: int, commit: bool = True)
+    """
 
     def __init__(self, cfg=None, db_URL=None, echo=False):
         super(DatabaseCRUD, self).__init__(cfg, db_URL, echo)
