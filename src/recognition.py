@@ -7,8 +7,6 @@ from sklearn import neighbors
 
 class Recognition(metaclass=Singleton):
 
-    isRunning = True
-
     def __init__(self, cfg: ConfigParser):
         self.cfg = cfg
         self.load_model()
