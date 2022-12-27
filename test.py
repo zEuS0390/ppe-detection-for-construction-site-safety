@@ -29,7 +29,7 @@ class TestConfigFiles(unittest.TestCase):
         device = self.configparser.get("yolor", "device")
         self.assertEqual(device, "cpu")
 
-# Test Database CRUD Functions
+# Test Local Database CRUD Functions
 class TestDatabaseCRUD(unittest.TestCase):
 
     cfg = configparser.ConfigParser()
