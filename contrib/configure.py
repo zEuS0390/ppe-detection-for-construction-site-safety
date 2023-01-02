@@ -118,7 +118,21 @@ class Configure:
         self.selectOption()
 
     def configureFaceRecognition(self):
-        pass
+        clear()
+        def setModelsDir():
+            modelsdir = input("\tEnter Directory: ")
+            app_cfg.set("face_recognition", "models_dir", modelsdir)
+            with open(APP_CFG_FILENAME, "w") as cfgfile:
+                app_cfg.write(cfgfile)
+        options = [
+            ("Models Directory", setModelsDir)
+        ]
+        print("\n\tFace Recognition")
+        print("\n\tCurrent Values:")
+        print("\tMODELS DIRECTORY:", app_cfg.get("face_recognition", "models_dir"))
+        self.displayOptions(options)
+        self.executeSelectedOption(options)
+        self.selectOption()
 
     def configureDetection(self):
         clear()
