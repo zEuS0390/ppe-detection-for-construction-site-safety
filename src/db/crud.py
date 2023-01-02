@@ -14,7 +14,7 @@ class DatabaseCRUD(DatabaseHandler):
     Methods:
         - insertPPEClasses  (filepath: str)
         - insertPersons     (filepath: str, verbose=False)
-        - loadPersons       ()
+        - getPersons        ()
         - updatePerson      (person_id: int, first_name: str = "", middle_name: str = "", last_name: str = "", job_title: str = "")
         - deletePerson      (person_id: int)
         - insertViolator    (violationdetails_id: int, person_id: int, coordinates: str, detectedppeclasses: list, verbose: bool = False, commit: bool = True)
@@ -65,7 +65,7 @@ class DatabaseCRUD(DatabaseHandler):
         self.session.commit()
         self.session.close()
 
-    def loadPersons(self):
+    def getPersons(self):
         row = self.session.query(Person).all()
         persons = {}
         for col in row:
