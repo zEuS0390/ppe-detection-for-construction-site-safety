@@ -65,7 +65,7 @@ class TestDatabaseCRUD(unittest.TestCase):
             writer.writerows(persons)
         self.db.insertPersons(PERSONS_FILE)
 
-    def test_step_2_insert_violator(self):
+    def test_step_2_insert_violation_details_with_violators(self):
 
         # Create violation details
         violationdetails = ViolationDetails()
