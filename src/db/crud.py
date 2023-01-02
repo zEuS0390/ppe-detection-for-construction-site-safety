@@ -14,6 +14,7 @@ class DatabaseCRUD(DatabaseHandler):
     Methods:
         - insertPPEClasses  (filepath: str)
         - insertPersons     (filepath: str, verbose=False)
+        - getPPEClasses     ()
         - getPersons        ()
         - updatePerson      (person_id: int, first_name: str = "", middle_name: str = "", last_name: str = "", job_title: str = "")
         - deletePerson      (person_id: int)
@@ -64,6 +65,17 @@ class DatabaseCRUD(DatabaseHandler):
                     print(f"{person_data['first_name']} {person_data['middle_name']} {person_data['last_name']} already exist!")
         self.session.commit()
         self.session.close()
+
+    def getPPEClasses(self):
+        row = self.session.query(PPEClass).all()
+        ppeclasses = {}
+        for col in row:
+            ppeclass = {}
+            for column in col.__table__.columns:
+                ppeclass[column.name] = getattr(col, column.name)
+            ppeclasses[ppeclass["id"]] = ppeclass
+            del ppeclass["id"]
+        return ppeclasses
 
     def getPersons(self):
         row = self.session.query(Person).all()
