@@ -36,7 +36,7 @@ class Detection(metaclass=Singleton):
         - onClientSet           (client, userdata, msg) -> None
         - loadData              () -> None
         - loadCameraDetails     () -> None
-        - getPersons            () -> None
+        - loadPersons           () -> None
         - loadClasses           () -> None
         - loadModel             () -> None
         - loadPreferences       () -> None
@@ -104,7 +104,7 @@ class Detection(metaclass=Singleton):
 
     def loadData(self):
         if self.db is not None:
-            self.getPersons()
+            self.loadPersons()
         self.loadCameraDetails()
         self.loadDetectionCFG()
         self.loadColors()
@@ -116,7 +116,7 @@ class Detection(metaclass=Singleton):
         self.camera_details["description"] = self.cfg.get("camera", "description"),
         self.camera_details["ip_address"] = getIPAddress()
 
-    def getPersons(self):
+    def loadPersons(self):
         """
         Loads all persons inserted in the database
         """
