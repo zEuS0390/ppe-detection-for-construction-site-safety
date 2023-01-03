@@ -246,7 +246,8 @@ class Detection(metaclass=Singleton):
                 self.db.insertViolator(
                     violationdetails_id=violationdetails_id,
                     person_id=person["person_id"],
-                    coordinates="(0,0,0,0)",
+                    topleft=(0, 0),
+                    bottomright=(0, 0),
                     detectedppeclasses=violations,
                     verbose=True,
                     commit=False

@@ -63,14 +63,17 @@ class Violator:
     """
     __tablename__="violator"
     id = Column(Integer, primary_key=True)
-    coordinates = Column(String(length=250))
+    x1 = Column(Integer)
+    y1 = Column(Integer)
+    x2 = Column(Integer)
+    y2 = Column(Integer)
     person_id = Column(Integer, ForeignKey("person.id", ondelete="CASCADE"))
     person = relationship("Person", back_populates="people")
     detectedppeclasses = relationship("DetectedPPEClass", back_populates="violator", cascade="all, delete")
     violationdetails_id = Column(Integer, ForeignKey("violationdetails.id", ondelete="CASCADE"))
     violationdetails = relationship("ViolationDetails", back_populates="violators")
     def __str__(self):
-        return f"Violator(id={self.id}, name='{self.person}', coordinates='{self.coordinates}', detectedppeclasses={self.detectedppeclasses})"
+        return f"Violator(id={self.id}, name='{self.person}', detectedppeclasses={self.detectedppeclasses})"
     def __repr__(self):
         return f"{self.person}"
 
