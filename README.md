@@ -2,6 +2,8 @@
 [![.github/workflows/app_server.yml](https://github.com/cpe-pd/rpi-camera/actions/workflows/app_server.yml/badge.svg?event=push)](https://github.com/cpe-pd/rpi-camera/actions/workflows/app_server.yml)
 
 <h1 align="center">PPE Detection Application for Construction Safety in Raspberry Pi</h1>
+
+## About
 This is the official repository of our detection application, which is part of the whole system in our project design prototype. It analyzes the detected PPE from camera stream and evaluates the violations of each person. We used face recognition API to predict their identities, although there are some limitations. After obtaining the output, they will be published and sent as a payload which will then be received by multiple clients that are connected in the broker through lightweight messaging protocol called MQTT.
 
 ## Members
