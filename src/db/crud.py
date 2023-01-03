@@ -13,13 +13,25 @@ class DatabaseCRUD(DatabaseHandler):
     """
     Methods:
         - insertPPEClasses          (filepath: str)
-        - insertPersons             (filepath: str, verbose=False)
+        - insertPersons             (filepath: str, 
+                                     verbose=False)
         - getPPEClasses             ()
         - getPersons                ()
-        - updatePerson              (person_id: int, first_name: str = "", middle_name: str = "", last_name: str = "", job_title: str = "")
+        - updatePerson              (person_id: int, 
+                                     first_name: str = "", 
+                                     middle_name: str = "", 
+                                     last_name: str = "", 
+                                     job_title: str = "")
         - deletePerson              (person_id: int)
-        - insertViolator            (violationdetails_id: int, person_id: int, topleft: tuple, bottomright: tuple, detectedppeclasses: list, verbose: bool = False, commit: bool = True)
-        - deleteViolator            (person_id: int, commit: bool = True)
+        - insertViolator            (violationdetails_id: int, 
+                                     person_id: int, 
+                                     topleft: tuple, 
+                                     bottomright: tuple, 
+                                     detectedppeclasses: list, 
+                                     verbose: bool = False, 
+                                     commit: bool = True)
+        - deleteViolator            (person_id: int, 
+                                     commit: bool = True)
         - getAllViolationDetails    ()
     """
 
