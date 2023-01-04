@@ -1,33 +1,31 @@
-from src.hardware import Hardware
+from src.hardware import *
 from src.constants import RGBColor
+from src.singleton import Singleton
 
-class Indicator(Hardware):
-
-    def __init__(self, cfg):
-        super(Indicator, self).__init__(cfg)
+class Indicator(metaclass=Singleton):
 
     def info_downloading_files(self):
-        self.setColorRGB(*RGBColor.BLUE.value)
-        self.playBuzzer(1, 0.05, 0.05)
+        setColorRGB(*RGBColor.BLUE.value)
+        playBuzzer(1, 0.05, 0.05)
 
     def info_creating_objects(self):
-        self.setColorRGB(*RGBColor.YELLOW.value)
-        self.playBuzzer(1, 0.05, 0.05)
+        setColorRGB(*RGBColor.YELLOW.value)
+        playBuzzer(1, 0.05, 0.05)
 
     def info_none(self, buzzer=True):
-        self.setColorRGB(*RGBColor.NONE.value)
+        setColorRGB(*RGBColor.NONE.value)
         if buzzer:
-            self.playBuzzer(1, 0.05, 0.05)
+            playBuzzer(1, 0.05, 0.05)
 
     def info_stopping_application(self):
-        self.setColorRGB(*RGBColor.RED.value)
-        self.playBuzzer(5, 0.05, 0.05)
-        self.setColorRGB(*RGBColor.NONE.value)
+        setColorRGB(*RGBColor.RED.value)
+        playBuzzer(5, 0.05, 0.05)
+        setColorRGB(*RGBColor.NONE.value)
 
     def info_receiving_msg_mqtt(self):
-        self.setColorRGB(False, True, True)
-        self.playBuzzer(1, 0.05, 0.05)
+        setColorRGB(False, True, True)
+        playBuzzer(1, 0.05, 0.05)
 
     def info_detecting(self):
-        self.setColorRGB(True, False, True)
-        self.playBuzzer(1, 0.1, 0.1)
+        setColorRGB(True, False, True)
+        playBuzzer(1, 0.1, 0.1)

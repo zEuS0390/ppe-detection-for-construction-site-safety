@@ -25,6 +25,7 @@ class Hardware(metaclass=Singleton):
         self.redPin = cfg.getint("hardware", "red_pin")
         self.greenPin = cfg.getint("hardware", "green_pin")
         self.bluePin = cfg.getint("hardware", "blue_pin")
+        self.buttonPin = cfg.getint("hardware", "button_pin")
         GPIO.setwarnings(False)
         GPIO.setmode(GPIO.BCM)
         self.setupPins()
@@ -37,26 +38,29 @@ class Hardware(metaclass=Singleton):
         GPIO.setup(self.redPin, GPIO.OUT)
         GPIO.setup(self.bluePin, GPIO.OUT)
         GPIO.setup(self.greenPin, GPIO.OUT)
+        GPIO.setup(self.buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-    def setColorRGB(self, red: bool = False, green: bool = False, blue: bool = False):
-        if self.isrgbenabled:
-            if red == True:
-                GPIO.output(self.redPin, GPIO.HIGH)
-            else:
-                GPIO.output(self.redPin, GPIO.LOW)
-            if green == True:
-                GPIO.output(self.greenPin, GPIO.HIGH)
-            else:
-                GPIO.output(self.greenPin, GPIO.LOW)
-            if blue == True:
-                GPIO.output(self.bluePin, GPIO.HIGH)
-            else:
-                GPIO.output(self.bluePin, GPIO.LOW)
+def setColorRGB(red: bool = False, green: bool = False, blue: bool = False):
+    hardware = Hardware.getInstance()
+    if hardware.isrgbenabled:
+        if red == True:
+            GPIO.output(hardware.redPin, GPIO.HIGH)
+        else:
+            GPIO.output(hardware.redPin, GPIO.LOW)
+        if green == True:
+            GPIO.output(hardware.greenPin, GPIO.HIGH)
+        else:
+            GPIO.output(hardware.greenPin, GPIO.LOW)
+        if blue == True:
+            GPIO.output(hardware.bluePin, GPIO.HIGH)
+        else:
+            GPIO.output(hardware.bluePin, GPIO.LOW)
 
-    def playBuzzer(self, n_times: int, delay1: float, delay2: float):
-        if self.isbuzzerenabled:
-            for _ in range(n_times):
-                GPIO.output(self.buzzerPin, GPIO.HIGH)
-                time.sleep(delay1)
-                GPIO.output(self.buzzerPin, GPIO.LOW)
-                time.sleep(delay2)
+def playBuzzer(n_times: int, delay1: float, delay2: float):
+    hardware = Hardware.getInstance()
+    if hardware.isbuzzerenabled:
+        for _ in range(n_times):
+            GPIO.output(hardware.buzzerPin, GPIO.HIGH)
+            time.sleep(delay1)
+            GPIO.output(hardware.buzzerPin, GPIO.LOW)
+            time.sleep(delay2)

@@ -4,9 +4,11 @@ from src.detection import Detection
 from src.utils import getLatestFiles, getRecognitionData
 from src.recognition import Recognition
 from src.camera import Camera
+from src.hardware import Hardware
 from src.indicator import Indicator
+from src.shutdown_listener import ShutdownListener
 from src.constants import APP_CFG_FILE
-import configparser, time
+import configparser, time, subprocess
 
 class Application:
 
@@ -18,7 +20,9 @@ class Application:
         cfg.read(APP_CFG_FILE)
 
         # Instantiate objects
-        indicator = Indicator(cfg)
+        hardware = Hardware(cfg)
+        indicator = Indicator()
+        shutdownlistener = ShutdownListener()
 
         indicator.info_downloading_files()
         getLatestFiles("data", ["face_recognition", "detection"])
@@ -45,11 +49,12 @@ class Application:
 
         indicator.info_none()
 
-        try:
-            while True: time.sleep(1)
-        except KeyboardInterrupt:
-            detection.isRunning = False
-            camera.isRunning = False
+        shutdownlistener.thread.join()
+
+        detection.isRunning = False
+        camera.isRunning = False
         
         indicator.info_stopping_application()
+
+        subprocess.run(["sudo", "shutdown", "-h", "now"])
 
