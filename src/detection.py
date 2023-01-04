@@ -48,8 +48,8 @@ class Detection(metaclass=Singleton):
         - update                () -> None
     """
 
-    persons_info: Person = []
-    names: list = []
+    persons_info = []
+    names = []
     model = None
     isDetecting = True
     isRunning = True
