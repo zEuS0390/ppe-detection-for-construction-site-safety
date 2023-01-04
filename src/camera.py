@@ -16,8 +16,8 @@ class Camera(metaclass=Singleton):
         self.frame = None
         self.cfg = cfg
         self.device: str = cfg.get("camera", "device")
-        self.rtsp_enabled = self.cfg.getboolean("camera", "rtsp_enabled")
-        self.record_enabled = self.cfg.getboolean("camera", "record_enabled")
+        self.rtsp_enabled: bool = self.cfg.getboolean("camera", "rtsp_enabled")
+        self.record_enabled: bool = self.cfg.getboolean("camera", "record_enabled")
         while True:
             try:
                 if self.device.isdigit():
