@@ -17,9 +17,7 @@ class ShutdownListener(metaclass=Singleton):
         start_time = 0
         target_time = 3
         while True:
-            print("waiting...")
             if GPIO.input(self.hardware.buttonPin) == GPIO.HIGH:
-                print("Pressing the button.")
                 if time_flag == True:
                     elapsed_time = time.time() - start_time
                     if elapsed_time >= target_time:
@@ -31,5 +29,4 @@ class ShutdownListener(metaclass=Singleton):
             else:
                 button_flag = True
             time.sleep(0.2)
-        print("Shutting down...")
 
