@@ -227,14 +227,19 @@ class Detection(metaclass=Singleton):
                     ppe.append(detected_obj)
         return persons, ppe
 
-    def saveViolations(self, persons, violations):
+    def saveViolations(self, image, persons, violations):
         """
         Save violations of person/s to the database
         """
+        date_and_time = datetime.now().strftime(r"%y-%m-%d_%H:%M:%S")
+        image_name = f"data/images/image_{date_and_time}.jpg"
+        cv2.imwrite(image_name,image)
+
         violations = [violation["class_name"] for violation in violations]
 
         # Create violation details
         violationdetails = ViolationDetails()
+        violationdetails.image = image_name
         self.db.session.add(violationdetails)
         self.db.session.flush()
         violationdetails_id = violationdetails.id
@@ -359,8 +364,11 @@ class Detection(metaclass=Singleton):
 
             # Save violations of person/s to the database
             if self.db is not None:
-                _, save_time = getElapsedTime(self.saveViolations, violator["person_info"], violator["violations"])
+                _, save_time = getElapsedTime(self.saveViolations, image_plots, violator["person_info"], violator["violations"])
                 string += f"Saving violations time: {save_time:.2f}\n"
+
+        date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%")
+        cv2.imwrite(f"data/images/image_{date_and_time}.jpg",image_plots)
 
         message["camera"] = self.camera_details
         message["image"] = imageToBinary(image_plots)
