@@ -284,6 +284,8 @@ class Detection(metaclass=Singleton):
 
         Returns the violations of the detected person
         """
+        total_violations = 0
+        class_bbox_drawn = []
         string = ""
         message = {}
         detection_result, detection_time = getElapsedTime(self.detect, processed_image, image)
@@ -314,9 +316,6 @@ class Detection(metaclass=Singleton):
 
         # Resize image to be published from mqtt client
         image_plots = cv2.resize(image_plots, (self.mqtt_img_size[0], self.mqtt_img_size[1]), interpolation=cv2.INTER_AREA)
-        
-        total_violations = 0
-        class_bbox_drawn = []
 
         # Evaluate violations of each person
         violators = []
