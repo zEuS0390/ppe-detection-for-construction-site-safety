@@ -50,7 +50,6 @@ class Application:
         indicator.info_none()
 
         shutdownlistener.thread.join()
-
         detection.isRunning = False
         camera.isRunning = False
         
