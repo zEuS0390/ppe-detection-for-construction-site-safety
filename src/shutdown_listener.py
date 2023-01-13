@@ -28,5 +28,5 @@ class ShutdownListener(metaclass=Singleton):
                     start_time = time.time()
             else:
                 button_flag = True
-            time.sleep(0.2)
+            time.sleep(0.1)
 
