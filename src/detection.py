@@ -25,8 +25,7 @@ from src.constants import (
 from src.camera import Camera
 from datetime import datetime
 import numpy as np
-import json
-import cv2
+import json, logging, cv2
 
 class Detection(metaclass=Singleton):
     
@@ -63,6 +62,7 @@ class Detection(metaclass=Singleton):
         mqtt_notif: MQTTClient = None,
         mqtt_set: MQTTClient = None
     ):
+        self.logger = logging.getLogger()
         self.cfg = cfg
         self.indicator: Indicator = Indicator.getInstance()
         self.db: DatabaseCRUD = DatabaseCRUD.getInstance()
@@ -74,6 +74,7 @@ class Detection(metaclass=Singleton):
         self.device = select_device(self.cfg.get("yolor", "device"))
         cudnn.benchmark = True
         self.loadData()
+        self.logger.info("Detection initialized")
         
     def start(self):
         """

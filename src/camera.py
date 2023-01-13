@@ -5,14 +5,15 @@ from datetime import datetime
 from src.singleton import Singleton
 from queue import Queue
 import numpy as np
-import cv2, time
-import os
+import cv2, time, logging, os
 
 # Camera Class
 class Camera(metaclass=Singleton):
 
     # Initialize
     def __init__(self, cfg: ConfigParser):
+        self.logger = logging.getLogger()
+        self.logger.info("Initializing camera")
         self.frame = None
         self.cfg = cfg
         self.device: str = cfg.get("camera", "device")
@@ -47,6 +48,7 @@ class Camera(metaclass=Singleton):
         self.det = []
         self.q = Queue()
         self.q.put(self.cap.read()[1])
+        self.logger.info("Camera initialized")
 
     def start(self):
         self.updateThread = Thread(target=self.update)

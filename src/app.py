@@ -23,14 +23,18 @@ class Application:
         logger.setLevel(logging.DEBUG)
 
         # Load app configuration file
+        logger.info("Loading app configuration")
         cfg = configparser.ConfigParser()
         cfg.read(APP_CFG_FILE)
 
         # Instantiate objects
+        logger.info("Initializing hardware")
         hardware = Hardware(cfg)
         indicator = Indicator()
         shutdownlistener = ShutdownListener()
+        logger.info("Hardware initialized")
 
+        logger.info("Downloading model files")
         indicator.info_downloading_files()
         getLatestFiles("data", ["face_recognition", "detection"])
 

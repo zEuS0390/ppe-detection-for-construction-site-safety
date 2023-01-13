@@ -1,5 +1,5 @@
 from face_recognition.face_recognition_cli import image_files_in_folder
-import os, math, pickle, face_recognition
+import os, math, pickle, face_recognition, logging
 from configparser import ConfigParser
 from src.utils import getRecognitionData
 from src.singleton import Singleton
@@ -8,8 +8,11 @@ from sklearn import neighbors
 class Recognition(metaclass=Singleton):
 
     def __init__(self, cfg: ConfigParser):
+        self.logger = logging.getLogger()
+        self.logger.info("Initializing recognition")
         self.cfg = cfg
         self.load_model()
+        self.logger.info("Recognition initialized")
 
     def load_model(self):
         recognition_data = getRecognitionData(self.cfg)
