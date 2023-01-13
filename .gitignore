@@ -8,3 +8,7 @@ yolor/
 *.sqlite3
 
 draft/
+
+# Vim temporary files
+*.swp
+*~
