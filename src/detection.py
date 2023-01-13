@@ -38,7 +38,7 @@ class Detection(metaclass=Singleton):
         - loadPersons           () -> None
         - loadClasses           () -> None
         - loadModel             () -> None
-        - loadPreferences       () -> None
+        - loadDetectionCFG      () -> None
         - plotBox               (image: np.ndarray, coordinates: Box, color: Color, label: str) -> None
         - detect                (img, im0s) -> tuple
         - saveViolations        (detected_persons: dict, violations: list) -> None
