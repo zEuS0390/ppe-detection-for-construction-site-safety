@@ -366,7 +366,7 @@ class Detection(metaclass=Singleton):
                 _, save_time = getElapsedTime(self.saveViolations, image_plots, violator["person_info"], violator["violations"])
                 string += f"Saving violations time: {save_time:.2f}\n"
 
-        date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%")
+        date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
         cv2.imwrite(f"data/images/image_{date_and_time}.jpg",image_plots)
 
         message["camera"] = self.camera_details

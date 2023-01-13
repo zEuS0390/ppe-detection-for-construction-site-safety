@@ -9,11 +9,19 @@ from src.indicator import Indicator
 from src.shutdown_listener import ShutdownListener
 from src.constants import APP_CFG_FILE
 import configparser, time, subprocess
+from datetime import datetime
+import logging
+
+date_and_time = datetime.now().strftime('%y-%m-%d_%H-%M-%S')
+logging.basicConfig(filename=f"logs/events_{date_and_time}.log",format="%(asctime)s %(message)s", filemode="w")
 
 class Application:
 
     @staticmethod
     def main():
+
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)
 
         # Load app configuration file
         cfg = configparser.ConfigParser()
