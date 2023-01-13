@@ -74,6 +74,19 @@ def getPlainConfig(filepath, target_key):
 
 class Configure:
 
+    """
+    Methods:
+        - executeSelectedOption     (options)
+        - displayOptions            (options)
+        - configureCameraDetails    ()
+        - configureFaceRecognition  ()
+        - configureFaceRecognition  ()
+        - configureDetection        ()
+        - configureMQTTConnection   ()
+        - configureSFTPConnection   ()
+        - selectOption              ()
+    """
+
     def executeSelectedOption(self, options):
         optionLength = len(options)
         selected = input(f"\n\tSelect 1-{optionLength} [0 to cancel]: ")
@@ -210,6 +223,34 @@ class Configure:
     def configureSFTPConnection(self):
         pass
 
+    def configureHardware(self):
+        clear()
+        def setBuzzerState():
+            state = input("\tSelect state [on/off/cancel]: ")
+            while state not in ["on", "off", "cancel"]:
+                state = input("\tSelect state [on/off/cancel]: ")
+            if state == "cancel":
+                return
+            app_cfg.set("hardware", "buzzer_enabled", state)
+            with open(APP_CFG_FILENAME, "w") as cfgfile:
+                app_cfg.write(cfgfile)
+        def setRGBState():
+            state = input("\tSelect state [on/off/cancel]: ")
+            while state not in ["on", "off", "cancel"]:
+                state = input("\tSelect state [on/off/cancel]: ")
+            if state == "cancel":
+                return
+            app_cfg.set("hardware", "rgb_enabled", state)
+            with open(APP_CFG_FILENAME, "w") as cfgfile:
+                app_cfg.write(cfgfile)
+        options = [
+            ("Buzzer State", setBuzzerState),
+            ("RGB State", setRGBState)
+        ]
+        self.displayOptions(options)
+        self.executeSelectedOption(options)
+        self.selectOption()
+
     def selectOption(self):
         clear()
         configuration_options = [
@@ -217,7 +258,8 @@ class Configure:
             ("face recognition", self.configureFaceRecognition),
             ("detection", self.configureDetection),
             ("mqtt connection", self.configureMQTTConnection),
-            ("sftp connection", self.configureSFTPConnection)
+            ("sftp connection", self.configureSFTPConnection),
+            ("hardware", self.configureHardware)
         ]
         print("\n\tApplication")
         self.displayOptions(configuration_options)
