@@ -61,9 +61,12 @@ class Application:
         indicator.info_none()
 
         shutdownlistener.thread.join()
+
         detection.isRunning = False
         camera.isRunning = False
-        
+        detection.updateThread.join()
+        camera.updateThread.join() 
+
         indicator.info_stopping_application()
 
         subprocess.run(["sudo", "shutdown", "-h", "now"])
