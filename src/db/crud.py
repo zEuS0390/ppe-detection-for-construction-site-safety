@@ -128,7 +128,7 @@ class DatabaseCRUD(DatabaseHandler):
             violator = Violator()
             violator.person = person
             violator.x1 = topleft[0]
-            violator.y2 = topleft[1]
+            violator.y1 = topleft[1]
             violator.x2 = bottomright[0]
             violator.y2 = bottomright[1]
             violator.violationdetails = violationdetails
