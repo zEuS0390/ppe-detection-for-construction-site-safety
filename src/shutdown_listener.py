@@ -16,20 +16,20 @@ class ShutdownListener(metaclass=Singleton):
         button_flag = True
         start_time = 0
         target_time = 3
-        while True:
-            try:
-                if GPIO.input(self.hardware.buttonPin) == GPIO.HIGH:
-                    if time_flag == True:
-                        elapsed_time = time.time() - start_time
-                        if elapsed_time >= target_time:
-                            break
-                    if button_flag == True:
-                        button_flag = False
-                        time_flag = True
-                        start_time = time.time()
-                else:
-                    button_flag = True
-            except KeyboardInterrupt:
-                break
-            time.sleep(0.1)
+        try:
+            while True:
+                    if GPIO.input(self.hardware.buttonPin) == GPIO.HIGH:
+                        if time_flag == True:
+                            elapsed_time = time.time() - start_time
+                            if elapsed_time >= target_time:
+                                break
+                        if button_flag == True:
+                            button_flag = False
+                            time_flag = True
+                            start_time = time.time()
+                    else:
+                        button_flag = True
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            pass
 
