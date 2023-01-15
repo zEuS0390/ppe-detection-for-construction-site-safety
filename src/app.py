@@ -60,6 +60,11 @@ class Application:
 
         indicator.info_none()
 
+        try:
+            while shutdownlistener.isRunning: time.sleep(1)
+        except KeyboardInterrupt:
+            shutdownlistener.isRunning = False
+            
         shutdownlistener.thread.join()
 
         detection.isRunning = False
