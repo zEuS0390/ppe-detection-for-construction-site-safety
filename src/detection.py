@@ -364,8 +364,6 @@ class Detection(metaclass=Singleton):
 
             # Save violations of person/s to the database
             if self.db is not None:
-                date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
-                cv2.imwrite(f"data/images/image_{date_and_time}.jpg",image_plots)
                 _, save_time = getElapsedTime(self.saveViolations, image_plots, violator["person_info"], violator["violations"], person["coordinate"])
                 string += f"Saving violations time: {save_time:.2f}\n"
 
