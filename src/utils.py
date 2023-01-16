@@ -1,4 +1,4 @@
-import cv2, base64, os, time, subprocess, paramiko, socket
+import cv2, base64, os, time, subprocess, paramiko, socket, logging
 
 def imageToBinary(image):
     """
@@ -77,7 +77,8 @@ def parsePlainConfig(filepath: str):
         raise e
 
 def getLatestFiles(cfg_name, target_names: list):
-    print("Getting the latest data files of {0}".format(cfg_name))
+    logger = logging.getLogger()
+    logger.info("Getting the latest data files of {0}".format(cfg_name))
     cfg_file = f"cfg/client/sftp/{cfg_name}.cfg"
     cfg = parsePlainConfig(cfg_file)
     hostname = cfg["hostname"]
@@ -101,16 +102,16 @@ def getLatestFiles(cfg_name, target_names: list):
             timeout=10
         )
     except paramiko.ssh_exception.NoValidConnectionsError as e:
-        print(f"{e}\nCheck if SSH server is online.")
+        logger.error(f"{e}. Check if SSH server is online.")
         return
     except paramiko.ssh_exception.AuthenticationException as e:
-        print(f"{e}\nCheck if SSH server creredentials are correct.")
+        logger.error(f"{e}. Check if SSH server creredentials are correct.")
         return
     except socket.timeout as e:
-        print(f"{e}\nCheck if SSH server is online.")
+        logger.error(f"{e}. Check if SSH server is online.")
         return
     except OSError as e:
-        print(f"{e}")
+        logger.error(f"{e}")
         return
 
     sftp_client = ssh_client.open_sftp()
@@ -118,7 +119,7 @@ def getLatestFiles(cfg_name, target_names: list):
     try:
         files = sftp_client.listdir(source_dir)
     except FileNotFoundError as e:
-        print(f"{e}\nCheck if the source directory exists.")
+        logger.error(f"{e}. Check if the source directory exists.")
         return
             
     if len(files) > 0:
@@ -128,20 +129,20 @@ def getLatestFiles(cfg_name, target_names: list):
             try:
                 index = files.index(target_name)
             except ValueError as e:
-                print(f"{e}")
+                logger.error(f"{e}")
                 continue
             try:
                 target_dir = sftp_client.listdir(os.path.join(source_dir, target_name))
             except FileNotFoundError as e:
-                print(f"{e}")
+                logger.error(f"{e}")
                 continue
             if len(target_dir) > 0:
                 latest = target_dir.pop()
                 destination_versions = os.listdir(os.path.join(destination_dir, target_name))
                 if latest in destination_versions:
-                    print(f"Download '{latest}' [ALREADY EXIST]")
+                    logger.error(f"Download '{latest}' [ALREADY EXIST]")
                     continue
-                print(f"Download '{latest}'")
+                logger.error(f"Download '{latest}'")
                 latest_files = sftp_client.listdir(os.path.join(source_dir, target_name, latest))
                 for file in latest_files:
                     source_latest_dir = os.path.join(source_dir, target_name, latest)
@@ -151,7 +152,7 @@ def getLatestFiles(cfg_name, target_names: list):
                     if not os.path.exists(destination_latest_dir):
                         os.mkdir(destination_latest_dir)
                     sftp_client.get(source_file, destination_file)
-                    print(f"\t* [DOWNLOADED] {file}")
+                    logger.error(f"\t* [DOWNLOADED] {file}")
                 for version in destination_versions:
                     os.rmdir(version)
         sftp_client.close()
@@ -159,4 +160,4 @@ def getLatestFiles(cfg_name, target_names: list):
     else:
         sftp_client.close()
         ssh_client.close()
-        print("Files not found.")
+        logger.error("Files not found.")
