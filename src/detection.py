@@ -84,7 +84,7 @@ class Detection(metaclass=Singleton):
             self.updateThread = threading.Thread(target=self.update)
             self.updateThread.start()
         else:
-            print("Missing arguments (camera, recognition, mqtt_notif). Abort")
+            self.logger.error("Missing arguments (camera, recognition, mqtt_notif, mqtt_set). Abortting.")
 
     def onClientSet(self, client, userdata, msg):
         self.indicator.info_receiving_msg_mqtt()
@@ -94,14 +94,14 @@ class Detection(metaclass=Singleton):
             data = json.loads(payload)
             if "ppe_preferences" in data:
                 self.ppe_preferences = {class_name.replace("_", " "): status for class_name, status in data["ppe_preferences"].items()}
-                print(self.ppe_preferences)
+                # print(self.ppe_preferences)
             if "detection_interval" in data:
                 self.interval = data["detection_interval"]
             if "mqtt_img_resolution" in data:
                 self.mqtt_img_size[0] = data["mqtt_img_resolution"]["width"]
                 self.mqtt_img_size[1] = data["mqtt_img_resolution"]["height"]
         except Exception as e:
-            print(f"MQTT Client Error: {e}")
+            self.logger.error(f"MQTT Client Error: {e}")
 
     def loadData(self):
         if self.db is not None:
@@ -121,31 +121,23 @@ class Detection(metaclass=Singleton):
         """
         Loads all persons inserted in the database
         """
-        string = "Load Persons:\n"
         self.persons_info = self.db.getPersons()
-        for person in self.persons_info:
-            string += f"\t[LOADED] {person} {self.persons_info[person]['first_name']}\n"
-        print(string, end="")
+        self.logger.info(f"{len(self.persons_info)} persons loaded.")
 
     def loadColors(self):
         """
         Loads predefined colors for each class names
         """
-        string = "Load Colors:\n"
         self.colors = list(BGRColor)
-        for color in [(color.name, color.value) for color in self.colors]:
-            string += f"\t[LOADED] {color[0]} {color[1]}\n"
-        print(string, end="")
+        self.logger.info(f"{len(self.colors)} colors loaded.")
 
     def loadClasses(self):
         """
         Loads class names which were used in the trained model.
         """
-        print("Load Detection Class Names:")
         with open(self.cfg.get("yolor", "classes")) as f:
             self.names = f.read().split('\n')
-            for name in self.names:
-                print(f"\t[LOADED] {name}")
+        self.logger.info(f"{len(self.names)} ppe class names loaded.")
 
     # Load model
     def loadModel(self):
@@ -158,16 +150,15 @@ class Detection(metaclass=Singleton):
             self.model.load_state_dict(torch.load(weights, map_location=self.device)['model'])
             self.model.to(self.device).eval()
         else:
+            self.logger.error("No weights found")
             raise Exception("No weights found")
 
     def loadDetectionCFG(self):
         detection_cfg = ConfigParser()
         detection_cfg.read("cfg/detection/config.cfg")
         self.ppe_preferences = {key.replace("_", " "): detection_cfg.getboolean("ppe_preferences", key) for key, _ in detection_cfg.items("ppe_preferences")}
-
         self.publish_if_violators_exist = detection_cfg.getboolean("mqtt", "publish_if_violators_exist")
-        for ppe_item, status in self.ppe_preferences.items():
-            print(f"\t[LOADED] '{ppe_item}': {status}")
+        self.logger.info("PPE preferences loaded")
 
     def plotBox(self, image: np.ndarray, coordinates: Box, color: BGRColor, label: str):
         """
@@ -258,10 +249,11 @@ class Detection(metaclass=Singleton):
                     verbose=True,
                     commit=False
                 )
+
         self.db.n_operations += 1
         # Perform commit when n_operations value reaches 5
         if self.db.n_operations >= 1:
-            print("Committing database operations...")
+            self.logger.info("Committing database operations...")
             self.db.n_operations = 0
             self.db.session.commit()
             self.db.session.close()
@@ -287,10 +279,9 @@ class Detection(metaclass=Singleton):
         """
         total_violations = 0
         class_bbox_drawn = []
-        string = ""
         message = {}
         detection_result, detection_time = getElapsedTime(self.detect, processed_image, image)
-        string += f"Detection time: {detection_time:.2f}\n"
+        self.logger.info(f"Detection time: {detection_time:.2f}")
 
         image_plots = image.copy()
         persons = detection_result[0]
@@ -303,7 +294,7 @@ class Detection(metaclass=Singleton):
         
         # Recognize faces
         person_indices, person_time = getElapsedTime(self.recognition.predict, image, distance_threshold=0.4)
-        string += f"Recognition time: {person_time:.2f}\n"
+        self.logger.info(f"Recognition time: {person_time:.2f}\n")
 
         # Check overlaps of each recognized faces
         recognized_persons = []
@@ -352,7 +343,7 @@ class Detection(metaclass=Singleton):
                     try:
                         del ppe_item["coordinate"]
                     except Exception as e:
-                        print(f"{e}")
+                        pass
                     violator["violations"].append(ppe_item)
 
             # Get recognized faces that are in the person
@@ -365,7 +356,7 @@ class Detection(metaclass=Singleton):
             # Save violations of person/s to the database
             if self.db is not None:
                 _, save_time = getElapsedTime(self.saveViolations, image_plots, violator["person_info"], violator["violations"], person["coordinate"])
-                string += f"Saving violations time: {save_time:.2f}\n"
+                self.logger.info(f"Saving violations time: {save_time:.2f}")
 
         message["camera"] = self.camera_details
         message["image"] = imageToBinary(image_plots)
@@ -374,7 +365,6 @@ class Detection(metaclass=Singleton):
         message["violators"] = violators
         message["timestamp"] = datetime.now().strftime(r"%y-%m-%d %H:%M:%S")
         
-        print(string, end="")
         return message
 
     @torch.no_grad()
@@ -390,13 +380,13 @@ class Detection(metaclass=Singleton):
                 try:
                     processed_frame, original_frame = self.camera.getFrame()
                 except Exception as e:
-                    print(f"Returned None on getFrame method: {e}")
+                    self.logger.error(f"Returned None on getFrame method: {e}")
                     time.sleep(0.03)
                     continue
                 if processed_frame is not None:
                     self.indicator.info_detecting()
                     violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, original_frame)
-                    print(f"Overall process time: {violations_time:.2f}")
+                    self.logger.info(f"Overall process time: {violations_time:.2f}")
                     to_print = {
                             "camera": violations_result["camera"],
                             "total_violators": violations_result["total_violators"],
@@ -406,11 +396,11 @@ class Detection(metaclass=Singleton):
                         }
                     if self.publish_if_violators_exist == True:
                         if violations_result["total_violators"] > 0:
-                            print(json.dumps(to_print, indent=4, sort_keys=True))
+                            self.logger.info(json.dumps(to_print, indent=4, sort_keys=True))
                             payload = json.dumps(violations_result)
                             self.mqtt_notif.publish(payload=payload)
                     else:
-                        print(json.dumps(to_print, indent=4, sort_keys=True))
+                        self.logger.info(json.dumps(to_print, indent=4, sort_keys=True))
                         payload = json.dumps(violations_result)
                         self.mqtt_notif.publish(payload=payload)
                     self.indicator.info_none(buzzer=False)
