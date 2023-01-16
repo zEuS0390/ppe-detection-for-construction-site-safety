@@ -252,7 +252,7 @@ class Detection(metaclass=Singleton):
 
         self.db.n_operations += 1
         # Perform commit when n_operations value reaches 5
-        if self.db.n_operations >= 1:
+        if self.db.n_operations >= 5:
             self.logger.info("Committing database operations...")
             self.db.n_operations = 0
             self.db.session.commit()
