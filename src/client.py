@@ -1,10 +1,11 @@
 from paho.mqtt.client import Client, connack_string
 from src.utils import parsePlainConfig
-import time, os, shutil
+import time, os, shutil, logging
 
 class MQTTClient:
 
     def __init__(self, name: str, port=1883):
+        self.logger = logging.getLogger()
         self.client_id = name
         self.port = port
         self.rgb = None
@@ -13,7 +14,7 @@ class MQTTClient:
             samle_cfg_filename = f"cfg/client/mqtt/sample.cfg"
             cfg_filename = f"cfg/client/mqtt/{name}.cfg"
             if not os.path.exists(cfg_filename):
-                print(f"'{cfg_filename}' does not exist. Creating cfonfiguration.")
+                self.logger.warning(f"'{cfg_filename}' does not exist. Creating cfonfiguration.")
                 shutil.copy2(samle_cfg_filename, cfg_filename)
             self.cfg = parsePlainConfig(cfg_filename)
             self.topic = self.cfg["topic_name"]
@@ -30,7 +31,7 @@ class MQTTClient:
                 self.client.connect(self.broker, self.port)
                 break
             except Exception as e:
-                print(f"{e}")
+                self.logger.error(f"{e}")
             time.sleep(1)
         self.client.loop_start()
 
@@ -43,7 +44,7 @@ class MQTTClient:
         self.client.loop_stop()
 
     def on_connect(self, client, userdata, flags, rc):
-        print(f"Connection result: {connack_string(rc)}")
+        self.logger.info(f"Connection result: {connack_string(rc)}")
         if rc == 0:
             self.client.subscribe(self.topic)
         elif rc == 5:

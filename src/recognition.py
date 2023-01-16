@@ -47,15 +47,15 @@ class Recognition(metaclass=Singleton):
                 face_bounding_boxes = face_recognition.face_locations(image, model="cnn")
                 if len(face_bounding_boxes) != 1:
                     if verbose:
-                        print("Image {} not suitable for training: {}".format(img_path, "Didn't find a face" if len(face_bounding_boxes) < 1 else "Found more than one face"))
+                        self.logger.info("Image {} not suitable for training: {}".format(img_path, "Didn't find a face" if len(face_bounding_boxes) < 1 else "Found more than one face"))
                 else:
                     X.append(face_recognition.face_encodings(image, known_face_locations=face_bounding_boxes)[0])
                     y.append(class_dir)
                     if verbose:
-                      print("Image {}: Found face".format(img_path))
+                      self.logger.info("Image {}: Found face".format(img_path))
         n_neighbors = int(round(math.sqrt(len(X))))
         if verbose:
-            print("Chose n_neighbors automatically:", n_neighbors)
+            self.logger.info("Chose n_neighbors automatically: {}".format(n_neighbors))
         knn_clf = neighbors.KNeighborsClassifier(n_neighbors=n_neighbors, algorithm=knn_algo, weights='distance')
         knn_clf.fit(X, y)
         # Save the trained KNN classifier
