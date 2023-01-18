@@ -6,6 +6,7 @@ from .tables import (
     Person,
     ViolationDetails
 )
+from datetime import datetime
 import csv
 
 class DatabaseCRUD(DatabaseHandler):
@@ -162,6 +163,8 @@ class DatabaseCRUD(DatabaseHandler):
             return True
         return False
 
-    def getAllViolationDetails(self):
-        allviolationdetails = self.session.query(ViolationDetails).all()
+    def getAllViolationDetails(self, 
+                               from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"), 
+                               to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 11:59:59")):
+        allviolationdetails = self.session.query(ViolationDetails).filter(ViolationDetails.timestamp.between(from_datetime, to_datetime)).all()
         return allviolationdetails
