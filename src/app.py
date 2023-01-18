@@ -48,9 +48,7 @@ class Application:
         mqtt_notif = MQTTClient("notif")
         mqtt_set = MQTTClient("set")
         
-        detection = Detection(
-            cfg, mqtt_notif, mqtt_set
-        )
+        detection = Detection(cfg, mqtt_notif, mqtt_set)
 
         # Start threads
         mqtt_notif.start()
@@ -66,9 +64,10 @@ class Application:
             shutdownlistener.isRunning = False
             
         shutdownlistener.thread.join()
-
-        detection.isRunning = False
-        camera.isRunning = False
+        detection.stop()
+        camera.stop()
+        mqtt_notif.stop()
+        mqtt_set.stop()
         detection.updateThread.join()
         camera.updateThread.join() 
 

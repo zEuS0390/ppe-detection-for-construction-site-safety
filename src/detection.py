@@ -86,6 +86,9 @@ class Detection(metaclass=Singleton):
         else:
             self.logger.error("Missing arguments (camera, recognition, mqtt_notif, mqtt_set). Abortting.")
 
+    def stop(self):
+        self.isRunning = False
+        
     def onClientSet(self, client, userdata, msg):
         self.indicator.info_receiving_msg_mqtt()
         self.indicator.info_none(buzzer=False)

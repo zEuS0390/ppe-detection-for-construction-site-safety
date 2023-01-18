@@ -54,6 +54,9 @@ class Camera(metaclass=Singleton):
         self.updateThread = Thread(target=self.update)
         self.updateThread.start()
 
+    def stop(self):
+        self.isRunning = False
+
     def update(self):
         """
         Update function for the camera thread
