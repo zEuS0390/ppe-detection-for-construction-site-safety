@@ -128,7 +128,7 @@ class DatabaseCRUD(DatabaseHandler):
         person = self.session.query(Person).filter_by(person_id=person_id).first()
         if person is not None and violationdetails is not None:
             violator = Violator()
-            violator.person = person
+            person.people.append(violator)
             violator.x1 = topleft[0]
             violator.y1 = topleft[1]
             violator.x2 = bottomright[0]
@@ -138,8 +138,8 @@ class DatabaseCRUD(DatabaseHandler):
                 ppeclass = self.session.query(PPEClass).filter_by(name=ppeclass_name).first()
                 if ppeclass is not None:
                     detected = DetectedPPEClass()
-                    detected.ppeclass = ppeclass
-                    detected.violator = violator
+                    violator.detectedppeclasses.append(detected)
+                    ppeclass.detectedppeclasses.append(detected)
                 else:
                     if verbose:
                         print(f"{ppeclass_name} does not exist!")
