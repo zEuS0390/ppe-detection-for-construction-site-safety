@@ -166,5 +166,4 @@ class DatabaseCRUD(DatabaseHandler):
     def getAllViolationDetails(self, 
                                from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"), 
                                to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 11:59:59")):
-        allviolationdetails = self.session.query(ViolationDetails).filter(ViolationDetails.timestamp.between(from_datetime, to_datetime)).all()
-        return allviolationdetails
+        return self.session.query(ViolationDetails).filter(ViolationDetails.timestamp.between(from_datetime, to_datetime)).all()
