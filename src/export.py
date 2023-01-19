@@ -10,5 +10,7 @@ def exportAsXLSX(path_to_directory: str = "data/export",
     list_of_violation_details = db.getAllViolationDetails(from_datetime, to_datetime)
     wb = Workbook()
     ws = wb.active
-    filename = os.path.join(path_to_directory, from_datetime.replace(" ", "_").replace(":", "-")+"_TO_"+to_datetime.replace(" ", "_").replace(":", "-")+".xlxs")
+    headers = ["person", "no helmet", "no glasses", "no vest", "no gloves", "no boots", "helmet", "glasses", "vest", "gloves", "boots"]
+    ws.append(headers)
+    filename = os.path.join(path_to_directory, from_datetime.replace(" ", "_").replace(":", "-")+"_TO_"+to_datetime.replace(" ", "_").replace(":", "-")+".xlsx")
     wb.save(filename)
