@@ -34,7 +34,7 @@ class DatabaseCRUD(DatabaseHandler):
         - deleteViolator            (person_id: int, 
                                      commit: bool = True)
         - getAllViolationDetails    (from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"),
-                                     to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 11:59:59"))
+                                     to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59"))
     """
 
     def __init__(self, cfg=None, db_URL=None, echo=False):
