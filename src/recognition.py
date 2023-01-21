@@ -15,6 +15,7 @@ class Recognition(metaclass=Singleton):
         self.logger.info("Recognition initialized")
 
     def load_model(self):
+        # Get the latest face recognition model
         recognition_data = getRecognitionData(self.cfg)
         if "model" in recognition_data:
             with open(recognition_data["model"], "rb") as file:
