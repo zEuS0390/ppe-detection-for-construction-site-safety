@@ -1,15 +1,15 @@
 [![](https://img.shields.io/badge/TIP-Quezon%20City-yellow)](https://tip.edu.ph/)
 [![.github/workflows/app_server.yml](https://github.com/cpe-pd/rpi-camera/actions/workflows/app_server.yml/badge.svg?event=push)](https://github.com/cpe-pd/rpi-camera/actions/workflows/app_server.yml)
 
-<h1 align="center">PPE Detection Application for Construction Safety in Raspberry Pi</h1>
+<h1 align="center">PPE Detection Application<br>for Construction Safety<br>in Raspberry Pi</h1>
 
 ## About
-This is the official repository of our detection application, which is part of the whole system in our project design prototype. It analyzes the detected PPE from camera stream and evaluates the violations of each person. We used face recognition API to predict their identities, although there are some limitations. After obtaining the output, they will be published and sent as a payload which will then be received by multiple clients that are connected in the broker through lightweight messaging protocol called MQTT.
+This is the official repository of our PPE detection application which is part of the whole system in our capstone project. It analyzes the detected PPE from camera stream and evaluates the violations of each person. We also used a face recognition API to predict their identities, although there are some limitations. After obtaining the output, it will be wrapped up as a message to be published and sent as a payload which will then be received by multiple clients that are connected in the broker through lightweight messaging protocol called MQTT.
 
-## Members
+## Team Members
 - Zeus James Baltazar (Intelligent Systems) - Focuses mostly on utilization of ideas and their integration to the whole system.
 - Martin Lorenzo Basbacio (Data Science) - Facilitates methods regarding detection and recognition.
-- Clarece Gail Larrosa (Intelligent Systems) - Manages prototype paper and provides assets for mobile application.
+- Clarece Gail Larrosa (Intelligent Systems) - Manages the document and provides assets to mobile application.
 - Ian Gabriel Marquez (System Administration) - Handles mobile application development and its UI/UX design.
 
 ## Features
