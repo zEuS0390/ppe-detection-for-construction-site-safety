@@ -12,7 +12,7 @@ import configparser, time, subprocess
 from datetime import datetime
 import logging
 
-logging.basicConfig(filename=f"logs/events_{datetime.now().strftime('%y-%m-%d_%H-%M-%S')}.log",format="%(asctime)s %(message)s", filemode="w")
+logging.basicConfig(filename=f"data/logs/events_{datetime.now().strftime('%y-%m-%d_%H-%M-%S')}.log",format="%(asctime)s %(message)s", filemode="w")
 
 class Application:
 
