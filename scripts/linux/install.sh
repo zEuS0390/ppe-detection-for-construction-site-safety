@@ -58,4 +58,6 @@ cp "cfg/client/sftp/sample.cfg" "cfg/client/sftp/data.cfg"
 
 ssh-keygen -f "data/ssh_keys/rpi-camera" -t rsa -N "" -b 4096
 
+pdoc --html --force src
+
 # read -p "Press enter to exit..."
