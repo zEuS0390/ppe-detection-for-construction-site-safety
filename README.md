@@ -19,7 +19,7 @@ This is the official repository of our PPE detection application which is part o
 - Mobile application reports and notifications
 
 ## Hardware
-We used Rasperry Pi 4 Model B and OKdo Camera Module in this project. Additionally, we included some minor components to make the system more complete and at least somewhat helpful to the user, such as an indicator and a tactile switch.
+We used Rasperry Pi 4 Model B and OKdo Camera Module in this project. Additionally, we included some minor components to make the system more complete and at least somewhat helpful to the user, including RGB LED, piezo buzzer, and a tactile switch.
 | | Raspberry Pi |
 | :-: | :-: |
 | CPU | BCM2835 ARM Quad-Core 64-bit @ 1.8GHz |
