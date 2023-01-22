@@ -4,6 +4,17 @@ import time, os, shutil, logging
 
 class MQTTClient:
 
+    """
+    Methods:
+        - start         ()
+        - stop          ()
+        - on_connect    (client: any, 
+                         user: any, 
+                         flag: any, 
+                         rc: any)
+        - publish       (payload: any)
+    """
+
     def __init__(self, name: str, port=1883):
         self.logger = logging.getLogger()
         self.client_id = name

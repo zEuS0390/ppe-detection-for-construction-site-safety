@@ -10,6 +10,14 @@ import cv2, time, logging, os
 # Camera Class
 class Camera(metaclass=Singleton):
 
+    """
+    Methods:
+        - start     ()
+        - stop      ()
+        - update    ()
+        - getFrame  ()
+    """
+
     # Initialize
     def __init__(self, cfg: ConfigParser):
         self.logger = logging.getLogger()

@@ -7,6 +7,17 @@ from sklearn import neighbors
 
 class Recognition(metaclass=Singleton):
 
+    """
+    Methods:
+        - load_model        ()
+        - predict           (frame, 
+                             distance_threshold: float = 0.4)
+        - train             (train_dir: str, 
+                             model_save_path: any = None,
+                             knn_algo: str = 'ball tree',
+                             verbose: bool = False)
+    """
+
     def __init__(self, cfg: ConfigParser):
         self.logger = logging.getLogger()
         self.logger.info("Initializing recognition")
