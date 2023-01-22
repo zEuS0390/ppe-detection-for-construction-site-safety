@@ -235,6 +235,7 @@ class Detection(metaclass=Singleton):
         # Create violation details
         violationdetails = ViolationDetails()
         violationdetails.image = image_name
+        violationdetails.timestamp = datetime.now()
         self.db.session.add(violationdetails)
         self.db.session.flush()
         violationdetails_id = violationdetails.id

@@ -12,17 +12,11 @@ def exportAsXLSX(cfg: ConfigParser,
     list_of_violation_details = db.getAllViolationDetails(from_datetime, to_datetime)
     wb = Workbook()
     ws = wb.active
-    with open(cfg.get("yolor", "classes")) as f:
-        names = f.read().split('\n')
-    names.remove("person")
-    compliance = []
-    noncompliance = []
-    for name in names:
-        if "no" in name:
-            noncompliance.append(name)
-        else:
-            compliance.append(name)
-    headers = ["timestamp", "person"] + compliance + noncompliance 
-    ws.append(headers)
+    for violation_detail in list_of_violation_details:
+        timestamp = violation_detail["timestamp"]
+        for violator in violation_detail["violators"]:
+            recognized_persons = "\n".join(violator["recognized_persons"])
+            detected_ppe_classes = [violator["detected_ppe_classes"][ppe_class] for ppe_class in violator["detected_ppe_classes"]]
+            ws.append([timestamp, recognized_persons] + detected_ppe_classes)
     filename = os.path.join(path_to_directory, from_datetime.replace(" ", "_").replace(":", "-")+"_TO_"+to_datetime.replace(" ", "_").replace(":", "-")+".xlsx")
     wb.save(filename)

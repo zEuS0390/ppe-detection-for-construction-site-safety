@@ -167,4 +167,42 @@ class DatabaseCRUD(DatabaseHandler):
     def getAllViolationDetails(self, 
                                from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"), 
                                to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59")):
-        return self.session.query(ViolationDetails).filter(ViolationDetails.timestamp.between(from_datetime, to_datetime)).all()
+        violation_details = self.session.query(ViolationDetails).filter(ViolationDetails.timestamp.between(from_datetime, to_datetime)).all()
+        print(violation_details)
+        formatted_violation_details = []
+        for violation_detail in violation_details:
+            image = violation_detail.image
+            timestamp = violation_detail.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            violators = []
+            for violator in violation_detail.violators:
+                recognized_persons = []
+                first_name = violator.person.first_name
+                middle_name = violator.person.middle_name
+                last_name = violator.person.last_name
+                recognized_persons.append(" ".join([first_name, middle_name, last_name]))
+                detected_ppe_classes = {
+                        "no helmet": False,
+                        "no glasses": False,
+                        "no vest": False,
+                        "no gloves": False,
+                        "no boots": False,
+                        "helmet": False,
+                        "glasses": False,
+                        "vest": False,
+                        "gloves": False,
+                        "boots": False
+                }
+                for item in violator.detectedppeclasses:
+                    ppe_class_name = item.ppeclass.name
+                    if ppe_class_name in detected_ppe_classes:
+                        detected_ppe_classes[ppe_class_name] = True
+                violators.append({
+                    "recognized_persons": recognized_persons,
+                    "detected_ppe_classes": detected_ppe_classes
+                })
+            formatted_violation_details.append({
+                "image": image,
+                "timestamp": timestamp,
+                "violators": violators
+            })
+        return formatted_violation_details
