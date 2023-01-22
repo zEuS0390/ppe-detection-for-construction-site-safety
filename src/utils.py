@@ -57,6 +57,11 @@ def getRecognitionData(cfg):
         return result
 
 def getIPAddress():
+    """
+    Gets the current IP address of the machine.
+    
+    Returns a string of IP address
+    """
     ip_addr = subprocess.check_output(['hostname', '-I']).split()[0].decode()
     return ip_addr
 
