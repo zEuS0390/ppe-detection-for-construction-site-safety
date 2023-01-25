@@ -87,7 +87,8 @@ class Camera(metaclass=Singleton):
                     date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
                     self.writer = cv2.VideoWriter(f"data/recordings/recording_part{self.recording_number}_{date_and_time}.mp4", self.fourcc, self.fps, self.frame_size)
                     self.recording_number += 1
-                self.writer.write(read_frame)
+                if self.writer is not None:
+                    self.writer.write(read_frame)
             time.sleep(0.03)
         self.cap.release()
         self.writer.release()
