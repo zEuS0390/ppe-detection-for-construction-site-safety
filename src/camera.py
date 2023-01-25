@@ -52,6 +52,7 @@ class Camera(metaclass=Singleton):
             self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
             self.time_thresh = 1800  # 1800 seconds
             self.previous_time = time.time()
+            self.writer = None
             self.recording_number = 1
         self.isRunning = True
         self.det = []
@@ -81,7 +82,8 @@ class Camera(metaclass=Singleton):
             if self.record_enabled:
                 if elapsed_time >= self.time_thresh:
                     self.previous_time = current_time
-                    self.writer.release()
+                    if self.writer is not None:
+                        self.writer.release()
                     date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
                     self.writer = cv2.VideoWriter(f"data/recordings/recording_part{self.recording_number}_{date_and_time}.mp4", self.fourcc, self.fps, self.frame_size)
                     self.recording_number += 1
