@@ -47,11 +47,12 @@ class Camera(metaclass=Singleton):
                 self.logger.error(f"{e}")
             time.sleep(1)
         if self.record_enabled == True:
-            fps = 20
-            frame_size = (640, 480)
-            date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
+            self.fps = 20
+            self.frame_size = (640, 480)
             self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-            self.writer = cv2.VideoWriter(f"data/recordings/recording_{date_and_time}.mp4", self.fourcc, fps, frame_size)
+            self.time_thresh = 10 # 10 seconds
+            self.previous_time = time.time()
+            self.recording_number = 1
         self.isRunning = True
         self.det = []
         self.q = Queue()
@@ -70,12 +71,20 @@ class Camera(metaclass=Singleton):
         Update function for the camera thread
         """
         while self.isRunning:
+            current_time = time.time()
+            elapsed_time = current_time - self.previous_time
             _, read_frame = self.cap.read()
             if self.rtsp_enabled:
                 self.q.put(read_frame)
             else:
                 self.frame = read_frame
             if self.record_enabled:
+                if elapsed_time >= self.time_thresh:
+                    self.previous_time = current_time
+                    self.writer.release()
+                    date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
+                    self.writer = cv2.VideoWriter(f"data/recordings/recording_part{self.recording_number}_{date_and_time}.mp4", self.fourcc, self.fps, self.frame_size)
+                    self.recording_number += 1
                 self.writer.write(read_frame)
             time.sleep(0.03)
         self.cap.release()
