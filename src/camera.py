@@ -50,10 +50,16 @@ class Camera(metaclass=Singleton):
             self.fps = 20
             self.frame_size = (640, 480)
             self.fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-            self.time_thresh = 1800  # 1800 seconds
+            self.time_thresh = 30  # 1800 seconds
             self.previous_time = time.time()
-            self.writer = None
+            self.folder_name = "recording_"+datetime.now().date().strftime("%Y-%m-%d")
+            self.dir_path = "data/recordings/{}".format(self.folder_name)
+            if not os.path.exists(self.dir_path):
+                os.mkdir(self.dir_path)
             self.recording_number = 1
+            date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
+            self.writer = cv2.VideoWriter(os.path.join(self.dir_path, f"recording_part{self.recording_number}_{date_and_time}.mp4"), self.fourcc, self.fps, self.frame_size)
+            self.recording_number += 1
         self.isRunning = True
         self.det = []
         self.q = Queue()
@@ -82,12 +88,14 @@ class Camera(metaclass=Singleton):
             if self.record_enabled:
                 if elapsed_time >= self.time_thresh:
                     self.previous_time = current_time
-                    if self.writer is not None:
-                        self.writer.release()
+                    self.writer.release()
+                    self.folder_name = "recording_"+datetime.now().date().strftime("%Y-%m-%d")
+                    self.dir_path = "data/recordings/{}".format(self.folder_name)
+                    if not os.path.exists(self.dir_path):
+                        os.mkdir(self.dir_path)
                     date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
-                    self.writer = cv2.VideoWriter(f"data/recordings/recording_part{self.recording_number}_{date_and_time}.mp4", self.fourcc, self.fps, self.frame_size)
+                    self.writer = cv2.VideoWriter(os.path.join(self.dir_path, f"recording_part{self.recording_number}_{date_and_time}.mp4"), self.fourcc, self.fps, self.frame_size)
                     self.recording_number += 1
-                if self.writer is not None:
                     self.writer.write(read_frame)
             time.sleep(0.03)
         self.cap.release()
