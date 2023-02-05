@@ -12,13 +12,14 @@ import configparser, time, subprocess
 from datetime import datetime
 import logging
 
+# Set up the log event file and its message format
 logging.basicConfig(filename=f"data/logs/events_{datetime.now().strftime('%y-%m-%d_%H-%M-%S')}.log",format="%(asctime)s %(message)s", filemode="w")
 
 class Application:
 
     @staticmethod
     def main():
-
+        
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
 
