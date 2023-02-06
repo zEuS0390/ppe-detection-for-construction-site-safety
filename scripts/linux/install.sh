@@ -1,9 +1,12 @@
 #!/bin/bash
 
+# Create a virtual environment to store and isolate the dependencies to the system
 virtualenv .venv/ 
 
+# Install all the dependencies
 . .venv/bin/activate && pip install -r requirements.txt
 
+# Set up YOLOR
 # ----------------------------------------------
 
 # Clone YOLOR repository
@@ -52,12 +55,16 @@ echo "20s/from *utils./from yolor.utils./1 > ./yolor/utils/plots.py"
 
 # ----------------------------------------------
 
+# Create a copy of sample configuration files for MQTT clients
 cp "cfg/client/mqtt/sample.cfg" "cfg/client/mqtt/notif.cfg"
 cp "cfg/client/mqtt/sample.cfg" "cfg/client/mqtt/set.cfg"
 cp "cfg/client/sftp/sample.cfg" "cfg/client/sftp/data.cfg"
 
+# Create ssh keys for SFTP
 ssh-keygen -f "data/ssh_keys/rpi-camera" -t rsa -N "" -b 4096
 
+# Generate documentation of the source file of this project
+# If you don't want it to be included, you can comment it out
 pdoc --html --force src
 
-# read -p "Press enter to exit..."
+read -p "Press enter to exit..."
