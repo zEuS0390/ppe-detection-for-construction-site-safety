@@ -1,5 +1,10 @@
-import cv2, base64, os, time, subprocess, paramiko, socket, logging
-
+import (
+    cv2, base64,
+    os, time,
+    subprocess, paramiko,
+    socket, logging
+)
+    
 def imageToBinary(image):
     """
     Convert a numpy array image to binary data.
