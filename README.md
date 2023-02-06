@@ -61,4 +61,4 @@ Download and install mosquitto from https://mosquitto.org/download/. Make sure t
 Set the target IP address of MQTT client to the broker's IP address by creating its configuration file in ```cfg/client``` folder.
 
 ## 🎦 Demonstration
-TBA
+We are currently doing some tests on various construction sites to determine the quality of the system and draw conclusions about the accomplished objectives, particularly the accuracy of detection. In the meantime, we are not going to be able to show you the demonstration.

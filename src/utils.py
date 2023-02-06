@@ -66,6 +66,9 @@ def getIPAddress():
     return ip_addr
 
 def parsePlainConfig(filepath: str):
+    """
+    Parse the custom configuration file
+    """
     if not os.path.exists(filepath):
         raise Exception(f"'{filepath}' does not exist.")
     try:

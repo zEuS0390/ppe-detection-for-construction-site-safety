@@ -139,5 +139,6 @@ def main() -> None:
         listener.stop()
         cv2.destroyAllWindows()
 
+# Entry point of the program
 if __name__=="__main__":
     main()
