@@ -33,4 +33,16 @@ powershell -Command "(Get-Content ./yolor/utils/loss.py) -replace 'from utils.to
 powershell -Command "(Get-Content ./yolor/utils/plots.py) -replace 'from utils.general import xywh2xyxy, xyxy2xywh', 'from yolor.utils.general import xywh2xyxy, xyxy2xywh' | Out-File -encoding ASCII ./yolor/utils/plots.py"
 powershell -Command "(Get-Content ./yolor/utils/plots.py) -replace 'from utils.metrics import fitness', 'from yolor.utils.metrics import fitness' | Out-File -encoding ASCII ./yolor/utils/plots.py"
 
+# Create a copy of sample configuration files for MQTT clients
+copy "cfg\client\mqtt\sample.cfg" "cfg\client\mqtt\notif.cfg"
+copy "cfg\client\mqtt\sample.cfg" "cfg\client\mqtt\set.cfg"
+copy "cfg\client\sftp\sample.cfg" "cfg\client\sftp\data.cfg"
+
+# Create ssh keys for SFTP
+ssh-keygen -f "data\ssh_keys\rpi-camera" -t rsa -N "" -b 4096
+
+# Generate documentation of the source file of this project
+# If you don't want it to be included, you can comment it out
+pdoc --html --force src
+
 pause

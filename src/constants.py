@@ -4,6 +4,9 @@ APP_CFG_FILE = "./cfg/app.cfg"
 DEFAULT_MQTT_IMG_SIZE = [640, 480]
 
 class Class(Enum):
+    """
+    Class label names arranged in order
+    """
     HELMET = 0
     NO_HELMET = 1
     GLASSES = 2

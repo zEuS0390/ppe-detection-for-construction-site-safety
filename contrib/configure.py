@@ -19,6 +19,9 @@ def clear():
         os.system("cls")
 
 def parsePlainConfig(filepath: str):
+    """
+    Parse the custom configuration file
+    """
     if not os.path.exists(filepath):
         raise Exception(f"'{filepath}' does not exist.")
     try:
@@ -35,6 +38,9 @@ def parsePlainConfig(filepath: str):
         raise e
 
 def setPlainConfig(filepath, target_key, new_value):
+    """
+    Set new value in the custom configuration file
+    """
     if not os.path.exists(filepath):
         raise Exception(f"'{filepath}' does not exist.")
     try:
@@ -57,6 +63,9 @@ def setPlainConfig(filepath, target_key, new_value):
         raise e
 
 def getPlainConfig(filepath, target_key):
+    """
+    Get value by key in the custom configuration file
+    """
     if not os.path.exists(filepath):
         raise Exception(f"'{filepath}' does not exist.")
     try:
