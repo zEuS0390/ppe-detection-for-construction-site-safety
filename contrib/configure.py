@@ -2,6 +2,7 @@ from configparser import ConfigParser
 from getpass import getpass
 import os, sys
 
+# Initialize configuration file variables
 APP_CFG_FILENAME = "cfg/app.cfg"
 DETECTION_CFG_FILENAME = "cfg/detection/config.cfg"
 MQTT_CLIENT_NOTIF_FILENAME = "cfg/client/mqtt/notif.cfg"
@@ -13,6 +14,9 @@ detection_cfg = ConfigParser()
 detection_cfg.read(DETECTION_CFG_FILENAME)
 
 def clear():
+    """
+    Clear the console
+    """
     if sys.platform == "linux":
         os.system("clear")
     elif sys.platform == "win32":
