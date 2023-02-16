@@ -10,5 +10,8 @@ from src.app import Application
         - MARQUEZ, IAN GABRIEL
 """
 
+# This is the main entry point of the program.
+# It calls the static method of the Application
+# module to run the main process.
 if __name__=="__main__":
     Application.main()
