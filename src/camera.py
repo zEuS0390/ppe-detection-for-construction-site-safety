@@ -78,14 +78,14 @@ class Camera(metaclass=Singleton):
         Update function for the camera thread
         """
         while self.isRunning:
-            current_time = time.time()
-            elapsed_time = current_time - self.previous_time
             _, read_frame = self.cap.read()
             if self.rtsp_enabled:
                 self.q.put(read_frame)
             else:
                 self.frame = read_frame
             if self.record_enabled:
+                current_time = time.time()
+                elapsed_time = current_time - self.previous_time
                 if elapsed_time >= self.time_thresh:
                     self.previous_time = current_time
                     self.writer.release()

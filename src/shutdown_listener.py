@@ -1,7 +1,12 @@
 from src.hardware import Hardware
 from src.singleton import Singleton
 from threading import Thread
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    class GPIO:
+        HIGH: any = ...
+        def input(*args, **kwargs): ...
 import time
 
 class ShutdownListener(metaclass=Singleton):
