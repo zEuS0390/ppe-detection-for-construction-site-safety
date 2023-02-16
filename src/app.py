@@ -20,6 +20,25 @@ logging.basicConfig(
 )
 
 class Application:
+    
+    """
+    The workflow of the application happens here. Before starting the detection, all 
+    the underlying modules will be initialized first. They are essential, especially 
+    in loading the models and the people's basic personal identities. These modules 
+    have threads to process their initialized data and perform their specific roles. 
+    For example, the hardware module will utilize Raspberry Pi's GPIO pins to control 
+    the hardware components in the project based on its configuration.
+    
+    These are the following modules used:
+    - Hardware
+    - Indicator
+    - ShutdownListener
+    - DatabaseCRUD
+    - Camera
+    - Recognition
+    - Detection
+    - MQTTClient
+    """
 
     @staticmethod
     def main():
