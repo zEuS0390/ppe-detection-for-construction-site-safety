@@ -1,0 +1,3 @@
+[submodule "yolor"]
+	path = yolor
+	url = https://github.com/WongKinYiu/yolor.git
