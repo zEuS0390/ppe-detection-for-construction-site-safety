@@ -9,9 +9,8 @@ virtualenv .venv/
 # Set up YOLOR
 # ----------------------------------------------
 
-# Clone YOLOR repository
-git clone "https://github.com/WongKinYiu/yolor.git"
-rm -rf "./yolor/.git"
+# Incorporate YOLOR dependency project as submodule
+git submodule add "https://github.com/WongKinYiu/yolor.git"
 
 # ./yolor/models/models.py
 sed -i "1s/from *utils./from yolor.utils./1" "./yolor/models/models.py"
