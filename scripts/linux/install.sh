@@ -10,7 +10,7 @@ virtualenv .venv/
 # ----------------------------------------------
 
 # Incorporate YOLOR dependency project as submodule
-git submodule add "https://github.com/WongKinYiu/yolor.git"
+git submodule update --init
 
 # ./yolor/models/models.py
 sed -i "1s/from *utils./from yolor.utils./1" "./yolor/models/models.py"
