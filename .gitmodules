@@ -1,6 +1,8 @@
 [submodule "yolor"]
 	path = yolor
 	url = https://github.com/WongKinYiu/yolor.git
+	ignore = dirty
 [submodule "contrib/python-based-yolo-dataset-tools"]
 	path = contrib/python-based-yolo-dataset-tools
 	url = https://github.com/zEuS0390/python-based-yolo-dataset-tools.git
+	ignore = dirty
