@@ -72,19 +72,21 @@ We used Rasperry Pi 4 Model B and OKdo Camera Module in this project. Additional
   <img src="https://user-images.githubusercontent.com/39390245/221419072-ac3a7018-7ec4-4521-84a1-b8b0446808b0.png" width=640 height=480 alt"hardware-design-3">
 </p>
 
-## 🔍 Class Labels
-The trained model detects 5 basic PPE for construction with additional of 5 noncompliant cases and a person for determining violations.
-- Helmet
-- No helmet
-- Glasses
-- No glasses
-- Vest
-- No vest
-- Gloves
-- No gloves
-- Boots
-- No boots
-- Person
+## 🔍 Model Classes
+The trained model covers eleven classes. It can detect compliant and noncompliant PPE for construction, it can also detect persons which aids the application to determine particular violations.
+<ul>
+  <li>Helmet</li>
+  <li>No Helmet</li>
+  <li>Glasses</li>
+  <li>No Glasses</li>
+  <li>Vest</li>
+  <li>No Vest</li>
+  <li>Gloves</li>
+  <li>No Gloves</li>
+  <li>Boots</li>
+  <li>No Boots</li>
+  <li>Person</li>
+</ul>
 
 ## 🚀 Installation
 To get started, install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
