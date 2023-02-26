@@ -20,17 +20,57 @@ This is the official repository of our PPE detection application for constructio
 
 ## ⚙️ Hardware
 We used Rasperry Pi 4 Model B and OKdo Camera Module in this project. Additionally, we included some minor components to make the system more complete and at least somewhat helpful to the user, including RGB LED, piezo buzzer, and a tactile switch.
-| | Raspberry Pi |
-| :-: | :-: |
-| CPU | BCM2835 ARM Quad-Core 64-bit @ 1.8GHz |
-| OS | Debian GNU/Linux 11 (bullseye) aarch64 |
-| Memory | 8 GB |
 
-| | OKdo Camera Module |
-| :-: | :-: |
-| Sensor | 5MP OV5647 |
-| Resolution | 1080p |
-| FPS | 30 |
+<details>
+  <summary>Raspberry Pi Specifications</summary>
+  <br>
+  <table>
+    <tbody>
+      <tr>
+        <td align="center">CPU</td>
+        <td align="center">BCM2835 ARM Quad-Core 64-bit @ 1.8GHz</td>
+      </tr>
+      <tr>
+        <td align="center">OS</td>
+        <td align="center">Debian GNU/Linux 11 (bullseye) aarch64</td>
+      </tr>
+      <tr>
+        <td align="center">RAM</td>
+        <td align="center">8 GB</td>
+      </tr>
+    </tbody>
+  </table>
+</details>
+
+<details>
+  <summary>OKdo Camera Module Specifications</summary>
+  <br>
+  <table>
+    <tbody>
+      <tr>
+        <td align="center">Sensor</td>
+        <td align="center">5MP OV5647</td>
+      </tr>
+      <tr>
+        <td align="center">Resolution</td>
+        <td align="center">1080p</td>
+      </tr>
+      <tr>
+        <td align="center">FPS</td>
+        <td align="center">30</td>
+      </tr>
+    </tbody>
+  </table>
+</details>
+
+### Hardware Design
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/39390245/221418865-82400ab6-caf6-484a-9d54-ca28c0866e41.png" width=640 height=480 alt="hardware-design-1">
+  <br>
+  <img src="https://user-images.githubusercontent.com/39390245/221419473-27658a5d-7759-404a-853e-e95269814909.png" width=640 height=480 alt="hardware-design-2">
+  <br>
+  <img src="https://user-images.githubusercontent.com/39390245/221419072-ac3a7018-7ec4-4521-84a1-b8b0446808b0.png" width=640 height=480 alt"hardware-design-3">
+</p>
 
 ## 🔍 Class Labels
 The trained model detects 5 basic PPE for construction with additional of 5 noncompliant cases and a person for determining violations.
