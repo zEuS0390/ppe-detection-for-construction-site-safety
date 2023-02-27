@@ -226,7 +226,7 @@ class Detection(metaclass=Singleton):
         """
         Save violations of person/s to the database
         """
-        date_and_time = datetime.now().strftime(r"%y-%m-%d_%H:%M:%S")
+        date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
         image_name = f"data/images/image_{date_and_time}.jpg"
         cv2.imwrite(image_name,image)
 
