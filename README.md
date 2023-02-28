@@ -157,4 +157,8 @@ Download and install mosquitto from https://mosquitto.org/download/. Make sure t
 Set the target IP address of MQTT client to the broker's IP address by creating its configuration file in ```cfg/client``` folder.
 
 ## 🎦 Demonstration
-We are currently doing some tests on various construction sites to determine the quality of the system and draw conclusions about the accomplished objectives, particularly the accuracy of detection. In the meantime, we are not going to be able to show you the demonstration.
+We are currently doing some tests on various construction sites to determine the quality of the system and draw conclusions about the accomplished objectives, particularly the accuracy of detection.
+<ul>
+  <li><a href="https://youtu.be/9GrYwxQUfOI">PPE for Construction Detection Test #1</a></li>
+  <li><a href="https://youtu.be/NdW77oMXwo8">PPE for Construction Detection Test #2</a></li>
+</ul>
