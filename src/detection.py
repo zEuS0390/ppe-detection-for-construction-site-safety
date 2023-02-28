@@ -163,11 +163,18 @@ class Detection(metaclass=Singleton):
         self.publish_if_violators_exist = detection_cfg.getboolean("mqtt", "publish_if_violators_exist")
         self.logger.info("PPE preferences loaded")
 
-    def plotBox(self, image: np.ndarray, coordinates: Box, color: BGRColor, label: str):
+    def plotBox(self, _id: int, image: np.ndarray, coordinates: Box, color: BGRColor, label: str):
         """
         Plot bounding boxes and labels in the image.
         """
         tl = round(0.002 * (image.shape[0] + image.shape[1]) / 2) + 1 # Line/font thickness
+        # Set the font thickness of text labels
+        font_thickness = max(tl - 1, 1)  # font thickness
+        # This is the label _id, which is basically a PPE class id. 
+        # Do not include _id in the plot if it's value is -1
+        if _id != -1:
+            cv2.putText(image, str(_id), (coordinates.left, coordinates.top), 0, tl / 3, color.value, thickness=font_thickness, lineType=cv2.LINE_AA)
+        # Draw the bounding box
         cv2.rectangle(
             image, 
             (coordinates.left, coordinates.top), 
@@ -176,7 +183,6 @@ class Detection(metaclass=Singleton):
             thickness=tl, 
             lineType=cv2.LINE_AA
         )
-        font_thickness = max(tl - 1, 1)  # font thickness
         cv2.putText(image, label, (coordinates.left, coordinates.bottom), 0, tl / 3, color.value, thickness=font_thickness, lineType=cv2.LINE_AA)
 
     # Detect an image
@@ -305,7 +311,7 @@ class Detection(metaclass=Singleton):
         for person_index, person_coordinate in person_indices:
             person_info = self.persons_info[int(person_index)] if person_index != -1 else {}
             box = Box(*person_coordinate)
-            self.plotBox(image_plots, box, self.colors[11], person_info["first_name"] if len(person_info) > 0 else "Unknown")
+            self.plotBox(-1, image_plots, box, self.colors[11], person_info["first_name"] if len(person_info) > 0 else "Unknown")
             overlaps = self.checkOverlaps(box, persons)
             person_info["overlaps"] = overlaps
             recognized_persons.append(person_info)
@@ -323,6 +329,9 @@ class Detection(metaclass=Singleton):
                 "violations": []
             } 
 
+            # Plot the person's id in the image
+            self.plotBox(id, image_plots, person["coordinate"], self.colors[self.names.index(ppe_item["class_name"])], "")
+
             # Get PPE items that are in the person
             for ppe_item in ppe:
                 confidence = round(ppe_item["confidence"], 4)
@@ -334,7 +343,7 @@ class Detection(metaclass=Singleton):
                         label = f"{class_name} {confidence:.2f}"
                         class_bbox_drawn.append(ppe_item["id"])
                         try:
-                            self.plotBox(image_plots, ppe_item["coordinate"], self.colors[self.names.index(ppe_item["class_name"])], label)
+                            self.plotBox(-1, image_plots, ppe_item["coordinate"], self.colors[self.names.index(ppe_item["class_name"])], label)
                         except:
                             pass
 
