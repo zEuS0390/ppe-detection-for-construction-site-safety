@@ -82,12 +82,8 @@ class Application:
 
         indicator.info_none()
 
-        try:
-            while shutdownlistener.isRunning: time.sleep(1)
-        except KeyboardInterrupt:
-            shutdownlistener.isRunning = False
-            
-        shutdownlistener.thread.join()
+        shutdownlistener.wait()
+
         detection.stop()
         camera.stop()
         mqtt_notif.stop()
