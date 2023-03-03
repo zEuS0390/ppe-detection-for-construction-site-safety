@@ -330,7 +330,7 @@ class Detection(metaclass=Singleton):
             } 
 
             # Plot the person's id in the image
-            self.plotBox(id, image_plots, person["coordinate"], self.colors[self.names.index(ppe_item["class_name"])], "")
+            self.plotBox(id, image_plots, person["coordinate"], self.colors[self.names.index(person["class_name"])], "")
 
             # Get PPE items that are in the person
             for ppe_item in ppe:
