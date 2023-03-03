@@ -145,16 +145,31 @@ The trained model covers eleven classes. It can detect compliant and noncomplian
 ## 🚀 Installation
 To get started, install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
 
-There are some dependencies that are not included in the script. Download and install them first before continuing to the next step. 
+There are some external dependencies that are not included in the script. Download and install them first before continuing to the next step. 
 
 After that, just run this script and it will handle the installation.
-```
+```bash
 ./scripts/linux/install.sh
 ```
 
-Download and install mosquitto from https://mosquitto.org/download/. Make sure to run the broker as a service or as an independent program.
+Download and install mosquitto from https://mosquitto.org/download/. Make sure to set it as a service to automatically start itself during system startup. There should be username and password set up in the configuration by creating a password file (e.g. `passwd_file`):
+```bash
+# Uncomment the following values in this configuration file: mosquitto.conf
 
-Set the target IP address of MQTT client to the broker's IP address by creating its configuration file in ```cfg/client``` folder.
+listener 1883
+password_file passwd_file
+allow_anonymous false
+```
+To create a username and password, enter this command:
+```bash
+# Note: `admin` is a username, you can change it if you want
+# After entering this command, it will prompt for a password
+mosquitto_passwd passwd_file admin
+```
+This is optional, but if you want to run the broker manually instead of a service, then run this command:
+```
+mosquitto -c mosquitto.conf -v
+```
 
 ## 🎦 Demonstration
 We are currently doing some tests on various construction sites to determine the quality of the system and draw conclusions about the accomplished objectives, particularly the accuracy of detection.
