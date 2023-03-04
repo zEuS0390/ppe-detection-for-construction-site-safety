@@ -38,6 +38,7 @@ try:
                 else:
                     button_flag = True
                 time.sleep(0.1)
+# Create a different form of ShutdownListener if the import error occurs
 except ImportError:
     class ShutdownListener(metaclass=Singleton):
 
