@@ -184,7 +184,7 @@ class Detection(metaclass=Singleton):
             thickness=tl, 
             lineType=cv2.LINE_AA
         )
-        # cv2.putText(image, label, (coordinates.left, coordinates.bottom), 0, tl / 3, color.value, thickness=font_thickness, lineType=cv2.LINE_AA)
+        cv2.putText(image, label, (coordinates.left, coordinates.bottom), 0, tl / 3, color.value, thickness=font_thickness, lineType=cv2.LINE_AA)
 
     # Detect an image
     def detect(self, processed_image, image):
@@ -341,7 +341,7 @@ class Detection(metaclass=Singleton):
 
                     # Draw PPE if not drawn yet
                     if ppe_item["id"] not in class_bbox_drawn:
-                        label = f"{class_name} {confidence:.2f}"
+                        label = f"{class_name}"
                         class_bbox_drawn.append(ppe_item["id"])
                         try:
                             self.plotBox(-1, image_plots, ppe_item["coordinate"], self.colors[self.names.index(ppe_item["class_name"])], label)
