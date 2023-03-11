@@ -152,6 +152,7 @@ class Detection(metaclass=Singleton):
             self.model = Darknet(self.cfg.get("yolor", "cfg"), self.cfg.getint("yolor", "img_size")).cpu()
             self.model.load_state_dict(torch.load(weights, map_location=self.device)['model'])
             self.model.to(self.device).eval()
+            self.logger.info(f"Model loaded: {weights}")
         else:
             self.logger.error("No weights found")
             raise Exception("No weights found")
