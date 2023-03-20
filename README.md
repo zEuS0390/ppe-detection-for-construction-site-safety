@@ -69,7 +69,7 @@ This is the official repository of our PPE detection application for constructio
 
 ## System Flowchart
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/39390245/221636223-b5c07fa4-17e7-4f42-bf4b-d7f665bf27fe.png" width=640 height=640 alt="System Flowchart">
+  <img src="https://user-images.githubusercontent.com/39390245/226389227-8c31513f-9587-465d-b0f2-0c762376fca3.png" width=640 height=720 alt="System Flowchart">
 </p>
 
 ## ⚙️ Hardware
@@ -176,4 +176,7 @@ We are currently doing some tests on various construction sites to determine the
 <ul>
   <li><a href="https://youtu.be/9GrYwxQUfOI">PPE for Construction Detection Test #1</a></li>
   <li><a href="https://youtu.be/NdW77oMXwo8">PPE for Construction Detection Test #2</a></li>
+  <li><a href="https://youtu.be/BJzhbw56-tE">PPE for Construction Detection Test #3</a></li>
+  <li><a href="https://youtu.be/ogvOjIQox6o">PPE for Construction Detection Test #4</a></li>
+  <li><a href="https://youtu.be/HjcbnA7a1iU">PPE for Construction Detection Test #5</a></li>
 </ul>
