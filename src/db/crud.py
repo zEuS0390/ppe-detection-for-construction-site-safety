@@ -82,6 +82,9 @@ class DatabaseCRUD(DatabaseHandler):
         self.session.close()
 
     def getPPEClasses(self):
+        """
+        Get all the PPE class labels defined from the database.
+        """
         row = self.session.query(PPEClass).all()
         ppeclasses = {}
         for col in row:
@@ -93,6 +96,9 @@ class DatabaseCRUD(DatabaseHandler):
         return ppeclasses
 
     def getPersons(self):
+        """
+        Get all persons from the database.
+        """
         row = self.session.query(Person).all()
         persons = {}
         for col in row:
