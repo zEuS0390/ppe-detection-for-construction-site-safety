@@ -31,6 +31,9 @@ def getElapsedTime(func, *args, **kwargs):
     return (result, elapsed_time)
 
 def getDetectionModel(cfg):
+    """
+    Gets the latest detection model file
+    """
     weights_dir = cfg.get("yolor", "weights_dir")
     versions = sorted(os.listdir(weights_dir))
     if len(versions) > 0:
@@ -42,6 +45,9 @@ def getDetectionModel(cfg):
                 return os.path.join(latest_dir, file)
 
 def getRecognitionData(cfg):
+    """
+    Gets the latest recognition model file
+    """
     recognition_model_dir = cfg.get("face_recognition", "models_dir")
     versions = sorted(os.listdir(recognition_model_dir))
     if len(versions) > 0:
