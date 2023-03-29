@@ -1,5 +1,6 @@
 from enum import Enum
 
+# Declare constant variables for configuration and the size of the mqtt image
 APP_CFG_FILE = "./cfg/app.cfg"
 DEFAULT_MQTT_IMG_SIZE = [640, 480]
 
