@@ -8,6 +8,9 @@ def exportAsXLSX(cfg: ConfigParser,
                  path_to_directory: str = "data/export", 
                  from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"), 
                  to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59")):
+  """
+  Generate and export the requested data from the database to XLSX file.
+  """
     db = DatabaseCRUD.getInstance()
     list_of_violation_details = db.getAllViolationDetails(from_datetime, to_datetime)
     wb = Workbook()
