@@ -1,4 +1,15 @@
 import cv2, base64, os, time, subprocess, paramiko, socket, logging
+
+"""
+    Functions:
+        - imageToBinary         (image)
+        - getElapsedTime        (func, *args, **kwargs)
+        - getDetectionModel     (cfg)
+        - getRecognitionData    (cfg)
+        - getIPAddress          ()
+        - parsePlainConfig      (filepath)
+        - getLatestFiles        (cfg_name, target_names)
+"""
     
 def imageToBinary(image):
     """
