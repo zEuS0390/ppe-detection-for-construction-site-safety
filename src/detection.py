@@ -97,7 +97,6 @@ class Detection(metaclass=Singleton):
             data = json.loads(payload)
             if "ppe_preferences" in data:
                 self.ppe_preferences = {class_name.replace("_", " "): status for class_name, status in data["ppe_preferences"].items()}
-                # print(self.ppe_preferences)
             if "detection_interval" in data:
                 self.interval = data["detection_interval"]
             if "mqtt_img_resolution" in data:
@@ -229,7 +228,7 @@ class Detection(metaclass=Singleton):
                     ppe.append(detected_obj)
         return persons, ppe
 
-    def saveViolations(self, image, persons, violations, body_coordinate: Box):
+    def saveViolations(self, image, recognized_persons, violations, body_coordinate: Box):
         """
         Save violations of person/s to the database
         """
@@ -249,17 +248,42 @@ class Detection(metaclass=Singleton):
         self.db.session.commit()
         self.db.session.close()
 
-        for person in persons:
-            if len(person) > 1:
-                self.db.insertViolator(
-                    violationdetails_id=violationdetails_id,
-                    person_id=person["person_id"],
-                    topleft=(body_coordinate.left, body_coordinate.top),
-                    bottomright=(body_coordinate.right, body_coordinate.bottom),
-                    detectedppeclasses=violations,
-                    verbose=True,
-                    commit=False
-                )
+        # Save violator as unknown person that has no face
+        if len(recognized_persons) == 0:
+            
+            self.db.insertViolator(
+                violationdetails_id=violationdetails_id,
+                person_id=0,
+                topleft=(body_coordinate.left, body_coordinate.top),
+                bottomright=(body_coordinate.right, body_coordinate.bottom),
+                detectedppeclasses=violations,
+                verbose=True,
+                commit=False
+            )
+        else:
+            # Save violator as recognized person that has a face
+            for recognized_person in recognized_persons:
+                if len(recognized_person) > 1:
+                    self.db.insertViolator(
+                        violationdetails_id=violationdetails_id,
+                        person_id=recognized_person["person_id"],
+                        topleft=(body_coordinate.left, body_coordinate.top),
+                        bottomright=(body_coordinate.right, body_coordinate.bottom),
+                        detectedppeclasses=violations,
+                        verbose=True,
+                        commit=False
+                    )
+                # Save violator as unknown person that has an unrecognized face
+                else:
+                    self.db.insertViolator(
+                        violationdetails_id=violationdetails_id,
+                        person_id=0,
+                        topleft=(body_coordinate.left, body_coordinate.top),
+                        bottomright=(body_coordinate.right, body_coordinate.bottom),
+                        detectedppeclasses=violations,
+                        verbose=True,
+                        commit=False
+                    )
 
         self.db.n_operations += 1
         # Perform commit when n_operations value reaches 5
@@ -305,12 +329,17 @@ class Detection(metaclass=Singleton):
         
         # Recognize faces
         person_indices, person_time = getElapsedTime(self.recognition.predict, image, distance_threshold=0.4)
-        self.logger.info(f"Recognition time: {person_time:.2f}\n")
+        self.logger.info(f"Recognition time: {person_time:.2f}")
 
         # Check overlaps of each recognized faces
         recognized_persons = []
         for person_index, person_coordinate in person_indices:
-            person_info = self.persons_info[int(person_index)] if person_index != -1 else {}
+            # In the "self.persons_info[ int(person_index) + 1]", you may wonder why is it being incremented by 1.
+            # The reason is that there is an unknown person in the first row of the Person table from the database.
+            # This unknown person from the database does not exist in the dataset of the face recognition.
+            # The face recognition only gives us -1 if it is unknown (not recognized) within its dataset.
+            # See the saveViolations method to check how an unknown person from the database is used.
+            person_info = self.persons_info[ int(person_index) + 1 ] if person_index != -1 else {}
             box = Box(*person_coordinate)
             self.plotBox(-1, image_plots, box, self.colors[11], person_info["first_name"] if len(person_info) > 0 else "Unknown")
             overlaps = self.checkOverlaps(box, persons)
@@ -372,12 +401,13 @@ class Detection(metaclass=Singleton):
                 _, save_time = getElapsedTime(self.saveViolations, image_plots, violator["person_info"], violator["violations"], person["coordinate"])
                 self.logger.info(f"Saving violations time: {save_time:.2f}")
 
+        # Consolidate all the information
         message["camera"] = self.camera_details
         message["image"] = imageToBinary(image_plots)
         message["total_violators"] = len(violators)
         message["total_violations"] = total_violations
         message["violators"] = violators
-        message["timestamp"] = datetime.now().strftime(r"%y-%m-%d %H:%M:%S")
+        message["timestamp"] = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
         
         return message
 
@@ -399,6 +429,7 @@ class Detection(metaclass=Singleton):
                     continue
                 if processed_frame is not None:
                     self.indicator.info_detecting()
+                    self.indicator.info_none(buzzer=False)
                     violations_result, violations_time = getElapsedTime(self.checkViolations, processed_frame, original_frame)
                     self.logger.info(f"Overall process time: {violations_time:.2f}")
                     to_print = {
@@ -417,5 +448,4 @@ class Detection(metaclass=Singleton):
                         self.logger.info(json.dumps(to_print, indent=4, sort_keys=True))
                         payload = json.dumps(violations_result)
                         self.mqtt_notif.publish(payload=payload)
-                    self.indicator.info_none(buzzer=False)
             time.sleep(0.03)
