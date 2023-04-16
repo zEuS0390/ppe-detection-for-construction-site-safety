@@ -17,7 +17,6 @@ try:
                 while self.isRunning: time.sleep(1)
             except KeyboardInterrupt:
                 self.isRunning = False
-                self.stop()
             self.thread.join()
 
         def update(self):

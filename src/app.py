@@ -93,5 +93,7 @@ class Application:
 
         indicator.info_stopping_application()
 
-        subprocess.run(["sudo", "shutdown", "-h", "now"])
+        # Check if auto shutdown is enabled in the app configuration
+        if cfg.getboolean("hardware", "auto_shutdown_enabled"):
+            subprocess.run(["sudo", "shutdown", "-h", "now"])
 
