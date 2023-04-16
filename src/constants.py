@@ -6,7 +6,7 @@ DEFAULT_MQTT_IMG_SIZE = [640, 480]
 
 class Class(Enum):
     """
-    Class label names arranged in order
+    The class label names arranged in order.
     """
     HELMET = 0
     NO_HELMET = 1
@@ -22,7 +22,8 @@ class Class(Enum):
 
 class BGRColor(Enum):
     """
-    Color in BGR format
+    The colors in BGR format. This is used for coloring 
+    the bounding boxes of detected objects in the image.
     """
     RED = (0, 0, 255)
     ORANGE = (0, 165, 255)
@@ -39,13 +40,14 @@ class BGRColor(Enum):
 
 class RGBColor(Enum):
     """
-    Color in RGB format
+    The colors in RGB format with boolean values. This is 
+    used for coloring the RGB LED light indicator.
     """
-    RED  = (255, 0, 0)
-    GREEN = (0, 255, 0)
-    BLUE = (0, 0, 255)
-    WHITE = (255, 255, 255)
-    NONE = (0, 0, 0)
-    YELLOW = (255, 255, 0)
-    CYAN = (0, 255, 255)
-    PURPLE = (255, 0, 255)
+    RED  = (True, False, False)
+    GREEN = (False, True, False)
+    BLUE = (False, False, True)
+    WHITE = (True, True, True)
+    NONE = (False, False, False)
+    YELLOW = (True, True, False)
+    CYAN = (False, True, True)
+    PURPLE = (True, False, True)

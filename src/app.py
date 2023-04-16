@@ -61,8 +61,8 @@ class Application:
         logger.info("Downloading model files")
         indicator.info_downloading_files()
         getLatestFiles("data", ["face_recognition", "detection"])
+        indicator.info_none(buzzer=False)
 
-        indicator.info_creating_objects()
         dbHandler = DatabaseCRUD(cfg)
         dbHandler.insertPersons(getRecognitionData(cfg)["info"])
         dbHandler.insertPPEClasses(cfg.get("yolor","classes"))
@@ -79,8 +79,6 @@ class Application:
         mqtt_set.start()
         camera.start()
         detection.start()
-
-        indicator.info_none()
 
         shutdownlistener.wait()
 
