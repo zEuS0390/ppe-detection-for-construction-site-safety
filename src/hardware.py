@@ -43,6 +43,9 @@ class Hardware(metaclass=Singleton):
         GPIO.setup(self.buttonPin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 def setColorRGB(red: bool = False, green: bool = False, blue: bool = False):
+    """
+    Set the color of the RGB LED. Requires 3 states for red, green, and blue.
+    """
     hardware = Hardware.getInstance()
     if hardware.isrgbenabled:
         if red == True:
@@ -59,6 +62,9 @@ def setColorRGB(red: bool = False, green: bool = False, blue: bool = False):
             GPIO.output(hardware.bluePin, GPIO.LOW)
 
 def playBuzzer(n_times: int, delay1: float, delay2: float):
+    """
+    Play buzzer with an interval. Requires n_times, delay1, and delay2.
+    """
     hardware = Hardware.getInstance()
     if hardware.isbuzzerenabled:
         for _ in range(n_times):
