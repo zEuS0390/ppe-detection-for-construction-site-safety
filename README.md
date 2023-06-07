@@ -142,6 +142,26 @@ The trained model covers eleven classes. It can detect compliant and noncomplian
   <li>Person</li>
 </ul>
 
+## 📊 Datasets
+The trained model was trained using these datasets with different image augmentation. The custom dataset used in this project were pre-processed and thoroughly scanned and labeled following the classes mentioned above. Images were resized to 640x640 and provided with different augmentations. The final datasets are split into three different sets 70% Training Set, 20% Validation Set, and 10% Testing Set.
+
+<br>
+The datasets are available in these links:
+<ul>
+  <li>
+    Part 1
+    <a href="https://universe.roboflow.com/pd2/ppev5">
+        <img src="https://app.roboflow.com/images/download-dataset-badge.svg"></img>
+    </a>
+  </li>
+  <li>
+    Part 2
+    <a href="https://universe.roboflow.com/pd2v2/ppev5_v2">
+        <img src="https://app.roboflow.com/images/download-dataset-badge.svg"></img>
+    </a>
+  </li>
+</ul>
+
 ## 🚀 Installation
 To get started, install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
 
