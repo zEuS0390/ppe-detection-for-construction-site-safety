@@ -5,6 +5,17 @@ import time
 
 class Indicator(metaclass=Singleton):
 
+    """
+    This class contains all methods indicating a variety of events in the application.
+
+    Methods:
+        - info_downloading_files        ()
+        - info_none                     ()
+        - info_stopping_application     ()
+        - info_receving_msg_mqtt        ()
+        - info_detecting                ()
+    """
+
     def info_downloading_files(self):
         setColorRGB(*RGBColor.BLUE.value)
         playBuzzer(1, 0.05, 0.05)
