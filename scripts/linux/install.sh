@@ -64,6 +64,6 @@ ssh-keygen -f "data/ssh_keys/rpi-camera" -t rsa -N "" -b 4096
 
 # Generate documentation of the source file of this project
 # If you don't want it to be included, you can comment it out
-pdoc --html --force src
+# pdoc --html --force src
 
-read -p "Press enter to exit..."
+# read -p "Press enter to exit..."
