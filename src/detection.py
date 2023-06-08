@@ -64,13 +64,8 @@ class Detection(metaclass=Singleton):
     ):
         self.logger = logging.getLogger()
         self.cfg = cfg
-        self.indicator: Indicator = Indicator.getInstance()
-        self.db: DatabaseCRUD = DatabaseCRUD.getInstance()
-        self.camera: Camera = Camera.getInstance()
-        self.recognition: Recognition = Recognition.getInstance()
         self.mqtt_notif = mqtt_notif
         self.mqtt_set = mqtt_set
-        self.mqtt_set.client.on_message = self.onClientSet
         self.device = select_device(self.cfg.get("yolor", "device"))
         cudnn.benchmark = True
         self.loadData()
@@ -80,7 +75,15 @@ class Detection(metaclass=Singleton):
         """
         Starts the detection thread. It will not start if one or more required arguments are missing.
         """
-        if self.camera is not None and self.recognition is not None and self.mqtt_notif is not None and self.mqtt_set is not None:
+        if self.mqtt_notif is not None and self.mqtt_set is not None:
+            self.indicator: Indicator = Indicator.getInstance()
+            self.db: DatabaseCRUD = DatabaseCRUD.getInstance()
+            self.camera: Camera = Camera.getInstance()
+            self.recognition: Recognition = Recognition.getInstance()
+            self.mqtt_set.client.on_message = self.onClientSet
+            if self.db is not None:
+                self.loadPersons()
+            self.loadCameraDetails()
             self.updateThread = threading.Thread(target=self.update)
             self.updateThread.start()
         else:
@@ -106,9 +109,6 @@ class Detection(metaclass=Singleton):
             self.logger.error(f"MQTT Client Error: {e}")
 
     def loadData(self):
-        if self.db is not None:
-            self.loadPersons()
-        self.loadCameraDetails()
         self.loadDetectionCFG()
         self.loadColors()
         self.loadClasses()
