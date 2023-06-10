@@ -72,8 +72,12 @@ This is the official repository of our PPE detection application for constructio
   <img src="https://user-images.githubusercontent.com/39390245/226389227-8c31513f-9587-465d-b0f2-0c762376fca3.png" width=640 height=720 alt="System Flowchart">
 </p>
 
-## ⚙️ Hardware
-We used Rasperry Pi 4 Model B and OKdo Camera Module in this project. Additionally, we included some minor components to make the system more complete and at least somewhat helpful to the user, including RGB LED, piezo buzzer, and a tactile switch.
+## ⚙️ Hardware Design
+We used a Rasperry Pi 4 Model B and an OKdo camera module in this project. Additionally, we included some minor components to 
+help the user determine the status of the device and physically turn it off. These components are: RGB LED light, piezo buzzer, and a 
+tactile switch. A tripod can also be attached and detached to the bottom of the enclosure to adjust the angle of the camera, 
+which aids the mobility of the device. The ventillation also plays a vital role in the every hardware. Therefore, in the enclosure, 
+the exhausts are found at the top, right, and left.
 
 <details>
   <summary>Raspberry Pi Specifications</summary>
@@ -117,13 +121,14 @@ We used Rasperry Pi 4 Model B and OKdo Camera Module in this project. Additional
   </table>
 </details>
 
-### Hardware Design
+<br>
+
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/39390245/221418865-82400ab6-caf6-484a-9d54-ca28c0866e41.png" width=640 height=480 alt="hardware-design-1">
+  <img src="https://github.com/cpe-pd/ppe-for-construction-detection/assets/39390245/a2b2c684-8e8b-4dfc-8ccd-4327aa1bb156" width=640 height=480 alt="hardware-design-1">
   <br>
-  <img src="https://user-images.githubusercontent.com/39390245/221419473-27658a5d-7759-404a-853e-e95269814909.png" width=640 height=480 alt="hardware-design-2">
+  <img src="https://github.com/cpe-pd/ppe-for-construction-detection/assets/39390245/60148172-3349-4ee7-8db2-3c5212fde6b4" width=640 height=480 alt="hardware-design-2">
   <br>
-  <img src="https://user-images.githubusercontent.com/39390245/221419072-ac3a7018-7ec4-4521-84a1-b8b0446808b0.png" width=640 height=480 alt"hardware-design-3">
+  <img src="https://github.com/cpe-pd/ppe-for-construction-detection/assets/39390245/7409e33a-18db-450e-8ccb-a4faa04a0a98" width=640 height=480 alt="hardware-design-3">
 </p>
 
 ## 🔍 Model Classes
