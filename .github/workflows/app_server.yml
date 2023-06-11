@@ -24,6 +24,10 @@ jobs:
             chmod +x ./scripts/linux/install.sh
             ./scripts/linux/install.sh
           shell: bash
+        - name: Create a Virtual Environment
+          run: |
+            virtualenv .venv/
+          shell: bash
         - name: Run Tests
           run: |
             . .venv/bin/activate && python -m unittest discover -s tests
