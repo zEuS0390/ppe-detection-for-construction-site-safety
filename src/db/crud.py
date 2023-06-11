@@ -13,35 +13,39 @@ class DatabaseCRUD(DatabaseHandler):
     
     """
     Methods:
-        - insertPPEClasses          (filepath: str)
+        - insertPPEClasses          (filepath: str)                                                             -> None
         - insertPersons             (filepath: str, 
-                                     verbose=False)
-        - getPPEClasses             ()
-        - getPersons                ()
+                                     verbose=False)                                                             -> None
+        - getPPEClasses             ()                                                                          -> dict
+        - getPersons                ()                                                                          -> dict
         - updatePerson              (person_id: int, 
                                      first_name: str = "", 
                                      middle_name: str = "", 
                                      last_name: str = "", 
-                                     job_title: str = "")
-        - deletePerson              (person_id: int)
+                                     job_title: str = "")                                                       -> bool
+        - deletePerson              (person_id: int)                                                            -> bool
         - insertViolator            (violationdetails_id: int, 
                                      person_id: int, 
                                      topleft: tuple, 
                                      bottomright: tuple, 
                                      detectedppeclasses: list, 
                                      verbose: bool = False, 
-                                     commit: bool = True)
+                                     commit: bool = True)                                                       -> bool
         - deleteViolator            (person_id: int, 
-                                     commit: bool = True)
+                                     commit: bool = True)                                                       -> bool
         - getAllViolationDetails    (from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"),
-                                     to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59"))
+                                     to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59"))      -> list
     """
 
-    def __init__(self, cfg=None, db_URL=None, echo=False):
+    def __init__(self, 
+                 cfg = None, 
+                 db_URL = None, 
+                 echo = False):
         super(DatabaseCRUD, self).__init__(cfg, db_URL, echo)
 
     # Load the PPE classes that will be used for detection in PPE violations
-    def insertPPEClasses(self, filepath: str):
+    def insertPPEClasses(self, 
+                         filepath: str) -> None:
         # Declare an empty list for names
         ppeclass_names = []
         # Read the file and add them to the list
@@ -60,7 +64,9 @@ class DatabaseCRUD(DatabaseHandler):
         self.session.commit()
         self.session.close()
 
-    def insertPersons(self, filepath: str, verbose=False):
+    def insertPersons(self, 
+                      filepath: str, 
+                      verbose: bool = False) -> None:
         persons = []
         with open(filepath, newline="") as csv_file:
             reader = csv.DictReader(csv_file)
@@ -81,7 +87,7 @@ class DatabaseCRUD(DatabaseHandler):
         self.session.commit()
         self.session.close()
 
-    def getPPEClasses(self):
+    def getPPEClasses(self) -> dict:
         """
         Get all the PPE class labels defined from the database.
         """
@@ -95,7 +101,7 @@ class DatabaseCRUD(DatabaseHandler):
             del ppeclass["id"]
         return ppeclasses
 
-    def getPersons(self):
+    def getPersons(self) -> dict:
         """
         Get all persons from the database.
         """
@@ -109,7 +115,12 @@ class DatabaseCRUD(DatabaseHandler):
             del person["id"] # Delete the id from the database because it is not necessary to be included in MQTT JSON data
         return persons
 
-    def updatePerson(self, person_id: int, first_name: str="", middle_name: str="", last_name: str="", job_title: str=""):
+    def updatePerson(self, 
+                     person_id: int, 
+                     first_name: str = "", 
+                     middle_name: str = "", 
+                     last_name: str = "", 
+                     job_title: str = "") -> bool:
         person = self.session.query(Person).filter_by(person_id=person_id).first()
         if person is not None:
             if len(first_name)>0: person.first_name = first_name
@@ -121,7 +132,8 @@ class DatabaseCRUD(DatabaseHandler):
             return True
         return False
 
-    def deletePerson(self, person_id: int):
+    def deletePerson(self, 
+                     person_id: int) -> bool:
         person = self.session.query(Person).filter_by(person_id=person_id).first()
         if person is not None:
             self.session.delete(person)
@@ -129,7 +141,14 @@ class DatabaseCRUD(DatabaseHandler):
             return True
         return False
 
-    def insertViolator(self, violationdetails_id: int, person_id: int, topleft: tuple, bottomright: tuple, detectedppeclasses: list, verbose=False, commit=True):
+    def insertViolator(self, 
+                       violationdetails_id: int, 
+                       person_id: int, 
+                       topleft: tuple, 
+                       bottomright: tuple, 
+                       detectedppeclasses: list, 
+                       verbose: bool = False, 
+                       commit: bool = True) -> bool:
         violationdetails = self.session.query(ViolationDetails).filter_by(id=violationdetails_id).first()
         person = self.session.query(Person).filter_by(person_id=person_id).first()
         if person is not None and violationdetails is not None:
@@ -159,7 +178,9 @@ class DatabaseCRUD(DatabaseHandler):
             return False
         return True
 
-    def deleteViolator(self, person_id: int, commit=True):
+    def deleteViolator(self, 
+                       person_id: int, 
+                       commit: bool = True) -> bool:
         person = self.session.query(Person).filter_by(person_id=person_id).all()
         if len(person) > 0:
             for same in person:
@@ -172,7 +193,7 @@ class DatabaseCRUD(DatabaseHandler):
 
     def getAllViolationDetails(self, 
                                from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"), 
-                               to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59")):
+                               to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59")) -> list:
         violation_details = self.session.query(ViolationDetails).filter(ViolationDetails.timestamp.between(from_datetime, to_datetime)).all()
         print(violation_details)
         formatted_violation_details = []
