@@ -26,13 +26,21 @@ jobs:
         - name: Create a Virtual Environment
           run: |
             virtualenv .venv/
-        - name: Crete a Folder for the Detection Model
+        - name: Create a Folder for the Detection Model
           run: |
             mkdir ./data/detection/detection_1.0
         - name: Download the Detection Model
           working-directory: ./data/detection/detection_1.0
           run: |
             . ../../../.venv/bin/activate && gdown 12BQrp2PjIB_ZeX2hCSTrGUuqOLu6GLfX
+        - name: Create a Folder for Sample Images
+          run: |
+            mkdir ./data/samples/images
+        - name: Download the Sample Images
+          working-directory: ./data/samples/images
+          run: |
+            . ../../../.venv/bin/activate && gdown 1qzzbCVJY69NAjSUc95fP9Y_STYvOZqrx
+            . ../../../.venv/bin/activate && gdown 1yFS1ZWt8llj8qOu7NpDAqBwBHNumCFzv
         - name: Run Tests
           run: |
             . .venv/bin/activate && python -m unittest discover -s tests
