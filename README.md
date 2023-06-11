@@ -1,7 +1,8 @@
 [![](https://img.shields.io/badge/TIP-Quezon%20City-yellow)](https://tip.edu.ph/)
 [![.github/workflows/app_server.yml](https://github.com/cpe-pd/rpi-camera/actions/workflows/app_server.yml/badge.svg?event=push)](https://github.com/cpe-pd/rpi-camera/actions/workflows/app_server.yml)
 
-<h1 align="center">PPE Detection Application<br>for Construction Safety<br>in Raspberry Pi</h1>
+<!-- Background image by pikisuperstar: https://www.freepik.com/free-vector/geometric-abstract-green-background_6189913.htm#query=black%20green%20polygon&position=24&from_view=search&track=ais -->
+![Untitled-1](https://github.com/cpe-pd/ppe-for-construction-detection/assets/39390245/53f0fdc5-fc15-4667-8d9b-bc875c31d87c)
 
 ## 📓 About
 This is the official repository of our PPE detection application for construction which is part of the whole system in our capstone project. It analyzes the detected PPE from camera stream and evaluates the violations of each person. We also used an API that predicts their identities using [face_recognition](https://github.com/ageitgey/face_recognition). When obtaining the output from the detection, it will be wrapped up as a message to be published and sent as a payload which will then be received by multiple clients that are connected in the broker through lightweight messaging protocol called [MQTT](https://en.wikipedia.org/wiki/MQTT).
@@ -150,17 +151,16 @@ The trained model covers eleven classes. It can detect compliant and noncomplian
 ## 📊 Datasets
 The trained model was trained using these datasets with different image augmentation. The custom dataset used in this project were pre-processed and thoroughly scanned and labeled following the classes mentioned above. Images were resized to 640x640 and provided with different augmentations. The final datasets are split into three different sets 70% Training Set, 20% Validation Set, and 10% Testing Set.
 
-<br>
 The datasets are available in these links:
 <ul>
   <li>
-    Part 1
+    Part 1:   
     <a href="https://universe.roboflow.com/pd2/ppev5">
         <img src="https://app.roboflow.com/images/download-dataset-badge.svg"></img>
     </a>
   </li>
   <li>
-    Part 2
+    Part 2:   
     <a href="https://universe.roboflow.com/pd2v2/ppev5_v2">
         <img src="https://app.roboflow.com/images/download-dataset-badge.svg"></img>
     </a>
