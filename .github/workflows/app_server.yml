@@ -21,6 +21,7 @@ jobs:
           shell: bash
         - name: Install Required Dependencies
           run: |
+            pip install virtualenv
             chmod +x ./scripts/linux/install.sh
             ./scripts/linux/install.sh
           shell: bash
