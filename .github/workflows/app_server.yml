@@ -18,17 +18,21 @@ jobs:
         - name: Update PIP
           run: |
             python -m pip install --upgrade pip
-          shell: bash
         - name: Install Required Dependencies
           run: |
             pip install virtualenv
             chmod +x ./scripts/linux/install.sh
             ./scripts/linux/install.sh
-          shell: bash
         - name: Create a Virtual Environment
           run: |
             virtualenv .venv/
-          shell: bash
+        - name: Crete a Folder for the Detection Model
+          run: |
+            mkdir ./data/detection/detection_1.0
+        - name: Download the Detection Model
+          working-directory: ./data/detection/detection_1.0
+          run: |
+            gdown 12BQrp2PjIB_ZeX2hCSTrGUuqOLu6GLfX
         - name: Run Tests
           run: |
             . .venv/bin/activate && python -m unittest discover -s tests
