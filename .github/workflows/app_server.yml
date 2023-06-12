@@ -23,4 +23,4 @@ jobs:
             ./scripts/linux/install.sh
         - name: Run Tests
           run: |
-            . .venv/bin/activate && python -m unittest discover -s tests
+            . .venv/bin/activate && python -m unittest discover -s tests -vvv
