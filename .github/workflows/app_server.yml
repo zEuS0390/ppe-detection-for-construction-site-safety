@@ -21,20 +21,6 @@ jobs:
             pip install virtualenv
             chmod +x ./scripts/linux/install.sh
             ./scripts/linux/install.sh
-        - name: Create a Folder for the Resources
-          run: |
-            mkdir ./data/detection/detection_1.0
-            mkdir ./data/samples/images
-        - name: Download the Detection Model
-          working-directory: ./data/detection/detection_1.0
-          run: |
-            . ../../../.venv/bin/activate && gdown 12BQrp2PjIB_ZeX2hCSTrGUuqOLu6GLfX
-        - name: Download the Sample Images
-          working-directory: ./data/samples/images
-          run: |
-            . ../../../.venv/bin/activate && gdown 1qzzbCVJY69NAjSUc95fP9Y_STYvOZqrx
-            . ../../../.venv/bin/activate && gdown 1yFS1ZWt8llj8qOu7NpDAqBwBHNumCFzv
         - name: Run Tests
           run: |
             . .venv/bin/activate && python -m unittest discover -s tests
-      
