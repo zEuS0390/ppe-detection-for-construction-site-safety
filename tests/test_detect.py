@@ -1,5 +1,5 @@
 try:
-    import unittest, configparser, cv2
+    import unittest, configparser, cv2, os
     from yolor.utils.datasets import letterbox
     from src.detection import Detection
     import numpy as np
@@ -8,6 +8,7 @@ try:
     configparser = configparser.ConfigParser()
     configparser.read(CONFIG_FILE)
     detection = Detection(configparser)
+    base_path_test_images = "data/samples/images/tests"
 
     def processImage(image: np.ndarray) -> np.ndarray:
         """
@@ -32,15 +33,19 @@ try:
         """
 
         def test_step_1_detect_one_violator(self):
-            img = cv2.imread("data/samples/images/frame_19947.jpg")
+            path = os.path.join(base_path_test_images, "frame_19947.jpg")
+            img = cv2.imread(path)
             processed_img = processImage(img)
             persons, ppe = detection.detect(processed_img, img)
             self.assertEqual(len(persons), 1)
         
         def test_step_2_detect_no_violator(self):
-            img = cv2.imread("data/samples/images/frame_732.jpg")
+            path = os.path.join(base_path_test_images, "frame_732.jpg")
+            img = cv2.imread(path)
             processed_img = processImage(img)
             persons, ppe = detection.detect(processed_img, img)
             self.assertEqual(len(persons), 0)
+
 except Exception as e:
     print(f"{e}")
+
