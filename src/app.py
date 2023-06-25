@@ -50,7 +50,25 @@ class Application:
         logger.info("Loading app configuration")
         cfg = configparser.ConfigParser()
         cfg.read(APP_CFG_FILE)
+        
+        app_db_section = "mysql_db"
+        dbname = cfg.get(app_db_section, "dbname")
+        username = cfg.get(app_db_section, "username")
+        password = cfg.get(app_db_section, "password")
+        hostname = cfg.get(app_db_section, "hostname")
+        port = cfg.get(app_db_section, "port")
+        try:
+            port = int(port) if port != '' else 3306
+        except:
+            print("Invalid port parameter. It should be an integer number.")
+            return
 
+        if username != '' and password != '' and hostname != '' and dbname != '':
+            link = f"mysql+mysqldb://{username}:{password}@{hostname}:{port}/{dbname}"
+        else:
+            print("Missing database connection parameter(s) [dbname, username, password, hostname]")
+            return
+        
         # Instantiate objects
         logger.info("Initializing hardware")
         hardware = Hardware(cfg)
@@ -63,7 +81,7 @@ class Application:
         getLatestFiles("data", ["face_recognition", "detection"])
         indicator.info_none(buzzer=False)
 
-        dbHandler = DatabaseCRUD(cfg)
+        dbHandler = DatabaseCRUD(cfg, db_URL=link)
         dbHandler.insertPersons(getRecognitionData(cfg)["info"])
         dbHandler.insertPPEClasses(cfg.get("yolor","classes"))
 
@@ -94,4 +112,3 @@ class Application:
         # Check if auto shutdown is enabled in the app configuration
         if cfg.getboolean("hardware", "auto_shutdown_enabled"):
             subprocess.run(["sudo", "shutdown", "-h", "now"])
-

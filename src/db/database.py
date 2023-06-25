@@ -14,15 +14,15 @@ class DatabaseHandler(metaclass=Singleton):
         if cfg is not None and db_URL is None:
             self.cfg = cfg
             self.dbname = f"sqlite:///data/{self.cfg.get('database', 'name')}.sqlite"
-        elif cfg is None and db_URL is not None:
+            print("picking the custom named database from the configuration")
+        elif (cfg is None and db_URL is not None) or (cfg is not None and db_URL is not None):
             self.dbname = db_URL
+            print("picking the custom named database from the argument") 
         else:
             self.dbname = "sqlite:///data/appdb.sqlite"
+            print("picking the default named database")
         self.engine = create_engine(
-            url=self.dbname, 
-            connect_args={"check_same_thread": False},
-            echo=echo, 
-            future=True
+            url=self.dbname
         )
         mapper_registry.metadata.create_all(self.engine)
         session_factory = sessionmaker(autoflush=True, autocommit=False, bind=self.engine)
