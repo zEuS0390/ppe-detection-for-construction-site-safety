@@ -146,7 +146,7 @@ class DatabaseCRUD(DatabaseHandler):
                        person_id: int, 
                        topleft: tuple, 
                        bottomright: tuple, 
-                       detectedppeclasses: list, 
+                       detectedppeclasses: dict, 
                        verbose: bool = False, 
                        commit: bool = True) -> bool:
         violationdetails = self.session.query(ViolationDetails).filter_by(id=violationdetails_id).first()
@@ -163,6 +163,7 @@ class DatabaseCRUD(DatabaseHandler):
                 ppeclass = self.session.query(PPEClass).filter_by(name=ppeclass_name).first()
                 if ppeclass is not None:
                     detected = DetectedPPEClass()
+                    detected.confidence = detectedppeclasses[ppeclass_name]
                     violator.detectedppeclasses.append(detected)
                     ppeclass.detectedppeclasses.append(detected)
                 else:

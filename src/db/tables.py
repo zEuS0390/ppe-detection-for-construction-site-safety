@@ -49,6 +49,7 @@ class DetectedPPEClass:
     id = Column(Integer, primary_key=True)
     violator_id = Column(Integer, ForeignKey("violator.id", ondelete="CASCADE"))
     ppeclass_id = Column(Integer, ForeignKey("ppeclass.id", ondelete="CASCADE"))
+    confidence = Column(Integer)
     violator = relationship("Violator", back_populates="detectedppeclasses",)
     ppeclass = relationship("PPEClass", back_populates="detectedppeclasses")
     def __str__(self):
