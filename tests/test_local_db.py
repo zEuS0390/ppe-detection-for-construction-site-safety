@@ -77,13 +77,13 @@ class TestDatabaseCRUD(unittest.TestCase):
 
         # Insert violator entry with the correct inputs
         person_id = int("1")
-        detected = {"no helmet": 0.75, "no glasses": 0.80, "no gloves": 0.76, "no boots": 0.9}
+        detected = [("no helmet", 0.75), ("no glasses", 0.80), ("no gloves", 0.76), ("no boots", 0.9)]
         result = self.db.insertViolator(violationdetails_id, person_id, (0, 0), (100, 400), detected)
         self.assertTrue(result)
 
         # Insert violator entry with the same name (NOTE: This case is possible when there are multiple recognized faces)
         person_id = int("4")
-        detected = {"no helmet": 0.60, "no glasses": 0.98, "no gloves": 0.91, "no boots": 0.90}
+        detected = [("no helmet", 0.60), ("no glasses", 0.98), ("no gloves", 0.91), ("no boots", 0.90)]
         result = self.db.insertViolator(violationdetails_id, person_id, (0, 0), (100, 400), detected)
         self.assertTrue(result)
 
@@ -98,7 +98,7 @@ class TestDatabaseCRUD(unittest.TestCase):
 
         # Insert violator entry with non existing person_id and unknown ppe classes
         person_id = "-1"
-        detected = {"no helmet": 0.62, "pencil": 0.95, "cap": 0.92}
+        detected = [("no helmet", 0.62), ("pencil", 0.95), ("cap", 0.92)]
         result = self.db.insertViolator(violationdetails_id, person_id, (0, 0), (100, 400), detected)
         self.assertFalse(result)
 

@@ -146,7 +146,7 @@ class DatabaseCRUD(DatabaseHandler):
                        person_id: int, 
                        topleft: tuple, 
                        bottomright: tuple, 
-                       detectedppeclasses: dict, 
+                       detectedppeclasses: list, 
                        verbose: bool = False, 
                        commit: bool = True) -> bool:
         violationdetails = self.session.query(ViolationDetails).filter_by(id=violationdetails_id).first()
@@ -159,11 +159,11 @@ class DatabaseCRUD(DatabaseHandler):
             violator.x2 = bottomright[0]
             violator.y2 = bottomright[1]
             violator.violationdetails = violationdetails
-            for ppeclass_name in detectedppeclasses:
+            for ppeclass_name, confidence in detectedppeclasses:
                 ppeclass = self.session.query(PPEClass).filter_by(name=ppeclass_name).first()
                 if ppeclass is not None:
                     detected = DetectedPPEClass()
-                    detected.confidence = detectedppeclasses[ppeclass_name]
+                    detected.confidence = confidence
                     violator.detectedppeclasses.append(detected)
                     ppeclass.detectedppeclasses.append(detected)
                 else:
