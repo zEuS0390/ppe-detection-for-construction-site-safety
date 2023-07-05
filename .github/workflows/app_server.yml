@@ -20,7 +20,7 @@ jobs:
             python -m pip install --upgrade pip
             pip install virtualenv
             chmod +x ./scripts/linux/install.sh
-            ./scripts/linux/install.sh
+            ./scripts/linux/install.sh local
         - name: Run Tests
           run: |
             . .venv/bin/activate && python -m unittest discover -s tests -vvv
