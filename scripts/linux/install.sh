@@ -1,10 +1,15 @@
 #!/bin/bash
 
+
 # Create a virtual environment to store and isolate the dependencies to the system
 virtualenv .venv/ 
 
 # Install all the dependencies
-. .venv/bin/activate && pip install -r requirements.txt
+if [[ $1 == "local" ]]; then
+	. .venv/bin/activate && pip install -r requirements/local_requirements.txt
+else
+	. .venv/bin/activate && pip install -r requirements/cloud_requirements.txt
+fi
 
 # Set up YOLOR
 # ----------------------------------------------
