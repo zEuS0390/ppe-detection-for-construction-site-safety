@@ -28,7 +28,7 @@ if __name__=="__main__":
         print("Initializing local application")
         localapp.Application.main()
     else:
-        from src import cloudapp
+        from src.cloud import cloudapp
         print("Initializing cloud application")
         cloudapp.Application.main()
 
