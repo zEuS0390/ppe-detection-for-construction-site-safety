@@ -71,12 +71,13 @@ class Application:
         recognition = Recognition(cfg)
         mqtt_client = MQTTClient(
                 args = {
-                    "client_id": os.environ.get("MQTT_CLIENT_ID"),
-                    "topic": os.environ.get("MQTT_TOPIC"),
-                    "hostname": os.environ.get("MQTT_HOSTNAME"),
-                    "username": os.environ.get("MQTT_USERNAME"),
-                    "password": os.environ.get("MQTT_PASSWORD"),
-                    "port": os.environ.get("MQTT_PORT")
+                    "client_id": os.environ.get("LOCAL_MQTT_CLIENT_ID"),
+                    "sub_topic": os.environ.get("LOCAL_MQTT_SUB_TOPIC"),
+                    "pub_topic": os.environ.get("LOCAL_MQTT_PUB_TOPIC"),
+                    "hostname": os.environ.get("LOCAL_MQTT_HOSTNAME"),
+                    "username": os.environ.get("LOCAL_MQTT_USERNAME"),
+                    "password": os.environ.get("LOCAL_MQTT_PASSWORD"),
+                    "port": os.environ.get("LOCAL_MQTT_PORT")
                 }
         )
         
