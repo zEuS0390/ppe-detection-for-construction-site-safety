@@ -8,7 +8,7 @@ from src.hardware import Hardware
 from src.indicator import Indicator
 from src.shutdown_listener import ShutdownListener
 from src.constants import APP_CFG_FILE
-import configparser, time, subprocess
+import configparser, time, subprocess, os
 from datetime import datetime
 import logging
 
@@ -42,7 +42,7 @@ class Application:
 
     @staticmethod
     def main():
-        
+
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
 
@@ -50,24 +50,6 @@ class Application:
         logger.info("Loading app configuration")
         cfg = configparser.ConfigParser()
         cfg.read(APP_CFG_FILE)
-        
-        app_db_section = "mysql_db"
-        dbname = cfg.get(app_db_section, "dbname")
-        username = cfg.get(app_db_section, "username")
-        password = cfg.get(app_db_section, "password")
-        hostname = cfg.get(app_db_section, "hostname")
-        port = cfg.get(app_db_section, "port")
-        try:
-            port = int(port) if port != '' else 3306
-        except:
-            print("Invalid port parameter. It should be an integer number.")
-            return
-
-        if username != '' and password != '' and hostname != '' and dbname != '':
-            link = f"mysql+mysqldb://{username}:{password}@{hostname}:{port}/{dbname}"
-        else:
-            print("Missing database connection parameter(s) [dbname, username, password, hostname]")
-            return
         
         # Instantiate objects
         logger.info("Initializing hardware")
@@ -81,20 +63,27 @@ class Application:
         getLatestFiles("data", ["face_recognition", "detection"])
         indicator.info_none(buzzer=False)
 
-        dbHandler = DatabaseCRUD(cfg, db_URL=link)
+        dbHandler = DatabaseCRUD(cfg)
         dbHandler.insertPersons(getRecognitionData(cfg)["info"])
         dbHandler.insertPPEClasses(cfg.get("yolor","classes"))
 
         camera = Camera(cfg)
         recognition = Recognition(cfg)
-        mqtt_notif = MQTTClient("notif")
-        mqtt_set = MQTTClient("set")
+        mqtt_client = MQTTClient(
+                args = {
+                    "client_id": os.environ.get("MQTT_CLIENT_ID"),
+                    "topic": os.environ.get("MQTT_TOPIC"),
+                    "hostname": os.environ.get("MQTT_HOSTNAME"),
+                    "username": os.environ.get("MQTT_USERNAME"),
+                    "password": os.environ.get("MQTT_PASSWORD"),
+                    "port": os.environ.get("MQTT_PORT")
+                }
+        )
         
-        detection = Detection(cfg, mqtt_notif, mqtt_set)
+        detection = Detection(cfg, mqtt_client)
 
         # Start threads
-        mqtt_notif.start()
-        mqtt_set.start()
+        mqtt_client.start()
         camera.start()
         detection.start()
 
@@ -102,8 +91,7 @@ class Application:
 
         detection.stop()
         camera.stop()
-        mqtt_notif.stop()
-        mqtt_set.stop()
+        mqtt_client.stop()
         detection.updateThread.join()
         camera.updateThread.join() 
 

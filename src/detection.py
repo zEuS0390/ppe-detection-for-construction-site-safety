@@ -59,13 +59,11 @@ class Detection(metaclass=Singleton):
     # Initialize
     def __init__(self, 
         cfg: ConfigParser,
-        mqtt_notif: MQTTClient = None,
-        mqtt_set: MQTTClient = None
+        mqtt_client: MQTTClient = None
     ):
         self.logger = logging.getLogger()
         self.cfg = cfg
-        self.mqtt_notif = mqtt_notif
-        self.mqtt_set = mqtt_set
+        self.mqtt_client = mqtt_client
         self.device = select_device(self.cfg.get("yolor", "device"))
         cudnn.benchmark = True
         self.loadData()
@@ -75,19 +73,19 @@ class Detection(metaclass=Singleton):
         """
         Starts the detection thread. It will not start if one or more required arguments are missing.
         """
-        if self.mqtt_notif is not None and self.mqtt_set is not None:
+        if self.mqtt_client is not None:
             self.indicator: Indicator = Indicator.getInstance()
             self.db: DatabaseCRUD = DatabaseCRUD.getInstance()
             self.camera: Camera = Camera.getInstance()
             self.recognition: Recognition = Recognition.getInstance()
-            self.mqtt_set.client.on_message = self.onClientSet
+            self.mqtt_client.client.on_message = self.onClientSet
             if self.db is not None:
                 self.loadPersons()
             self.loadCameraDetails()
             self.updateThread = threading.Thread(target=self.update)
             self.updateThread.start()
         else:
-            self.logger.error("Missing arguments (camera, recognition, mqtt_notif, mqtt_set). Abortting.")
+            self.logger.error("Missing arguments (camera, recognition, mqtt_client). Abortting.")
 
     def stop(self):
         self.isRunning = False
@@ -443,9 +441,9 @@ class Detection(metaclass=Singleton):
                         if violations_result["total_violators"] > 0:
                             self.logger.info(json.dumps(to_print, indent=4, sort_keys=True))
                             payload = json.dumps(violations_result)
-                            self.mqtt_notif.publish(payload=payload)
+                            self.mqtt_client.publish(payload=payload)
                     else:
                         self.logger.info(json.dumps(to_print, indent=4, sort_keys=True))
                         payload = json.dumps(violations_result)
-                        self.mqtt_notif.publish(payload=payload)
+                        self.mqtt_client.publish(payload=payload)
             time.sleep(0.03)

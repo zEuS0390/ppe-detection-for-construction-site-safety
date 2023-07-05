@@ -15,34 +15,33 @@ class MQTTClient:
         - publish       (payload: any)
     """
 
-    def __init__(self, name: str, port=1883):
+    def __init__(self, args: dict, auth_cert=False):
         self.logger = logging.getLogger()
-        self.client_id = name
-        self.port = port
-        self.rgb = None
-        self.buzzer = None
-        try:
-            samle_cfg_filename = f"cfg/client/mqtt/sample.cfg"
-            cfg_filename = f"cfg/client/mqtt/{name}.cfg"
-            if not os.path.exists(cfg_filename):
-                self.logger.warning(f"'{cfg_filename}' does not exist. Creating cfonfiguration.")
-                shutil.copy2(samle_cfg_filename, cfg_filename)
-            self.cfg = parsePlainConfig(cfg_filename)
-            self.topic = self.cfg["topic_name"]
-            self.broker = self.cfg["broker_ip"]
+        if not auth_cert:
+            for key, value in args.items():
+                if value == None:
+                    self.logger.error("[MQTTClient]: Missing MQTT client argument(s)")
+                    raise Exception("[MQTTClient]: Missing MQTT client argument(s)")
+            self.client_id = args['client_id']
+            self.topic = args['topic']
+            self.hostname = args['hostname']
+            self.username = args['username']
+            self.password = args['password']
+            self.port = int(args['port'])
             self.client = Client(client_id=self.client_id)
-            self.client.username_pw_set(self.cfg["username"], self.cfg["password"])
-            self.client.on_connect = self.on_connect
-        except Exception as e:
-            raise e
+            self.client.username_pw_set(self.username, self.password)
+        else:
+            # This means the authentication method is through certificate
+            pass
+        self.client.on_connect = self.on_connect
         
     def start(self):
         while True:
             try:
-                self.client.connect(self.broker, self.port)
+                self.client.connect(self.hostname, self.port)
                 break
             except Exception as e:
-                self.logger.error(f"{e}")
+                self.logger.error(f"[MQTTClient]: {e}")
             time.sleep(1)
         self.client.loop_start()
 
