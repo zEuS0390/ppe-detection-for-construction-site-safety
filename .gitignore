@@ -1,3 +1,5 @@
+dlib/
+
 output/
 
 # Consider the database file just in case that it gets accidentally saved here.
