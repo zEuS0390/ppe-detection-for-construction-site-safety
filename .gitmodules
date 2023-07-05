@@ -6,3 +6,7 @@
 	path = contrib/python-based-yolo-dataset-tools
 	url = https://github.com/zEuS0390/python-based-yolo-dataset-tools.git
 	ignore = dirty
+[submodule "amazon-kinesis-video-streams-consumer-library-for-python"]
+	path = amazon-kinesis-video-streams-consumer-library-for-python
+	url = https://github.com/aws-samples/amazon-kinesis-video-streams-consumer-library-for-python.git
+	ignore = dirty
