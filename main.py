@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
-import sys
+import sys, os
+sys.path.append(os.path.abspath("amazon-kinesis-video-streams-consumer-library-for-python"))
 
 """
     TECHNOLOGICAL INSTITUTE OF THE PHILIPPINES - QUEZON CITY
