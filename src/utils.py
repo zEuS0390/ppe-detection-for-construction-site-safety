@@ -1,4 +1,5 @@
 import cv2, base64, os, time, subprocess, paramiko, socket, logging
+import numpy as np
 
 """
     Functions:
@@ -10,6 +11,13 @@ import cv2, base64, os, time, subprocess, paramiko, socket, logging
         - parsePlainConfig      (filepath)
         - getLatestFiles        (cfg_name, target_names)
 """
+
+def binaryToImage(binary):
+    buffer = base64.b64decode(binary)
+    npimg = np.frombuffer(buffer, dtype=np.uint8)
+    img = cv2.imdecode(npimg, 1)
+    frame = cv2.resize(img, (640, 640), interpolation=cv2.INTER_AREA)
+    return frame
     
 def imageToBinary(image):
     """
