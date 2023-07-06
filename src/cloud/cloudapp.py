@@ -1,7 +1,25 @@
 from src.cloud.kinesis_video_stream_consumer import KinesisVideoStreamConsumer
 from src.client import MQTTClient
+from src.utils import imageToBinary, binaryToImage
+from src.cloud.deployedmodel import DeployedModel
 import time, os, threading, json, cv2
 import numpy as np
+
+payload = {
+    "image": "",
+    "ppe_preferences": {
+        "helmet": True,
+        "no helmet": True,
+        "glasses": True,
+        "no glasses": True,
+        "vest": True,
+        "no vest": True,
+        "gloves": True,
+        "no gloves": True,
+        "boots": True,
+        "no boots": True
+    }
+}
 
 class Application:
 
@@ -9,6 +27,31 @@ class Application:
 
     @staticmethod
     def main():
+
+        deployedmodel = DeployedModel(
+            aws_access_key_id=os.environ.get("AWS_SAGEMAKER_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.environ.get("AWS_SAGEMAKER_SECRET_ACCESS_KEY"),
+            aws_endpoint_name=os.environ.get("AWS_SAGEMAKER_ENDPOINT"),
+            aws_region_name=os.environ.get("AWS_SAGEMAKER_REGION")
+        )
+
+        capture = cv2.VideoCapture(0)
+
+        ret, frame = capture.read()
+
+        if ret:
+            payload["image"] = imageToBinary(frame)
+            response = deployedmodel.invoke_endpoint(payload)
+        else:
+            print("Reading frame returns an error")
+
+        cv2.imshow("output.png", binaryToImage(response["image"]))
+
+        cv2.waitKey(0)
+
+        capture.release()
+    
+        """
 
         kvsconsumer = KinesisVideoStreamConsumer(
             aws_kvs_stream_name=os.environ.get("AWS_KINESIS_VIDEO_STREAM_NAME"),
@@ -24,6 +67,8 @@ class Application:
         except:
             Application.stop_mainprocess = True
             kvsconsumer.stop_loop()
+
+        """
 
     @staticmethod
     def mainProcessFunc(kvsconsumer):
