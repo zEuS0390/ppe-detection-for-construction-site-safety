@@ -107,8 +107,6 @@ class MQTTClient:
     def publish(self, payload):
         self.client.publish(
                 self.pub_topic, 
-                payload=payload, 
-                qos=0,
-                retain=False
+                payload=payload
         )
         print(f"Client published to {self.pub_topic}")

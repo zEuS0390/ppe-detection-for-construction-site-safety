@@ -9,6 +9,20 @@ class DeployedModel:
             aws_endpoint_name: str,
             aws_region_name: str
     ):
+
+        self.ppe_preferences = {
+            "helmet": True,
+            "no helmet": True,
+            "glasses": True,
+            "no glasses": True,
+            "vest": True,
+            "no vest": True,
+            "gloves": True,
+            "no gloves": True,
+            "boots": True,
+            "no boots": True
+        }
+
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
         self.aws_endpoint_name = aws_endpoint_name
