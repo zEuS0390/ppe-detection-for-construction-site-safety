@@ -1,6 +1,6 @@
 from src.cloud.kinesis_video_stream_consumer import KinesisVideoStreamConsumer
 from src.client import MQTTClient
-from src.utils import imageToBinary
+from src.utils import imageToBinary, binaryToImage
 from src.cloud.deployedmodel import DeployedModel
 import time, os, threading, json, cv2
 import numpy as np
@@ -40,13 +40,14 @@ class Application:
         ret, frame = capture.read()
 
         if ret:
-            base64Image = imageToBinary(frame)
-            payload["image"] = base64Image
+            payload["image"] = imageToBinary(frame)
             response = deployedmodel.invoke_endpoint(payload)
         else:
             print("Reading frame returns an error")
 
-        cv2.imwrte("~/Desktop/output.png", binaryToImage(response["image"]))
+        cv2.imshow("output.png", binaryToImage(response["image"]))
+
+        cv2.waitKey(0)
 
         capture.release()
     

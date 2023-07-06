@@ -16,7 +16,7 @@ class DeployedModel:
         self.sagemaker_client = boto3.client(
             "sagemaker-runtime",
             aws_access_key_id=aws_access_key_id,
-            aws_secret_acces_key=aws_secret_access_key,
+            aws_secret_access_key=aws_secret_access_key,
             region_name=aws_region_name
         )
        
