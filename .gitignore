@@ -11,3 +11,12 @@ draft/
 # Vim temporary files
 *.swp
 *~
+
+# Mobile application binary files
+*.apk
+
+# Executable files
+*.exe
+
+# Archive files
+*.rar
