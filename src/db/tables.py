@@ -85,7 +85,23 @@ class ViolationDetails:
     image = Column(String(length=250))
     violators = relationship("Violator", back_populates="violationdetails", cascade="all, delete")
     timestamp = Column(DateTime, default=datetime.now())
+    devicedetails_id = Column(Integer, ForeignKey("devicedetails.id", ondelete="CASCADE"))
+    devicedetails = relationship("DeviceDetails", back_populates="violationdetails")
     def __str__(self):
         return f"ViolationDetails(id={self.id},image='{self.image}',violators='{self.violators}',timestamp={self.timestamp})"
     def __repr__(self):
         return f"ViolationDetails(id={self.id},image='{self.image}',violators='{self.violators}',timestamp={self.timestamp})"
+    
+@mapper_registry.mapped
+class DeviceDetails:
+    __tablename__="devicedetails"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(length=250))
+    description = Column(String(length=250))
+    start_datetime = Column(DateTime, default=datetime.now())
+    end_datetime = Column(DateTime)
+    violationdetails = relationship("ViolationDetails", back_populates="devicedetails", cascade="all, delete")
+    def __str__(self):
+        return f"DeviceDetails(id={self.id}, name='{self.name}', start_datetime={self.start_datetime}, end_datetime={self.end_datetime})"
+    def __repr__(self):
+        return f"DeviceDetails(id={self.id}, name='{self.name}', start_datetime={self.start_datetime}, end_datetime={self.end_datetime})"

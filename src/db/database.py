@@ -26,6 +26,6 @@ class DatabaseHandler(metaclass=Singleton):
         )
         mapper_registry.metadata.create_all(self.engine)
         session_factory = sessionmaker(autoflush=True, autocommit=False, bind=self.engine)
-        scoped = scoped_session(session_factory)
-        self.session = scoped()
+        self.scoped = scoped_session(session_factory)
+        self.session = self.scoped()
         self.n_operations = 0 # Number of SQL operations to track before committing them

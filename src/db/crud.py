@@ -4,7 +4,8 @@ from .tables import (
     Violator, 
     DetectedPPEClass,
     Person,
-    ViolationDetails
+    ViolationDetails,
+    DeviceDetails
 )
 from datetime import datetime
 import csv
@@ -138,6 +139,18 @@ class DatabaseCRUD(DatabaseHandler):
         if person is not None:
             self.session.delete(person)
             self.session.commit()
+            return True
+        return False
+
+    def insertViolationDetailsToDeviceDetails(self, 
+                               devicedetails_id: int,
+                               violationdetails_id: int):
+        devicedetails = self.session.query(DeviceDetails).filter_by(id=devicedetails_id).first()
+        violationdetails = self.session.query(ViolationDetails).filter_by(id=violationdetails_id).first()
+        if devicedetails is not None and violationdetails is not None:
+            devicedetails.violationdetails.append(violationdetails)
+            self.session.commit()
+            self.session.close()
             return True
         return False
 

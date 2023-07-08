@@ -1,9 +1,10 @@
 import unittest, configparser, os
-from src.db.tables import Person, Violator, ViolationDetails
+from src.db.tables import Person, Violator, ViolationDetails, DeviceDetails
 from src.db.crud import DatabaseCRUD
 from sqlalchemy import func
 from faker import Faker
 from csv import DictWriter
+import time
 
 CONFIG_FILE = "./cfg/app.cfg"
 DB_FILE = "data/test_db.sqlite"
@@ -41,6 +42,7 @@ class TestDatabaseCRUD(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        cls.db.scoped.remove()
         cls.db.session.close()
         os.remove(PERSONS_FILE)
         os.remove(DB_FILE)
@@ -67,6 +69,13 @@ class TestDatabaseCRUD(unittest.TestCase):
 
     def test_step_2_insert_violation_details_with_violators(self):
 
+        devicedetails = DeviceDetails()
+        self.db.session.add(devicedetails)
+        self.db.session.flush()
+        devicedetails_id = devicedetails.id
+        self.db.session.commit()
+        self.db.session.close()
+
         # Create violation details
         violationdetails = ViolationDetails()
         self.db.session.add(violationdetails)
@@ -74,6 +83,9 @@ class TestDatabaseCRUD(unittest.TestCase):
         violationdetails_id = violationdetails.id
         self.db.session.commit()
         self.db.session.close()
+
+        result = self.db.insertViolationDetailsToDeviceDetails(devicedetails_id, violationdetails_id)
+        self.assertTrue(result)
 
         # Insert violator entry with the correct inputs
         person_id = int("1")
