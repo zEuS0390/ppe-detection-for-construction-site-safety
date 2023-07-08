@@ -118,4 +118,4 @@ class Application:
                         Application.stop_detectionprocess = True
                         break
             else:
-                time.sleep(1)
+                time.sleep(0.01)
