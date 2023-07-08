@@ -73,6 +73,7 @@ class MQTTClient:
                 self.client.connect(
                     self.hostname,
                     self.port,
+                    5
                 )
                 break
             except Exception as e:

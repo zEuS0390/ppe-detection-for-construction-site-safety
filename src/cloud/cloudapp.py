@@ -69,10 +69,11 @@ class Application:
             mainProcessThread.start()
             kvsconsumer.start_loop()
         except:
-            mqttclient.stop()
-            Application.stop_detectionprocess = True
-            Application.stop_mainprocess = True
-            kvsconsumer.stop_loop()
+            pass
+        mqttclient.stop()
+        Application.stop_detectionprocess = True
+        Application.stop_mainprocess = True
+        kvsconsumer.stop_loop()
 
     @staticmethod
     def mainProcessFunc(deployedmodel, kvsconsumer):
@@ -80,7 +81,7 @@ class Application:
         cap = cv2.VideoCapture(0)
 
         frame = np.ndarray((480, 640, 3), dtype=np.uint8)
-        
+
         while not Application.stop_mainprocess:
 
             try:
@@ -95,31 +96,26 @@ class Application:
     
             time.sleep(0.01)
 
+        kvsconsumer.stop_loop()
+
     @staticmethod
     def detectFunc(mqttclient, deployedmodel):
-
+        
         while not Application.stop_detectionprocess:
-
             if Application.is_detecting == True:
                 if Application.frame_to_be_detected is not None:
-
-                    try:
-
-                        print("[Detection Thread Info]: Detecting...")
-
-                        payload = {
-                            "image": imageToBinary(Application.frame_to_be_detected),
-                            "ppe_preferences": deployedmodel.ppe_preferences
-                        }
-                        
-                        response = deployedmodel.invoke_endpoint(payload)
-                        del response["original_image"]
-                        mqttclient.publish(json.dumps(response))
-
-                        Application.is_detecting = False
-                        print("Done detecting")
-                    except Exception as err:
-                        print(f"[Detection Thread Error]: {err}") 
-
-            time.sleep(1)
-
+                    payload = {
+                        "image": imageToBinary(Application.frame_to_be_detected),
+                        "ppe_preferences": deployedmodel.ppe_preferences
+                    }
+                    response = deployedmodel.invoke_endpoint(payload)
+                    mqttclient.publish(json.dumps(response))
+                    cv2.imshow("frame", binaryToImage(response["image"]))
+                    Application.is_detecting = False
+                    key = cv2.waitKey(25)
+                    if key == 27:
+                        Application.stop_mainprocess = True
+                        Application.stop_detectionprocess = True
+                        break
+            else:
+                time.sleep(1)
