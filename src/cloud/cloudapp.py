@@ -8,6 +8,11 @@ import numpy as np
 
 class Application:
 
+    capture_from_camera_stream = True
+    detection_enabled = False
+    mqtt_enabled = False
+    display_image = True
+
     is_detecting = False
     frame_to_be_detected = None
 
@@ -79,54 +84,60 @@ class Application:
             detectionThread.start()
             mainProcessThread.start()
             kvsconsumer.start_loop()
-        except:
-            pass
+        except Exception as err:
+            print(f"[Application]: {err}")
         mqttclient.stop()
-        Application.stop_detectionprocess = True
         Application.stop_mainprocess = True
+        Application.stop_detectionprocess = True
         kvsconsumer.stop_loop()
 
     @staticmethod
     def mainProcessFunc(deployedmodel, kvsconsumer):
 
-        cap = cv2.VideoCapture(0)
+        if Application.capture_from_camera_stream:
+            cap = cv2.VideoCapture(0)
 
         frame = np.ndarray((480, 640, 3), dtype=np.uint8)
 
         while not Application.stop_mainprocess:
 
             try:
-                _, frame = cap.read()
-                # frame = kvsconsumer.frames.pop(0)
+                if Application.capture_from_camera_stream:
+                    _, frame = cap.read()
+                else:
+                    frame = kvsconsumer.frames.pop(0)
             except:
                 frame = frame
 
             if not Application.is_detecting:
                 Application.frame_to_be_detected = frame
                 Application.is_detecting = True
-    
+
             time.sleep(0.01)
 
         kvsconsumer.stop_loop()
 
     @staticmethod
     def detectFunc(mqttclient, deployedmodel):
-        
         while not Application.stop_detectionprocess:
-            if Application.is_detecting == True:
-                if Application.frame_to_be_detected is not None:
+            if Application.is_detecting == True and Application.frame_to_be_detected is not None:
+                image = Application.frame_to_be_detected
+                if Application.detection_enabled:
                     payload = {
                         "image": imageToBinary(Application.frame_to_be_detected),
                         "ppe_preferences": deployedmodel.ppe_preferences
                     }
                     response = deployedmodel.invoke_endpoint(payload)
+                    image = binaryToImage(response["image"])
+                if Application.mqtt_enabled:
                     mqttclient.publish(json.dumps(response))
-                    cv2.imshow("frame", binaryToImage(response["image"]))
-                    Application.is_detecting = False
+                if Application.display_image:
+                    cv2.imshow("frame", image)
                     key = cv2.waitKey(25)
                     if key == 27:
                         Application.stop_mainprocess = True
                         Application.stop_detectionprocess = True
                         break
+                Application.is_detecting = False
             else:
                 time.sleep(0.01)

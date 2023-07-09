@@ -34,21 +34,28 @@ class KinesisVideoStreamConsumer:
         get_media_endpoint = self._get_data_endpoint(self.aws_kvs_stream_name, "GET_MEDIA")
         kvs_media_client = self.session.client("kinesis-video-media", endpoint_url=get_media_endpoint)
         while not self.stop_video_stream:
-            get_media_response = kvs_media_client.get_media(
-                StreamName=self.aws_kvs_stream_name,
-                StartSelector={
-                    'StartSelectorType': 'NOW'
-                }
-            )
-            self.my_stream01_consumer = KvsConsumerLibrary(
-                self.aws_kvs_stream_name, 
-                get_media_response, 
-                self.on_fragment_arrived, 
-                self.on_stream_read_complete, 
-                self.on_stream_read_exception
-            )
-            self.my_stream01_consumer.start()
-            self.my_stream01_consumer.join()
+            try:
+                get_media_response = kvs_media_client.get_media(
+                    StreamName=self.aws_kvs_stream_name,
+                    StartSelector={
+                        'StartSelectorType': 'NOW'
+                    }
+                )
+                self.my_stream01_consumer = KvsConsumerLibrary(
+                    self.aws_kvs_stream_name, 
+                    get_media_response, 
+                    self.on_fragment_arrived, 
+                    self.on_stream_read_complete, 
+                    self.on_stream_read_exception
+                )
+                self.my_stream01_consumer.start()
+                self.my_stream01_consumer.join()
+            except KeyboardInterrupt as err:
+                self.stop_loop()
+                raise Exception(f"Keyboard interrupted")
+            except Exception as err:
+                self.stop_loop()
+                raise Exception(f"{err}")
     
     def stop_loop(self):
         self.my_stream01_consumer.stop_thread()
