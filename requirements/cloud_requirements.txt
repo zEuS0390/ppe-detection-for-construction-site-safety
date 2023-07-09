@@ -3,5 +3,6 @@ paramiko
 paho-mqtt
 opencv-python
 #opencv-python-headless
+sqlalchemy
 imageio
 av
