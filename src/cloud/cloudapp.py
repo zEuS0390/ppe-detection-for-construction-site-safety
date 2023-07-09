@@ -1,4 +1,5 @@
 from src.cloud.kinesis_video_stream_consumer import KinesisVideoStreamConsumer
+from src.db.crud import DatabaseCRUD
 from src.client import MQTTClient
 from src.utils import imageToBinary, binaryToImage
 from src.cloud.deployedmodel import DeployedModel
@@ -15,6 +16,16 @@ class Application:
 
     @staticmethod
     def main():
+
+        dbHandler = DatabaseCRUD(
+            db_URL="mysql+mysqldb://{username}:{password}@{hostname}:{port}/{dbname}".format(
+                hostname=os.environ.get("RDS_DB_HOSTNAME"),
+                port=int(os.environ.get("RDS_DB_PORT")),
+                username=os.environ.get("RDS_DB_USERNAME"),
+                password=os.environ.get("RDS_DB_PASSWORD"),
+                dbname=os.environ.get("RDS_DB_DBNAME")
+            )
+        )
 
         mqttclient = MQTTClient(
             auth_cert=True,
