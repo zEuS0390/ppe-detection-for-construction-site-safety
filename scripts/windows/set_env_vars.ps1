@@ -30,5 +30,7 @@
 [System.Environment]::SetEnvironmentVariable("CLOUD_MQTT_PORT", "", "machine")
 
 [System.Environment]::SetEnvironmentVariable("RDS_DB_HOSTNAME", "", "machine")
+[System.Environment]::SetEnvironmentVariable("RDS_DB_PORT", "", "machine")
 [System.Environment]::SetEnvironmentVariable("RDS_DB_USERNAME", "", "machine")
 [System.Environment]::SetEnvironmentVariable("RDS_DB_PASSWORD", "", "machine")
+[System.Environment]::SetEnvironmentVariable("RDS_DB_DBNAME", "", "machine")
