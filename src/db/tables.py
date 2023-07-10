@@ -19,7 +19,7 @@ class Person:
     middle_name = Column(String(length=250))
     last_name = Column(String(length=250))
     job_title = Column(String(length=250))
-    people = relationship("Violator", back_populates="person", cascade="all, delete")
+    people = relationship("Violator", back_populates="person", cascade="all, delete", viewonly=True)
     def __str__(self):
         return f"Person(first_name='{self.first_name}', middle_name='{self.middle_name}', last_name='{self.last_name}', job_title='{self.job_title}')"
     def __repr__(self):
@@ -33,7 +33,7 @@ class PPEClass:
     __tablename__="ppeclass"
     id = Column(Integer, primary_key=True)
     name = Column(String(length=250))
-    detectedppeclasses = relationship("DetectedPPEClass", back_populates="ppeclass")
+    detectedppeclasses = relationship("DetectedPPEClass", back_populates="ppeclass", viewonly=True)
     def __str__(self):
         return f"PPEClass(id={self.id}, name='{self.name}')"
     def __repr__(self):
@@ -50,8 +50,8 @@ class DetectedPPEClass:
     violator_id = Column(Integer, ForeignKey("violator.id", ondelete="CASCADE"))
     ppeclass_id = Column(Integer, ForeignKey("ppeclass.id", ondelete="CASCADE"))
     confidence = Column(Integer)
-    violator = relationship("Violator", back_populates="detectedppeclasses",)
-    ppeclass = relationship("PPEClass", back_populates="detectedppeclasses")
+    violator = relationship("Violator", back_populates="detectedppeclasses", viewonly=True)
+    ppeclass = relationship("PPEClass", back_populates="detectedppeclasses", viewonly=True)
     def __str__(self):
         return f"DetectedPPEClass(violator='{self.violator}',ppeclass='{self.ppeclass}')"
     def __repr__(self):
@@ -69,10 +69,10 @@ class Violator:
     x2 = Column(Integer)
     y2 = Column(Integer)
     person_id = Column(Integer, ForeignKey("person.id", ondelete="CASCADE"))
-    person = relationship("Person", back_populates="people")
-    detectedppeclasses = relationship("DetectedPPEClass", back_populates="violator", cascade="all, delete")
+    person = relationship("Person", back_populates="people", viewonly=True)
+    detectedppeclasses = relationship("DetectedPPEClass", back_populates="violator", cascade="all, delete", viewonly=True)
     violationdetails_id = Column(Integer, ForeignKey("violationdetails.id", ondelete="CASCADE"))
-    violationdetails = relationship("ViolationDetails", back_populates="violators")
+    violationdetails = relationship("ViolationDetails", back_populates="violators", viewonly=True)
     def __str__(self):
         return f"Violator(id={self.id}, name='{self.person}', detectedppeclasses={self.detectedppeclasses})"
     def __repr__(self):
@@ -83,10 +83,10 @@ class ViolationDetails:
     __tablename__ = "violationdetails"
     id = Column(Integer, primary_key=True)
     image = Column(String(length=250))
-    violators = relationship("Violator", back_populates="violationdetails", cascade="all, delete")
+    violators = relationship("Violator", back_populates="violationdetails", cascade="all, delete", viewonly=True)
     timestamp = Column(DateTime, default=datetime.now())
     devicedetails_id = Column(Integer, ForeignKey("devicedetails.id", ondelete="CASCADE"))
-    devicedetails = relationship("DeviceDetails", back_populates="violationdetails")
+    devicedetails = relationship("DeviceDetails", back_populates="violationdetails", viewonly=True)
     def __str__(self):
         return f"ViolationDetails(id={self.id},image='{self.image}',violators='{self.violators}',timestamp={self.timestamp})"
     def __repr__(self):
@@ -100,7 +100,7 @@ class DeviceDetails:
     description = Column(String(length=250))
     start_datetime = Column(DateTime, default=datetime.now())
     end_datetime = Column(DateTime)
-    violationdetails = relationship("ViolationDetails", back_populates="devicedetails", cascade="all, delete")
+    violationdetails = relationship("ViolationDetails", back_populates="devicedetails", cascade="all, delete", viewonly=True)
     def __str__(self):
         return f"DeviceDetails(id={self.id}, name='{self.name}', start_datetime={self.start_datetime}, end_datetime={self.end_datetime})"
     def __repr__(self):
