@@ -67,7 +67,7 @@ class Application:
         dbHandler.insertPersons(getRecognitionData(cfg)["info"])
         dbHandler.insertPPEClasses(cfg.get("yolor","classes"))
 
-        camera = Camera(cfg)
+        camera = Camera()
         recognition = Recognition(cfg)
         mqtt_client = MQTTClient(
                 args = {
