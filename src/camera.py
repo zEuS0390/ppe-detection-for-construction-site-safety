@@ -7,6 +7,8 @@ from queue import Queue
 import numpy as np
 import cv2, time, logging, os
 
+log = logging.getLogger()
+
 # Camera Class
 class Camera(metaclass=Singleton):
 
@@ -19,33 +21,46 @@ class Camera(metaclass=Singleton):
     """
 
     # Initialize
-    def __init__(self, cfg: ConfigParser):
-        self.logger = logging.getLogger()
-        self.logger.info("Initializing camera")
+    def __init__(
+            self, 
+            device: str = "0",
+            rtsp_enabled: bool = False,
+            record_enabled: bool = False
+        ):
+        log.info("Initializing camera")
         self.frame = None
         self.cfg = cfg
-        self.device: str = cfg.get("camera", "device")
-        self.rtsp_enabled: bool = self.cfg.getboolean("camera", "rtsp_enabled")
-        self.record_enabled: bool = self.cfg.getboolean("camera", "record_enabled")
+        self.rtsp_enabled = rtsp_enabled
+        self.record_enabled = record_enabled
+        self.setupVideoCapture()
+        self.setupRecording()
+        self.isRunning = True
+        self.q = Queue()
+        self.q.put(np.zeroes((480, 640, 3), dtype=np.uint8))
+        log.info("Camera initialized")
+
+    def setupVideoCapture(self):
         while True:
             try:
                 if self.device.isdigit():
-                    self.logger.info("Choosing in-built camera")
+                    log.info("Choosing in-built camera")
                     self.cap = cv2.VideoCapture(int(self.device))
                 else:
                     if self.rtsp_enabled:
-                        self.logger.info("Choosing RTSP video stream")
+                        log.info("Choosing RTSP video stream")
                         os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;udp"
                         self.cap = cv2.VideoCapture(self.device, cv2.CAP_FFMPEG)
                     else:
-                        self.logger.info("Choosing other video stream")
+                        log.info("Choosing other video stream")
                         self.cap = cv2.VideoCapture(self.device)
                 if not self.cap.isOpened():
                     raise Exception("Camera is not detected. Abort.")
                 break
             except Exception as e:
-                self.logger.error(f"{e}")
+                log.error(f"{e}")
             time.sleep(1)
+
+    def setupRecording(self):
         if self.record_enabled == True:
             self.fps = 20
             self.frame_size = (640, 480)
@@ -60,11 +75,6 @@ class Camera(metaclass=Singleton):
             date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
             self.writer = cv2.VideoWriter(os.path.join(self.dir_path, f"recording_part{self.recording_number}_{date_and_time}.mp4"), self.fourcc, self.fps, self.frame_size)
             self.recording_number += 1
-        self.isRunning = True
-        self.det = []
-        self.q = Queue()
-        self.q.put(self.cap.read()[1])
-        self.logger.info("Camera initialized")
 
     def start(self):
         self.updateThread = Thread(target=self.update)

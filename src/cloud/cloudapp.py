@@ -9,9 +9,9 @@ import numpy as np
 class Application:
 
     capture_from_camera_stream = False
-    detection_enabled = True
+    detection_enabled = False
     mqtt_enabled = True
-    display_image = True
+    display_image = False
 
     is_detecting = False
     frame_to_be_detected = None
@@ -128,7 +128,7 @@ class Application:
 
                 # Format of mqtt payload with sample data
                 mqtt_payload = {
-                    "image": "",
+                    "image": imageToBinary(Application.frame_to_be_detected),
                     "camera": {
                         "description": "A brief description about the device",
                         "ip_address": "192.168.1.2",
