@@ -8,8 +8,8 @@ import numpy as np
 
 class Application:
 
-    capture_from_camera_stream = True
-    detection_enabled = False
+    capture_from_camera_stream = False
+    detection_enabled = True
     mqtt_enabled = True
     display_image = True
 
@@ -187,15 +187,16 @@ class Application:
                         "image": imageToBinary(Application.frame_to_be_detected),
                         "ppe_preferences": deployedmodel.ppe_preferences
                     }
-                    deployed_model_response = deployedmodel.invoke_endpoint(payload)
+                    deployed_model_response = deployedmodel.invoke_endpoint(deployedmodel_payload)
                     mqtt_payload = deployed_model_response
 
                 if Application.mqtt_enabled:
-                    mqtt_payload["image"] = imageToBinary(decompressImage(compressImage(Application.frame_to_be_detected, quality=5)))
+                    mqtt_payload["image"] = imageToBinary(decompressImage(compressImage(binaryToImage(mqtt_payload["image"]), quality=10)))
                     mqttclient.publish(json.dumps(mqtt_payload))
 
                 if Application.display_image:
-                    cv2.imshow("frame", Application.frame_to_be_detected)
+                    # cv2.imshow("frame", Application.frame_to_be_detected)
+                    cv2.imshow("frame", binaryToImage(mqtt_payload["image"]))
                     key = cv2.waitKey(25)
                     if key == 27:
                         Application.stop_mainprocess = True
