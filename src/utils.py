@@ -1,4 +1,6 @@
 import cv2, base64, os, time, subprocess, paramiko, socket, logging
+from io import BytesIO
+from PIL import Image
 import numpy as np
 
 """
@@ -11,6 +13,25 @@ import numpy as np
         - parsePlainConfig      (filepath)
         - getLatestFiles        (cfg_name, target_names)
 """
+
+def compressImage(
+        image: np.ndarray, 
+        quality: int = 10, 
+        img_size: tuple = (640, 480), 
+        optimize = True
+    ) -> BytesIO:
+    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    img = Image.fromarray(rgb_image)
+    img.thumbnail(img_size)
+    compressed_frame_buffer = BytesIO()
+    img.save(compressed_frame_buffer, "JPEG", quality=quality, optimize=optimize)
+    return compressed_frame_buffer
+
+def decompressImage(compressed_image_buffer: BytesIO) -> np.ndarray:
+    compressed_image = Image.open(compressed_image_buffer)
+    decompressed_image = compressed_image.copy()
+    bgr_image = cv2.cvtColor(np.array(decompressed_image), cv2.COLOR_RGB2BGR)
+    return bgr_image
 
 def binaryToImage(binary):
     buffer = base64.b64decode(binary)

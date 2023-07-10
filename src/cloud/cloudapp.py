@@ -1,7 +1,7 @@
 from src.cloud.kinesis_video_stream_consumer import KinesisVideoStreamConsumer
 from src.db.crud import DatabaseCRUD
 from src.client import MQTTClient
-from src.utils import imageToBinary, binaryToImage
+from src.utils import imageToBinary, binaryToImage, compressImage, decompressImage
 from src.cloud.deployedmodel import DeployedModel
 import time, os, threading, json, cv2, logging
 import numpy as np
@@ -10,7 +10,7 @@ class Application:
 
     capture_from_camera_stream = True
     detection_enabled = False
-    mqtt_enabled = False
+    mqtt_enabled = True
     display_image = True
 
     is_detecting = False
@@ -22,6 +22,7 @@ class Application:
     @staticmethod
     def main():
 
+        """
         dbHandler = DatabaseCRUD(
             db_URL="mysql+mysqldb://{username}:{password}@{hostname}:{port}/{dbname}".format(
                 hostname=os.environ.get("RDS_DB_HOSTNAME"),
@@ -31,6 +32,7 @@ class Application:
                 dbname=os.environ.get("RDS_DB_DBNAME")
             )
         )
+        """
 
         mqttclient = MQTTClient(
             auth_cert=True,
@@ -119,25 +121,88 @@ class Application:
 
     @staticmethod
     def detectFunc(mqttclient, deployedmodel):
+
         while not Application.stop_detectionprocess:
+
             if Application.is_detecting == True and Application.frame_to_be_detected is not None:
-                image = Application.frame_to_be_detected
+
+                # Format of mqtt payload with sample data
+                mqtt_payload = {
+                    "image": "",
+                    "camera": {
+                        "description": "A brief description about the device",
+                        "ip_address": "192.168.1.2",
+                        "name":  "Site A Device"
+                    },
+                    "timestamp": "11/21/22 12:19:53",
+                    "total_violations": 3,
+                    "total_violators": 1,
+                    "violators": [
+                        {
+                            "id": 2,
+                            "person_info": [
+                                {
+                                    "first_name": "Nick Frederick",
+                                    "job_title": "Contractor",
+                                    "last_name": "Smith",
+                                    "middle_name": "Bell",
+                                    "overlaps": [
+                                        2
+                                    ],
+                                    "person_id": 1
+                                }
+                            ],
+                            "violations": [
+                                {
+                                    "class_name": "no helmet",
+                                    "confidence": 0.852,
+                                    "id": 1,
+                                    "overlaps": [
+                                        2
+                                    ]
+                                },
+                                {
+                                    "class_name": "glasses",
+                                    "confidence": 0.6996,
+                                    "id": 3,
+                                    "overlaps": [
+                                        2
+                                    ]
+                                },
+                                {
+                                    "class_name": "no vest",
+                                    "confidence": 0.5462,
+                                    "id": 4,
+                                    "overlaps": [
+                                        2
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+
                 if Application.detection_enabled:
-                    payload = {
+                    deployedmodel_payload = {
                         "image": imageToBinary(Application.frame_to_be_detected),
                         "ppe_preferences": deployedmodel.ppe_preferences
                     }
-                    response = deployedmodel.invoke_endpoint(payload)
-                    image = binaryToImage(response["image"])
+                    deployed_model_response = deployedmodel.invoke_endpoint(payload)
+                    mqtt_payload = deployed_model_response
+
                 if Application.mqtt_enabled:
-                    mqttclient.publish(json.dumps(response))
+                    mqtt_payload["image"] = imageToBinary(decompressImage(compressImage(Application.frame_to_be_detected, quality=5)))
+                    mqttclient.publish(json.dumps(mqtt_payload))
+
                 if Application.display_image:
-                    cv2.imshow("frame", image)
+                    cv2.imshow("frame", Application.frame_to_be_detected)
                     key = cv2.waitKey(25)
                     if key == 27:
                         Application.stop_mainprocess = True
                         Application.stop_detectionprocess = True
                         break
+
                 Application.is_detecting = False
+
             else:
                 time.sleep(0.01)
