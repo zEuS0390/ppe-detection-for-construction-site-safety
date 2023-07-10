@@ -88,6 +88,7 @@ class Camera(metaclass=Singleton):
         Update function for the camera thread
         """
         while self.isRunning:
+
             _, read_frame = self.cap.read()
 
             if self.rtsp_enabled:
@@ -121,7 +122,7 @@ class Camera(metaclass=Singleton):
         if self.record_enabled:
             self.writer.release()
 
-    def getFrame(self):
+    def getFrame(self, include_processed=True):
         """
         Get frame with an additional dimension to be used by the detection model
         """
@@ -131,8 +132,11 @@ class Camera(metaclass=Singleton):
         else:
             original_frame = self.frame if self.frame is not None else np.zeros((480, 640, 3), dtype=np.unint8) 
             img: np.ndarray = original_frame.copy()
-        img = img[:,:,::-1]
-        img = letterbox(img, new_shape=(640, 640), auto=True)[0]
-        img = np.expand_dims(img, axis=0)
-        img = img.transpose(0, 3, 1, 2)
-        return img, original_frame
+        if include_processed:
+            img = img[:,:,::-1]
+            img = letterbox(img, new_shape=(640, 640), auto=True)[0]
+            img = np.expand_dims(img, axis=0)
+            img = img.transpose(0, 3, 1, 2)
+            return img, original_frame
+        else:
+            return original_frame

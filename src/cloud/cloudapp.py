@@ -8,10 +8,10 @@ import numpy as np
 
 class Application:
 
-    capture_from_camera_stream = False
+    capture_from_camera_stream = True
     detection_enabled = False
-    mqtt_enabled = True
-    display_image = False
+    mqtt_enabled = False
+    display_image = True
 
     is_detecting = False
     frame_to_be_detected = None
@@ -105,7 +105,7 @@ class Application:
 
             try:
                 if Application.capture_from_camera_stream:
-                    _, frame = cap.read()
+                    frame = cap.read()[1]
                 else:
                     frame = kvsconsumer.frames.pop(0)
             except:
