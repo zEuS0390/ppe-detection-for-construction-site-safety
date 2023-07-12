@@ -11,21 +11,6 @@ mapper_registry = registry()
 # These are PPE detection tables for construction
 
 @mapper_registry.mapped
-class Person:
-    __tablename__="person"
-    id = Column(Integer, primary_key=True)
-    person_id = Column(Integer)
-    first_name = Column(String(length=250))
-    middle_name = Column(String(length=250))
-    last_name = Column(String(length=250))
-    job_title = Column(String(length=250))
-    people = relationship("Violator", back_populates="person", cascade="all, delete")
-    def __str__(self):
-        return f"Person(first_name='{self.first_name}', middle_name='{self.middle_name}', last_name='{self.last_name}', job_title='{self.job_title}')"
-    def __repr__(self):
-        return f"{self.first_name} {self.middle_name} {self.last_name}"
-
-@mapper_registry.mapped
 class PPEClass:
     """
         A mapped class that defines a table that holds classes of PPE for construction.
@@ -68,15 +53,13 @@ class Violator:
     y1 = Column(Integer)
     x2 = Column(Integer)
     y2 = Column(Integer)
-    person_id = Column(Integer, ForeignKey("person.id", ondelete="CASCADE"))
-    person = relationship("Person", back_populates="people")
     detectedppeclasses = relationship("DetectedPPEClass", back_populates="violator", cascade="all, delete")
     violationdetails_id = Column(Integer, ForeignKey("violationdetails.id", ondelete="CASCADE"))
     violationdetails = relationship("ViolationDetails", back_populates="violators")
     def __str__(self):
-        return f"Violator(id={self.id}, name='{self.person}', detectedppeclasses={self.detectedppeclasses})"
+        return f"Violator(id={self.id}, detectedppeclasses={self.detectedppeclasses})"
     def __repr__(self):
-        return f"{self.person}"
+        return f"Violator(id={self.id}, detectedppeclasses={self.detectedppeclasses})"
 
 @mapper_registry.mapped
 class ViolationDetails:
@@ -96,6 +79,11 @@ class ViolationDetails:
 class DeviceDetails:
     __tablename__="devicedetails"
     id = Column(Integer, primary_key=True)
+    kvs_name = Column(String(length=250))
+    uuid = Column(String(length=250))
+    password = Column(String(length=250))
+    pub_topic = Column(String(length=250))
+    set_topic = Column(String(length=250))
     name = Column(String(length=250))
     description = Column(String(length=250))
     start_datetime = Column(DateTime, default=datetime.now())

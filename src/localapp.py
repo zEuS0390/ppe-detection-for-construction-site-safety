@@ -2,7 +2,6 @@ from src.db.crud import DatabaseCRUD
 from src.client import MQTTClient
 from src.detection import Detection
 from src.utils import getLatestFiles, getRecognitionData
-from src.recognition import Recognition
 from src.camera import Camera
 from src.hardware import Hardware
 from src.indicator import Indicator
@@ -24,10 +23,10 @@ class Application:
     """
     The workflow of the application happens here. Before starting the detection, all 
     the underlying modules will be initialized first. They are essential, especially 
-    in loading the models and the people's basic personal identities. These modules 
-    have threads to process their initialized data and perform their specific roles. 
-    For example, the hardware module will utilize Raspberry Pi's GPIO pins to control 
-    the hardware components in the project based on its configuration.
+    in loading the models. These modules have threads to process their initialized 
+    data and perform their specific roles. For example, the hardware module will 
+    utilize Raspberry Pi's GPIO pins to control the hardware components in the 
+    project based on its configuration.
     
     These are the following modules used:
     - Hardware
@@ -60,15 +59,13 @@ class Application:
 
         logger.info("Downloading model files")
         indicator.info_downloading_files()
-        getLatestFiles("data", ["face_recognition", "detection"])
+        getLatestFiles("data", ["detection"])
         indicator.info_none(buzzer=False)
 
         dbHandler = DatabaseCRUD(cfg)
-        dbHandler.insertPersons(getRecognitionData(cfg)["info"])
         dbHandler.insertPPEClasses(cfg.get("yolor","classes"))
 
         camera = Camera()
-        recognition = Recognition(cfg)
         mqtt_client = MQTTClient(
                 args = {
                     "client_id": os.environ.get("LOCAL_MQTT_CLIENT_ID"),

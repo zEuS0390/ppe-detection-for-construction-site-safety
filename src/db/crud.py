@@ -3,7 +3,6 @@ from .tables import (
     PPEClass, 
     Violator, 
     DetectedPPEClass,
-    Person,
     ViolationDetails,
     DeviceDetails
 )
@@ -15,24 +14,12 @@ class DatabaseCRUD(DatabaseHandler):
     """
     Methods:
         - insertPPEClasses          (filepath: str)                                                             -> None
-        - insertPersons             (filepath: str, 
-                                     verbose=False)                                                             -> None
         - getPPEClasses             ()                                                                          -> dict
-        - getPersons                ()                                                                          -> dict
-        - updatePerson              (person_id: int, 
-                                     first_name: str = "", 
-                                     middle_name: str = "", 
-                                     last_name: str = "", 
-                                     job_title: str = "")                                                       -> bool
-        - deletePerson              (person_id: int)                                                            -> bool
         - insertViolator            (violationdetails_id: int, 
-                                     person_id: int, 
                                      topleft: tuple, 
                                      bottomright: tuple, 
                                      detectedppeclasses: list, 
                                      verbose: bool = False, 
-                                     commit: bool = True)                                                       -> bool
-        - deleteViolator            (person_id: int, 
                                      commit: bool = True)                                                       -> bool
         - getAllViolationDetails    (from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"),
                                      to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59"))      -> list
@@ -65,28 +52,29 @@ class DatabaseCRUD(DatabaseHandler):
         self.session.commit()
         self.session.close()
 
-    def insertPersons(self, 
-                      filepath: str, 
-                      verbose: bool = False) -> None:
-        persons = []
-        with open(filepath, newline="") as csv_file:
-            reader = csv.DictReader(csv_file)
-            for row in reader:
-                persons.append(row)
-        for person_data in persons:
-            exist = self.session.query(Person).filter_by(
-                first_name=person_data["first_name"],
-                middle_name=person_data["middle_name"],
-                last_name=person_data["last_name"]
-            ).first()
-            if exist is None:
-                person = Person(**person_data)
-                self.session.add(person)
-            else:
-                if verbose:
-                    print(f"{person_data['first_name']} {person_data['middle_name']} {person_data['last_name']} already exist!")
-        self.session.commit()
+    def insertDeviceDetails(
+            self, 
+            uuid: str, 
+            password: str, 
+            pub_topic: str, 
+            sub_topic: str, 
+            name: str, 
+            description: str
+        ) -> int:
+        devicedetails_id = -1
+        devicedetails = DeviceDetails()
+        devicedetails.uuid = uuid
+        devicedetails.password = password
+        devicedetails.pub_topic = pub_topic
+        devicedetails.sub_topic = sub_topic 
+        devicedetails.name = name
+        devicedetails.description = description
+        self.session.add(devicedetails)
+        self.session.flush()
+        devicedetails_id = devicedetails.id
+        self.session.commit() 
         self.session.close()
+        return devicedetails_id
 
     def getPPEClasses(self) -> dict:
         """
@@ -102,46 +90,6 @@ class DatabaseCRUD(DatabaseHandler):
             del ppeclass["id"]
         return ppeclasses
 
-    def getPersons(self) -> dict:
-        """
-        Get all persons from the database.
-        """
-        row = self.session.query(Person).all()
-        persons = {}
-        for col in row:
-            person = {}
-            for column in col.__table__.columns:
-                person[column.name] = getattr(col, column.name)
-            persons[person["id"]] = person # Use id from the database as key
-            del person["id"] # Delete the id from the database because it is not necessary to be included in MQTT JSON data
-        return persons
-
-    def updatePerson(self, 
-                     person_id: int, 
-                     first_name: str = "", 
-                     middle_name: str = "", 
-                     last_name: str = "", 
-                     job_title: str = "") -> bool:
-        person = self.session.query(Person).filter_by(person_id=person_id).first()
-        if person is not None:
-            if len(first_name)>0: person.first_name = first_name
-            if len(middle_name)>0: person.middle_name = middle_name
-            if len(last_name)>0: person.last_name = last_name
-            if len(job_title)>0: person.job_title = job_title
-            self.session.commit()
-            self.session.close()
-            return True
-        return False
-
-    def deletePerson(self, 
-                     person_id: int) -> bool:
-        person = self.session.query(Person).filter_by(person_id=person_id).first()
-        if person is not None:
-            self.session.delete(person)
-            self.session.commit()
-            return True
-        return False
-
     def insertViolationDetailsToDeviceDetails(self, 
                                devicedetails_id: int,
                                violationdetails_id: int):
@@ -156,49 +104,62 @@ class DatabaseCRUD(DatabaseHandler):
 
     def insertViolator(self, 
                        violationdetails_id: int, 
-                       person_id: int, 
                        topleft: tuple, 
                        bottomright: tuple, 
-                       detectedppeclasses: list, 
+                       detectedppe: list, 
                        verbose: bool = False, 
                        commit: bool = True) -> bool:
+
+        violator_id = None 
         violationdetails = self.session.query(ViolationDetails).filter_by(id=violationdetails_id).first()
-        person = self.session.query(Person).filter_by(person_id=person_id).first()
-        if person is not None and violationdetails is not None:
+
+        if violationdetails is not None:
+
+            detectedppe_to_be_added = []
+
+            for ppeitem in detectedppe:
+                ppeclass_name = ppeitem["class_name"]
+                confidence = ppeitem["confidence"]
+                ppeclass = self.session.query(PPEClass).filter_by(name=ppeclass_name).first()
+                if ppeclass is not None:
+                    detectedppe_to_be_added.append((ppeclass, confidence))
+                else:
+                    if verbose:
+                        print(f"{ppeclass_name} does not exist!")
+                    return None
+
             violator = Violator()
-            person.people.append(violator)
             violator.x1 = topleft[0]
             violator.y1 = topleft[1]
             violator.x2 = bottomright[0]
             violator.y2 = bottomright[1]
             violator.violationdetails = violationdetails
-            for ppeclass_name, confidence in detectedppeclasses:
-                ppeclass = self.session.query(PPEClass).filter_by(name=ppeclass_name).first()
-                if ppeclass is not None:
-                    detected = DetectedPPEClass()
-                    detected.confidence = confidence
-                    violator.detectedppeclasses.append(detected)
-                    ppeclass.detectedppeclasses.append(detected)
-                else:
-                    if verbose:
-                        print(f"{ppeclass_name} does not exist!")
+
+            while len(detectedppe_to_be_added) > 0:
+                detected, confidence = detectedppe_to_be_added.pop(0)
+                detectedppeclass = DetectedPPEClass()
+                detectedppeclass.confidence = confidence
+                violator.detectedppeclasses.append(detectedppeclass)
+                detected.detectedppeclasses.append(detectedppeclass)
+
             self.session.add(violator)
+
+            violator_id = violator.id
+
             if commit:
                 if verbose:
                     print(f"Added {violator}")
                 self.session.commit()
                 self.session.close()
-        else:
-            return False
-        return True
 
-    def deleteViolator(self, 
-                       person_id: int, 
-                       commit: bool = True) -> bool:
-        person = self.session.query(Person).filter_by(person_id=person_id).all()
-        if len(person) > 0:
-            for same in person:
-                self.session.delete(same)
+        return violator_id
+
+    def deleteViolator(self,
+            violator_id: int,
+            commit: bool = True) -> bool:
+        violator = self.session.query(Violator).filter_by(id=violator_id).scalar()
+        if violator is not None: 
+            self.session.delete(violator)
             if commit:
                 self.session.commit()
                 self.session.close()
@@ -209,18 +170,12 @@ class DatabaseCRUD(DatabaseHandler):
                                from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"), 
                                to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59")) -> list:
         violation_details = self.session.query(ViolationDetails).filter(ViolationDetails.timestamp.between(from_datetime, to_datetime)).all()
-        print(violation_details)
         formatted_violation_details = []
         for violation_detail in violation_details:
             image = violation_detail.image
             timestamp = violation_detail.timestamp.strftime("%Y-%m-%d %H:%M:%S")
             violators = []
-            for violator in violation_detail.violators:
-                recognized_persons = []
-                first_name = violator.person.first_name
-                middle_name = violator.person.middle_name
-                last_name = violator.person.last_name
-                recognized_persons.append(" ".join([first_name, middle_name, last_name]))
+            for violator in violation_details.violators:
                 detected_ppe_classes = {
                         "no helmet": False,
                         "no glasses": False,
@@ -238,7 +193,6 @@ class DatabaseCRUD(DatabaseHandler):
                     if ppe_class_name in detected_ppe_classes:
                         detected_ppe_classes[ppe_class_name] = True
                 violators.append({
-                    "recognized_persons": recognized_persons,
                     "detected_ppe_classes": detected_ppe_classes
                 })
             formatted_violation_details.append({

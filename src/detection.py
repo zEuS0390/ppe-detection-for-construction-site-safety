@@ -2,7 +2,6 @@ from yolor.utils.general import non_max_suppression, scale_coords
 from src.utils import getElapsedTime, getIPAddress
 from yolor.utils.torch_utils import select_device
 from yolor.models.models import Darknet
-from src.recognition import Recognition
 from configparser import ConfigParser
 from src.box import Box, isColliding
 import torch.backends.cudnn as cudnn
@@ -15,7 +14,7 @@ from src.db.crud import DatabaseCRUD
 from src.singleton import Singleton
 from src.client import MQTTClient
 from src.indicator import Indicator
-from src.db.tables import Person, ViolationDetails
+from src.db.tables import ViolationDetails
 import torch, threading, time
 from src.constants import (
     Class, 
@@ -35,7 +34,6 @@ class Detection(metaclass=Singleton):
         - onClientSet           (client, userdata, msg) -> None
         - loadData              () -> None
         - loadCameraDetails     () -> None
-        - loadPersons           () -> None
         - loadClasses           () -> None
         - loadModel             () -> None
         - loadDetectionCFG      () -> None
@@ -47,7 +45,6 @@ class Detection(metaclass=Singleton):
         - update                () -> None
     """
 
-    persons_info = []
     names = []
     model = None
     isDetecting = True
@@ -76,16 +73,21 @@ class Detection(metaclass=Singleton):
         if self.mqtt_client is not None:
             self.indicator: Indicator = Indicator.getInstance()
             self.db: DatabaseCRUD = DatabaseCRUD.getInstance()
+            self.devicedetails_id = self.db.insertDeviceDetails(
+                "ZMCI1",
+                "pass123",
+                "ZMCI/test/notif",
+                "ZMCI/test/set",
+                "Device Name",
+                "Description"
+            )
             self.camera: Camera = Camera.getInstance()
-            self.recognition: Recognition = Recognition.getInstance()
             self.mqtt_client.client.on_message = self.onClientSet
-            if self.db is not None:
-                self.loadPersons()
             self.loadCameraDetails()
             self.updateThread = threading.Thread(target=self.update)
             self.updateThread.start()
         else:
-            self.logger.error("Missing arguments (camera, recognition, mqtt_client). Abortting.")
+            self.logger.error("Missing arguments (camera, mqtt_client). Abortting.")
 
     def stop(self):
         self.isRunning = False
@@ -116,13 +118,6 @@ class Detection(metaclass=Singleton):
         self.camera_details["name"] = self.cfg.get("camera", "name"),
         self.camera_details["description"] = self.cfg.get("camera", "description"),
         self.camera_details["ip_address"] = getIPAddress()
-
-    def loadPersons(self):
-        """
-        Loads all persons inserted in the database
-        """
-        self.persons_info = self.db.getPersons()
-        self.logger.info(f"{len(self.persons_info)} persons loaded.")
 
     def loadColors(self):
         """
@@ -226,15 +221,13 @@ class Detection(metaclass=Singleton):
                     ppe.append(detected_obj)
         return persons, ppe
 
-    def saveViolations(self, image, recognized_persons, violations, body_coordinate: Box):
+    def saveViolations(self, image, violations, body_coordinate: Box):
         """
         Save violations of person/s to the database
         """
         date_and_time = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
         image_name = f"data/images/image_{date_and_time}.jpg"
         cv2.imwrite(image_name,image)
-
-        violations = [violation["class_name"] for violation in violations]
 
         # Create violation details
         violationdetails = ViolationDetails()
@@ -246,42 +239,16 @@ class Detection(metaclass=Singleton):
         self.db.session.commit()
         self.db.session.close()
 
-        # Save violator as unknown person that has no face
-        if len(recognized_persons) == 0:
-            
-            self.db.insertViolator(
-                violationdetails_id=violationdetails_id,
-                person_id=0,
-                topleft=(body_coordinate.left, body_coordinate.top),
-                bottomright=(body_coordinate.right, body_coordinate.bottom),
-                detectedppeclasses=violations,
-                verbose=True,
-                commit=False
-            )
-        else:
-            # Save violator as recognized person that has a face
-            for recognized_person in recognized_persons:
-                if len(recognized_person) > 1:
-                    self.db.insertViolator(
-                        violationdetails_id=violationdetails_id,
-                        person_id=recognized_person["person_id"],
-                        topleft=(body_coordinate.left, body_coordinate.top),
-                        bottomright=(body_coordinate.right, body_coordinate.bottom),
-                        detectedppeclasses=violations,
-                        verbose=True,
-                        commit=False
-                    )
-                # Save violator as unknown person that has an unrecognized face
-                else:
-                    self.db.insertViolator(
-                        violationdetails_id=violationdetails_id,
-                        person_id=0,
-                        topleft=(body_coordinate.left, body_coordinate.top),
-                        bottomright=(body_coordinate.right, body_coordinate.bottom),
-                        detectedppeclasses=violations,
-                        verbose=True,
-                        commit=False
-                    )
+        self.db.insertViolationDetailsToDeviceDetails(self.devicedetails_id, violationdetails_id)
+
+        self.db.insertViolator(
+            violationdetails_id=violationdetails_id,
+            topleft=(body_coordinate.left, body_coordinate.top),
+            bottomright=(body_coordinate.right, body_coordinate.bottom),
+            detectedppe=violations,
+            verbose=True,
+            commit=False
+        )
 
         self.db.n_operations += 1
         # Perform commit when n_operations value reaches 5
@@ -300,7 +267,7 @@ class Detection(metaclass=Singleton):
 
     def checkViolations(self, processed_image, image):
         """
-        Analyzes which PPE objects belong to a certain person and recognize identities by checking the overlapping bounding boxes.
+        Analyzes which PPE objects belong to a certain person by checking the overlapping bounding boxes.
         
         Note: It ignores all PPE objects that do not reside within the bounding box of the person class.
 
@@ -325,25 +292,6 @@ class Detection(metaclass=Singleton):
             overlaps = self.checkOverlaps(ppe_item["coordinate"], persons)
             ppe_item["overlaps"] = overlaps
         
-        # Recognize faces
-        person_indices, person_time = getElapsedTime(self.recognition.predict, image, distance_threshold=0.4)
-        self.logger.info(f"Recognition time: {person_time:.2f}")
-
-        # Check overlaps of each recognized faces
-        recognized_persons = []
-        for person_index, person_coordinate in person_indices:
-            # In the "self.persons_info[ int(person_index) + 1]", you may wonder why is it being incremented by 1.
-            # The reason is that there is an unknown person in the first row of the Person table from the database.
-            # This unknown person from the database does not exist in the dataset of the face recognition.
-            # The face recognition only gives us -1 if it is unknown (not recognized) within its dataset.
-            # See the saveViolations method to check how an unknown person from the database is used.
-            person_info = self.persons_info[ int(person_index) + 1 ] if person_index != -1 else {}
-            box = Box(*person_coordinate)
-            self.plotBox(-1, image_plots, box, self.colors[11], person_info["first_name"] if len(person_info) > 0 else "Unknown")
-            overlaps = self.checkOverlaps(box, persons)
-            person_info["overlaps"] = overlaps
-            recognized_persons.append(person_info)
-
         # Resize image to be published from mqtt client
         image_plots = cv2.resize(image_plots, (self.mqtt_img_size[0], self.mqtt_img_size[1]), interpolation=cv2.INTER_AREA)
 
@@ -353,7 +301,6 @@ class Detection(metaclass=Singleton):
             id = person["id"]
             violator = {
                 "id": id, 
-                "person_info": [],
                 "violations": []
             } 
 
@@ -387,16 +334,11 @@ class Detection(metaclass=Singleton):
                         pass
                     violator["violations"].append(ppe_item)
 
-            # Get recognized faces that are in the person
-            for recognized_person in recognized_persons:
-                if id in recognized_person["overlaps"]:
-                    violator["person_info"].append(recognized_person)
-
             violators.append(violator)
 
-            # Save violations of person/s to the database
+            # Save violations of the violator to the database
             if self.db is not None:
-                _, save_time = getElapsedTime(self.saveViolations, image_plots, violator["person_info"], violator["violations"], person["coordinate"])
+                _, save_time = getElapsedTime(self.saveViolations, image_plots, violator["violations"], person["coordinate"])
                 self.logger.info(f"Saving violations time: {save_time:.2f}")
 
         # Consolidate all the information
