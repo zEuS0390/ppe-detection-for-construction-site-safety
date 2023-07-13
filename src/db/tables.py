@@ -2,7 +2,7 @@ from sqlalchemy.orm import registry, relationship
 from sqlalchemy import (
     Column, Integer, 
     String, DateTime, 
-    ForeignKey
+    Boolean, ForeignKey
 )
 from datetime import datetime
 
@@ -17,7 +17,7 @@ class PPEClass:
     """
     __tablename__="ppeclass"
     id = Column(Integer, primary_key=True)
-    name = Column(String(length=250))
+    class_name = Column(String(length=250))
     detectedppeclasses = relationship("DetectedPPEClass", back_populates="ppeclass")
     def __str__(self):
         return f"PPEClass(id={self.id}, name='{self.name}')"
@@ -84,12 +84,9 @@ class DeviceDetails:
     password = Column(String(length=250))
     pub_topic = Column(String(length=250))
     set_topic = Column(String(length=250))
-    name = Column(String(length=250))
-    description = Column(String(length=250))
-    start_datetime = Column(DateTime, default=datetime.now())
-    end_datetime = Column(DateTime)
+    is_active = Column(Boolean, default=False, nullable=False)
     violationdetails = relationship("ViolationDetails", back_populates="devicedetails", cascade="all, delete")
     def __str__(self):
-        return f"DeviceDetails(id={self.id}, name='{self.name}', start_datetime={self.start_datetime}, end_datetime={self.end_datetime})"
+        return f"DeviceDetails(id={self.id}, uuid='{self.uuid}', pub_topic='{self.pub_topic}', set_topic='{self.set_topic}', is_active={self.is_active})"
     def __repr__(self):
-        return f"DeviceDetails(id={self.id}, name='{self.name}', start_datetime={self.start_datetime}, end_datetime={self.end_datetime})"
+        return f"DeviceDetails(id={self.id}, uuid='{self.uuid}', pub_topic='{self.pub_topic}', set_topic='{self.set_topic}', is_active={self.is_active})"

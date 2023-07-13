@@ -22,8 +22,7 @@ class Application:
     @staticmethod
     def main():
 
-        """
-        dbHandler = DatabaseCRUD(
+        db = DatabaseCRUD(
             db_URL="mysql+mysqldb://{username}:{password}@{hostname}:{port}/{dbname}".format(
                 hostname=os.environ.get("RDS_DB_HOSTNAME"),
                 port=int(os.environ.get("RDS_DB_PORT")),
@@ -32,7 +31,6 @@ class Application:
                 dbname=os.environ.get("RDS_DB_DBNAME")
             )
         )
-        """
 
         mqttclient = MQTTClient(
             auth_cert=True,
@@ -78,16 +76,22 @@ class Application:
             )
         )
 
+        return
+
+        # Wait and Connect with the MQTT Client
         mqttclient.start()
         while not mqttclient.is_connected:
             time.sleep(1)
 
         try:
+            # Start the processes
             detectionThread.start()
             mainProcessThread.start()
             kvsconsumer.start_loop()
         except Exception as err:
             print(f"[Application]: {err}")
+
+        # Wait and stop all processes
         mqttclient.stop()
         Application.stop_mainprocess = True
         Application.stop_detectionprocess = True
@@ -129,11 +133,6 @@ class Application:
                 # Format of mqtt payload with sample data
                 mqtt_payload = {
                     "image": imageToBinary(Application.frame_to_be_detected),
-                    "camera": {
-                        "description": "A brief description about the device",
-                        "ip_address": "192.168.1.2",
-                        "name":  "Site A Device"
-                    },
                     "timestamp": "11/21/22 12:19:53",
                     "total_violations": 3,
                     "total_violators": 1,

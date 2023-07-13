@@ -30,6 +30,7 @@ class DatabaseCRUD(DatabaseHandler):
                  db_URL = None, 
                  echo = False):
         super(DatabaseCRUD, self).__init__(cfg, db_URL, echo)
+        self.to_be_commited = []
 
     # Load the PPE classes that will be used for detection in PPE violations
     def insertPPEClasses(self, 
@@ -40,41 +41,17 @@ class DatabaseCRUD(DatabaseHandler):
         with open(filepath, "r") as file:
             ppeclass_names = [line.strip() for line in file.readlines()]
         # Loop and create a row for PPEClass table through each name
-        for name in ppeclass_names:
+        for class_name in ppeclass_names:
             # Check if the current PPE class already exist in the table
-            exist = self.session.query(PPEClass).filter_by(name=name).first()
+            exist = self.session.query(PPEClass).filter_by(class_name=class_name).first()
             if exist is None:
-                ppeclass = PPEClass(name=name)
+                ppeclass = PPEClass(class_name=class_name)
                 self.session.add(ppeclass)
             else:
                 pass
                 # print(f"{name} already exist!")
         self.session.commit()
         self.session.close()
-
-    def insertDeviceDetails(
-            self, 
-            uuid: str, 
-            password: str, 
-            pub_topic: str, 
-            sub_topic: str, 
-            name: str, 
-            description: str
-        ) -> int:
-        devicedetails_id = -1
-        devicedetails = DeviceDetails()
-        devicedetails.uuid = uuid
-        devicedetails.password = password
-        devicedetails.pub_topic = pub_topic
-        devicedetails.sub_topic = sub_topic 
-        devicedetails.name = name
-        devicedetails.description = description
-        self.session.add(devicedetails)
-        self.session.flush()
-        devicedetails_id = devicedetails.id
-        self.session.commit() 
-        self.session.close()
-        return devicedetails_id
 
     def getPPEClasses(self) -> dict:
         """
@@ -90,11 +67,48 @@ class DatabaseCRUD(DatabaseHandler):
             del ppeclass["id"]
         return ppeclasses
 
-    def insertViolationDetailsToDeviceDetails(self, 
-                               devicedetails_id: int,
-                               violationdetails_id: int):
-        devicedetails = self.session.query(DeviceDetails).filter_by(id=devicedetails_id).first()
-        violationdetails = self.session.query(ViolationDetails).filter_by(id=violationdetails_id).first()
+    def getAllDeviceDetails(self) -> list:
+        return self.session.query(DeviceDetails).all()
+
+    def insertDeviceDetails(
+            self, 
+            kvs_name: str,
+            uuid: str, 
+            password: str, 
+            pub_topic: str, 
+            set_topic: str, 
+        ) -> int:
+        devicedetails_id = -1
+        devicedetails = DeviceDetails()
+        devicedetails.kvs_name = kvs_name
+        devicedetails.uuid = uuid
+        devicedetails.password = password
+        devicedetails.pub_topic = pub_topic
+        devicedetails.set_topic = set_topic 
+        self.session.add(devicedetails)
+        self.session.flush()
+        devicedetails_id = devicedetails.id
+        self.session.commit() 
+        self.session.close()
+        return devicedetails_id
+
+    def insertViolationDetails(self) -> int:
+        violationdetails_id = -1
+        violationdetails = ViolationDetails()
+        self.session.add(violationdetails)
+        self.session.flush()
+        violationdetails_id = violationdetails.id
+        self.session.commit()
+        self.session.close()
+        return violationdetails_id
+
+    def insertViolationDetailsToDeviceDetails(
+            self,
+            devicedetails_id: int,
+            violationdetails_id: int
+        ) -> bool:
+        devicedetails = self.session.query(DeviceDetails).filter_by(id=devicedetails_id).scalar()
+        violationdetails = self.session.query(ViolationDetails).filter_by(id=violationdetails_id).scalar()
         if devicedetails is not None and violationdetails is not None:
             devicedetails.violationdetails.append(violationdetails)
             self.session.commit()
@@ -110,7 +124,6 @@ class DatabaseCRUD(DatabaseHandler):
                        verbose: bool = False, 
                        commit: bool = True) -> bool:
 
-        violator_id = None 
         violationdetails = self.session.query(ViolationDetails).filter_by(id=violationdetails_id).first()
 
         if violationdetails is not None:
@@ -120,31 +133,29 @@ class DatabaseCRUD(DatabaseHandler):
             for ppeitem in detectedppe:
                 ppeclass_name = ppeitem["class_name"]
                 confidence = ppeitem["confidence"]
-                ppeclass = self.session.query(PPEClass).filter_by(name=ppeclass_name).first()
+                ppeclass = self.session.query(PPEClass).filter_by(class_name=ppeclass_name).first()
                 if ppeclass is not None:
-                    detectedppe_to_be_added.append((ppeclass, confidence))
+                    detectedppe_to_be_added.append(
+                        DetectedPPEClass(
+                            ppeclass=ppeclass, 
+                            confidence=confidence
+                        )
+                    )
                 else:
                     if verbose:
                         print(f"{ppeclass_name} does not exist!")
-                    return None
+                    return False
 
-            violator = Violator()
-            violator.x1 = topleft[0]
-            violator.y1 = topleft[1]
-            violator.x2 = bottomright[0]
-            violator.y2 = bottomright[1]
-            violator.violationdetails = violationdetails
-
-            while len(detectedppe_to_be_added) > 0:
-                detected, confidence = detectedppe_to_be_added.pop(0)
-                detectedppeclass = DetectedPPEClass()
-                detectedppeclass.confidence = confidence
-                violator.detectedppeclasses.append(detectedppeclass)
-                detected.detectedppeclasses.append(detectedppeclass)
+            violator = Violator(
+                x1 = topleft[0],
+                y1 = topleft[1],
+                x2 = bottomright[0],
+                y2 = bottomright[1],
+                violationdetails = violationdetails,
+                detectedppeclasses = detectedppe_to_be_added
+            )
 
             self.session.add(violator)
-
-            violator_id = violator.id
 
             if commit:
                 if verbose:
@@ -152,7 +163,7 @@ class DatabaseCRUD(DatabaseHandler):
                 self.session.commit()
                 self.session.close()
 
-        return violator_id
+        return True
 
     def deleteViolator(self,
             violator_id: int,

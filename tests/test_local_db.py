@@ -79,7 +79,7 @@ class TestDatabaseCRUD(unittest.TestCase):
                 {"class_name": "no boots", "confidence": 0.9}
         ]
         result = self.db.insertViolator(violationdetails_id, (0, 0), (100, 400), detected)
-        self.assertEqual(result, 1)
+        self.assertTrue(result)
 
         # Insert violator entry with the same name (NOTE: This case is possible when there are multiple recognized faces)
         detected = [
@@ -89,7 +89,7 @@ class TestDatabaseCRUD(unittest.TestCase):
                 {"class_name": "no boots", "confidence": 0.90}
         ]
         result = self.db.insertViolator(violationdetails_id, (0, 0), (100, 400), detected)
-        self.assertEqual(result, 2)
+        self.assertTrue(result)
 
         # # Check the number of rows in the Violator. The result should be 2, because insertion is performed twice
         count = self.db.session.query(func.count(Violator.id)).scalar()
@@ -102,7 +102,7 @@ class TestDatabaseCRUD(unittest.TestCase):
                 {"class_name": "cap", "confidence": 0.92}
         ]
         result = self.db.insertViolator(violationdetails_id, (0, 0), (100, 400), detected)
-        self.assertEqual(result, None)
+        self.assertFalse(result)
 
     def test_step_5_delete_violator(self):
         # Delete violator with correct inputs
