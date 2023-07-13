@@ -2,6 +2,7 @@ import sys, os, random
 sys.path.append(os.path.abspath("."))
 from src.db.crud import DatabaseCRUD
 from src.db.tables import *
+from datetime import datetime
 
 if __name__=="__main__":
 
@@ -12,8 +13,7 @@ if __name__=="__main__":
         password=os.environ.get("RDS_DB_PASSWORD"),
         dbname=os.environ.get("RDS_DB_DBNAME")
     )
-
-
+    
     db = DatabaseCRUD(
         db_URL=url
     )
@@ -31,28 +31,51 @@ if __name__=="__main__":
 
     devicedetails = 1
 
-    for _ in range(10):
+    now = datetime.now()
 
-        violationdetails_id = db.insertViolationDetails()
+    hours = 0
+    minutes = 0
+
+    for _ in range(8*30):
+
+        if minutes > 30:
+            hours += 1
+            minutes = 0
+        else:
+            minutes += 1
+
+        if hours > 23:
+            print("[DATETIME]: Done")
+            hours = 0
+            break
+        
+        new = datetime(year=now.year, month=now.month, day=now.day, hour=hours, minute=minutes, second=0)
+
+        violationdetails_id = db.insertViolationDetails(timestamp=new)
+
         result = db.insertViolationDetailsToDeviceDetails(1, violationdetails_id)
 
         if result:
+
             detectedppeclasses = [ppeclasses[random.randint(1, len(ppeclasses)-1)] for _ in range(random.randint(10, 12))]
 
+            n = 0
             for detectedppe in detectedppeclasses:
+                detectedppe["bbox_id"] = n
                 detectedppe["confidence"] = random.randint(89, 99)
+                detectedppe["bbox_overlaps"] = [random.randint(1, 8*30) for _ in range(random.randint(3, 5))]
+                n += 1
 
             topleft = (random.randint(0, 640), random.randint(0, 480))
             bottomright = (random.randint(0, 640), random.randint(0, 480))
 
-            result = db.insertViolator(violationdetails_id, topleft, bottomright, detectedppeclasses, commit=False)
+            result = db.insertViolator(violationdetails_id, 1, topleft, bottomright, detectedppeclasses, commit=False)
 
             if result:
-                sys.stdout.write(f"[{result}]: Successfully saved to the database.\n")
-                sys.stdout.flush()
+                print(f"[{result}]: Successfully saved to the database.\n")
             else:
-                sys.stdout.write(f"[{result}]: Failed saving to the database.\n")
-                sys.stdout.flush()
+                print(f"[{result}]: Failed saving to the database.\n")
+
 
     db.session.commit()
     db.session.close()

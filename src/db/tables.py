@@ -32,9 +32,10 @@ class DetectedPPEClass:
     """
     __tablename__ = "detectedppeclass"
     id = Column(Integer, primary_key=True)
+    bbox_id = Column(Integer)
+    confidence = Column(Integer)
     violator_id = Column(Integer, ForeignKey("violator.id", ondelete="CASCADE"))
     ppeclass_id = Column(Integer, ForeignKey("ppeclass.id", ondelete="CASCADE"))
-    confidence = Column(Integer)
     violator = relationship("Violator", back_populates="detectedppeclasses")
     ppeclass = relationship("PPEClass", back_populates="detectedppeclasses")
     def __str__(self):
@@ -49,6 +50,7 @@ class Violator:
     """
     __tablename__="violator"
     id = Column(Integer, primary_key=True)
+    bbox_id = Column(Integer)
     x1 = Column(Integer)
     y1 = Column(Integer)
     x2 = Column(Integer)

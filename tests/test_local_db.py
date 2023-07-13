@@ -73,22 +73,34 @@ class TestDatabaseCRUD(unittest.TestCase):
 
         # Insert violator entry with the correct inputs
         detected = [
-                {"class_name": "no helmet", "confidence": 0.75}, 
-                {"class_name": "no glasses", "confidence": 0.80}, 
-                {"class_name": "no gloves", "confidence": 0.76}, 
-                {"class_name": "no boots", "confidence": 0.9}
+                {"bbox_id": 1, "class_name": "no helmet", "confidence": 0.75, "bbox_overlaps": [1, 2]}, 
+                {"bbox_id": 2, "class_name": "no glasses", "confidence": 0.80, "bbox_overlaps": [1,]}, 
+                {"bbox_id": 3, "class_name": "no gloves", "confidence": 0.76, "bbox_overlaps": [1,]}, 
+                {"bbox_id": 4, "class_name": "no boots", "confidence": 0.9, "bbox_overlaps": [1,]}
         ]
-        result = self.db.insertViolator(violationdetails_id, (0, 0), (100, 400), detected)
+        result = self.db.insertViolator(
+                violationdetails_id=violationdetails_id, 
+                bbox_id=1, 
+                topleft=(0, 0), 
+                bottomright=(100, 400), 
+                detectedppe=detected
+        )
         self.assertTrue(result)
 
         # Insert violator entry with the same name (NOTE: This case is possible when there are multiple recognized faces)
         detected = [
-                {"class_name": "no helmet", "confidence": 0.60}, 
-                {"class_name": "no glasses", "confidence": 0.98}, 
-                {"class_name": "no gloves", "confidence": 0.91}, 
-                {"class_name": "no boots", "confidence": 0.90}
+                {"bbox_id": 5, "class_name": "no helmet", "confidence": 0.75, "bbox_overlaps": [1, 2]}, 
+                {"bbox_id": 6, "class_name": "no glasses", "confidence": 0.98, "bbox_overlaps": [2,]}, 
+                {"bbox_id": 7, "class_name": "no gloves", "confidence": 0.91, "bbox_overlaps": [2,]}, 
+                {"bbox_id": 8, "class_name": "no boots", "confidence": 0.90, "bbox_overlaps": [2,]}
         ]
-        result = self.db.insertViolator(violationdetails_id, (0, 0), (100, 400), detected)
+        result = self.db.insertViolator(
+                violationdetails_id=violationdetails_id, 
+                bbox_id=2,
+                topleft=(0, 0), 
+                bottomright=(100, 400), 
+                detectedppe=detected
+        )
         self.assertTrue(result)
 
         # # Check the number of rows in the Violator. The result should be 2, because insertion is performed twice
@@ -97,11 +109,17 @@ class TestDatabaseCRUD(unittest.TestCase):
 
         # Insert violator entry with non existing ppe classes
         detected = [
-                {"class_name": "no helmet", "confidence": 0.62}, 
-                {"class_name": "pencil", "confidence": 0.95}, 
-                {"class_name": "cap", "confidence": 0.92}
+                {"bbox_id": 9, "class_name": "no helmet", "confidence": 0.62, "bbox_overlaps": [3,]}, 
+                {"bbox_id": 10, "class_name": "pencil", "confidence": 0.95, "bbox_overlaps": [3,]}, 
+                {"bbox_id": 11, "class_name": "cap", "confidence": 0.92, "bbox_overlaps": [3,]}
         ]
-        result = self.db.insertViolator(violationdetails_id, (0, 0), (100, 400), detected)
+        result = self.db.insertViolator(
+                violationdetails_id=violationdetails_id, 
+                bbox_id=3,
+                topleft=(0, 0), 
+                bottomright=(100, 400), 
+                detectedppe=detected
+        )
         self.assertFalse(result)
 
     def test_step_5_delete_violator(self):

@@ -8,10 +8,10 @@ import numpy as np
 
 class Application:
 
-    capture_from_camera_stream = True
+    capture_from_camera_stream = False
     detection_enabled = False
     mqtt_enabled = False
-    display_image = True
+    display_image = False
 
     is_detecting = False
     frame_to_be_detected = None
@@ -190,7 +190,14 @@ class Application:
                     mqtt_payload = deployed_model_response
 
                 if Application.mqtt_enabled:
-                    mqtt_payload["image"] = imageToBinary(decompressImage(compressImage(binaryToImage(mqtt_payload["image"]), quality=10)))
+                    mqtt_payload["image"] = imageToBinary(
+                        decompressImage(
+                            compressImage(
+                                binaryToImage(mqtt_payload["image"]), 
+                                quality=12
+                            )
+                        )
+                    )
                     mqttclient.publish(json.dumps(mqtt_payload))
 
                 if Application.display_image:
