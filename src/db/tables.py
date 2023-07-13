@@ -20,9 +20,9 @@ class PPEClass:
     class_name = Column(String(length=250))
     detectedppeclasses = relationship("DetectedPPEClass", back_populates="ppeclass")
     def __str__(self):
-        return f"PPEClass(id={self.id}, name='{self.name}')"
+        return f"PPEClass(id={self.id}, name='{self.class_name}')"
     def __repr__(self):
-        return f"'{self.name}'"
+        return f"'{self.class_name}'"
 
 # Associative table for PPEClass and violator
 @mapper_registry.mapped
