@@ -143,7 +143,7 @@ class DatabaseCRUD(DatabaseHandler):
             to_be_added = []
 
             for ppeitem in detectedppe:
-                ppe_bbox_id = ppeitem["bbox_id"]
+                ppe_bbox_id = ppeitem["id"]
                 ppeclass_name = ppeitem["class_name"]
                 confidence = ppeitem["confidence"]
                 bbox_overlaps = ppeitem["bbox_overlaps"]
@@ -162,7 +162,7 @@ class DatabaseCRUD(DatabaseHandler):
                             # "detectedppeclass": detectedppeclass,
                             "ppeclass": ppeclass,
                             "confidence": confidence,
-                            "bbox_id": ppe_bbox_id,
+                            "id": ppe_bbox_id,
                             "bbox_overlaps": bbox_overlaps
                         } 
                     )
@@ -189,7 +189,7 @@ class DatabaseCRUD(DatabaseHandler):
 
             for item in to_be_added:
 
-                bbox_id = item["bbox_id"]
+                bbox_id = item["id"]
                 ppeclass = item["ppeclass"]
                 bbox_overlaps = item["bbox_overlaps"]
                 confidence = item["confidence"]
@@ -278,3 +278,17 @@ class DatabaseCRUD(DatabaseHandler):
                 serializable_violation_details["violators"].append(serializable_violator)
             serializable_all_violation_details.append(serializable_violation_details)
         return serializable_all_violation_details
+
+    def setDeviceDetailsStatus(
+            self,
+            devicedetails_uuid: str,
+            is_active: bool
+        ):
+        devicedetails = self.session.query(DeviceDetails).filter_by(uuid=devicedetails_uuid).scalar()
+        if devicedetails is not None:
+            devicedetails.is_active = is_active
+            self.session.add(devicedetails)
+            self.session.commit()
+            self.session.close()
+            return True
+        return False

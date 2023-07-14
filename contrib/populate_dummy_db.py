@@ -61,7 +61,7 @@ if __name__=="__main__":
 
             n = 0
             for detectedppe in detectedppeclasses:
-                detectedppe["bbox_id"] = n
+                detectedppe["id"] = n
                 detectedppe["confidence"] = random.randint(89, 99)
                 detectedppe["bbox_overlaps"] = [random.randint(1, 50) for _ in range(random.randint(3, 5))]
                 n += 1
