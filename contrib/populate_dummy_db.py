@@ -20,7 +20,7 @@ if __name__=="__main__":
 
     db.insertDeviceDetails(
         kvs_name="ppedetection-videostream",
-        uuid="ZMCI01",
+        uuid="ZMCI1",
         password="pass123",
         pub_topic="ZMCI/test/notif",
         set_topic="ZMCI/test/set"
@@ -36,7 +36,7 @@ if __name__=="__main__":
     hours = 0
     minutes = 0
 
-    for _ in range(8*30):
+    for _ in range(50):
 
         if minutes > 30:
             hours += 1
@@ -63,7 +63,7 @@ if __name__=="__main__":
             for detectedppe in detectedppeclasses:
                 detectedppe["bbox_id"] = n
                 detectedppe["confidence"] = random.randint(89, 99)
-                detectedppe["bbox_overlaps"] = [random.randint(1, 8*30) for _ in range(random.randint(3, 5))]
+                detectedppe["bbox_overlaps"] = [random.randint(1, 50) for _ in range(random.randint(3, 5))]
                 n += 1
 
             topleft = (random.randint(0, 640), random.randint(0, 480))
@@ -75,7 +75,6 @@ if __name__=="__main__":
                 print(f"[{result}]: Successfully saved to the database.\n")
             else:
                 print(f"[{result}]: Failed saving to the database.\n")
-
 
     db.session.commit()
     db.session.close()

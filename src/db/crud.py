@@ -149,19 +149,26 @@ class DatabaseCRUD(DatabaseHandler):
                 bbox_overlaps = ppeitem["bbox_overlaps"]
                 ppeclass = self.session.query(PPEClass).filter_by(class_name=ppeclass_name).first()
                 if ppeclass is not None:
+                    """
+                    detectedppeclass = DetectedPPEClass(
+                        bbox_id=ppe_bbox_id,
+                        confidence=confidence
+                    )
+                    detectedppeclass.ppeclasses.append(ppeclass)
+                    self.session.add(detectedppeclass)
+                    """
                     to_be_added.append(
                         {
-                            "detectedppeclass": DetectedPPEClass(
-                                bbox_id=ppe_bbox_id,
-                                ppeclass=ppeclass, 
-                                confidence=confidence
-                            ),
+                            # "detectedppeclass": detectedppeclass,
+                            "ppeclass": ppeclass,
+                            "confidence": confidence,
+                            "bbox_id": ppe_bbox_id,
                             "bbox_overlaps": bbox_overlaps
                         } 
                     )
                 else:
                     if verbose:
-                        print(f"{ppeclass_name} does not exist!")
+                        print(f"{ppeclass_name} does not exist in the db! Skipping..")
                     return False
 
             # Insert a violator
@@ -179,15 +186,30 @@ class DatabaseCRUD(DatabaseHandler):
             # -------------- Assign Detected PPE Classes to Violator/s --------------
 
             # Assign the bbox overlaps to the violators matching with their bbox ids
+
             for item in to_be_added:
 
-                detectedppeclass = item["detectedppeclass"]
+                bbox_id = item["bbox_id"]
+                ppeclass = item["ppeclass"]
                 bbox_overlaps = item["bbox_overlaps"]
+                confidence = item["confidence"]
+                 
+                detectedppeclass = DetectedPPEClass(
+                    bbox_id=bbox_id,
+                    confidence=confidence
+                )
+
+                ppeclass.detectedppeclasses.append(detectedppeclass)
+                # detectedppeclass.ppeclasses.append(ppeclass)
+                self.session.add(detectedppeclass)
 
                 for bbox_id in bbox_overlaps:
+                    
                     violators = self.session.query(Violator).filter_by(bbox_id=bbox_id).all()
 
                     for violator in violators:
+
+                        # detectedppeclass.violators.append(violator)
                         violator.detectedppeclasses.append(detectedppeclass)
 
             if commit:
@@ -226,78 +248,30 @@ class DatabaseCRUD(DatabaseHandler):
             filter(
                 DeviceDetails.uuid==devicedetails_uuid
         ).all()
-
         serializable_all_violation_details = []
-
         for violation_details in all_violation_details:
-
             serializable_violation_details = {
+                "uuid": devicedetails_uuid,
                 "image": "",
+                "total_violators": 0,
+                "total_violations": 0,
                 "timestamp": "11/21/22 12:19:53",
                 "violators": []
             }
-
             for violator in violation_details.violators:
-
+                serializable_violation_details["total_violators"] += 1
                 serializable_violator = {
                     "id": 2,
                     "violations": []
                 }
-
-                for detectedppe in violator.detectedppeclasses:
-
-                    serializable_detectedppe = {
-                        "class_name": "",
-                        "confidence": 0,
-                        "id": 3,
-                        "overlaps": [
-                            2
-                        ]
+                for detectedppeclass in violator.detectedppeclasses:
+                    serializable_violation_details["total_violations"] += 1
+                    serializable_violations = {
+                        "id": detectedppeclass.bbox_id,
+                        "confidence": detectedppeclass.confidence,
+                        "class_name": detectedppeclass.ppeclass.class_name
                     }
-
-                    serializable_detectedppe["class_name"] = detectedppe.ppeclass.class_name
-                    serializable_detectedppe["confidence"] = detectedppe.confidence
-                    
-                    serializable_violator["violations"].append(serializable_detectedppe)
-
+                    serializable_violator["violations"].append(serializable_violations)
                 serializable_violation_details["violators"].append(serializable_violator)
-
             serializable_all_violation_details.append(serializable_violation_details)
-
-        print(serializable_all_violation_details)
-
-
-        """
-        violation_details = self.session.query(ViolationDetails).filter(ViolationDetails.timestamp.between(from_datetime, to_datetime)).all()
-        formatted_violation_details = []
-        for violation_detail in violation_details:
-            image = violation_detail.image
-            timestamp = violation_detail.timestamp.strftime("%Y-%m-%d %H:%M:%S")
-            violators = []
-            for violator in violation_details.violators:
-                detected_ppe_classes = {
-                        "no helmet": False,
-                        "no glasses": False,
-                        "no vest": False,
-                        "no gloves": False,
-                        "no boots": False,
-                        "helmet": False,
-                        "glasses": False,
-                        "vest": False,
-                        "gloves": False,
-                        "boots": False
-                }
-                for item in violator.detectedppeclasses:
-                    ppe_class_name = item.ppeclass.name
-                    if ppe_class_name in detected_ppe_classes:
-                        detected_ppe_classes[ppe_class_name] = True
-                violators.append({
-                    "detected_ppe_classes": detected_ppe_classes
-                })
-            formatted_violation_details.append({
-                "image": image,
-                "timestamp": timestamp,
-                "violators": violators
-            })
-        return formatted_violation_details
-        """
+        return serializable_all_violation_details

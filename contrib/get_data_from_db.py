@@ -1,8 +1,8 @@
-import sys, os
+import sys, os, json
 sys.path.append(os.path.abspath("."))
 from src.db.crud import DatabaseCRUD
 
-url = "mysql+mysqldb://{username}:{password}@{hostname}:{port}/{dbname}".format(
+url = "mysql+pymysql://{username}:{password}@{hostname}:{port}/{dbname}".format(
     hostname=os.environ.get("RDS_DB_HOSTNAME"),
     port=int(os.environ.get("RDS_DB_PORT")),
     username=os.environ.get("RDS_DB_USERNAME"),
@@ -12,6 +12,4 @@ url = "mysql+mysqldb://{username}:{password}@{hostname}:{port}/{dbname}".format(
 
 db = DatabaseCRUD(db_URL=url)
 
-db.getAllViolationDetails(devicedetails_uuid="ZMCI01")
-
-
+print(json.dumps(db.getAllViolationDetails(devicedetails_uuid="ZMCI1"), indent=4))

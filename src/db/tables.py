@@ -1,4 +1,4 @@
-from sqlalchemy.orm import registry, relationship
+from sqlalchemy.orm import registry, relationship, Mapped
 from sqlalchemy import (
     Column, Integer, 
     String, DateTime, 
@@ -39,9 +39,9 @@ class DetectedPPEClass:
     violator = relationship("Violator", back_populates="detectedppeclasses")
     ppeclass = relationship("PPEClass", back_populates="detectedppeclasses")
     def __str__(self):
-        return f"DetectedPPEClass(violator='{self.violator}',ppeclass='{self.ppeclass}')"
-    def __repr__(self):
-        return f"{self.ppeclass}"
+        return f"DetectedPPEClass(violator_id='{self.violator_id}',ppeclass_id='{self.ppeclass_id}')"
+    def __str__(self):
+        return f"DetectedPPEClass(violator_id='{self.violator_id}',ppeclass_id='{self.ppeclass_id}')"
 
 @mapper_registry.mapped
 class Violator:
