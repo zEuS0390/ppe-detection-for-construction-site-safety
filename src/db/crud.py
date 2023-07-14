@@ -238,16 +238,19 @@ class DatabaseCRUD(DatabaseHandler):
             from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"), 
             to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59")
         ) -> list:
-        all_violation_details = self.session.query(ViolationDetails).\
-            join(DeviceDetails).\
-            filter(
-                ViolationDetails.timestamp.between(
-                    from_datetime, 
-                    to_datetime)
-                ).\
-            filter(
-                DeviceDetails.uuid==devicedetails_uuid
-        ).all()
+        if uuid is not None: 
+            all_violation_details = self.session.query(ViolationDetails).\
+                join(DeviceDetails).\
+                filter(
+                    ViolationDetails.timestamp.between(
+                        from_datetime, 
+                        to_datetime)
+                    ).\
+                filter(
+                    DeviceDetails.uuid==devicedetails_uuid
+            ).all()
+        else:
+            all_violation_details = self.session.query(ViolationDetails).all()
         serializable_all_violation_details = []
         for violation_details in all_violation_details:
             serializable_violation_details = {
