@@ -259,7 +259,7 @@ class DatabaseCRUD(DatabaseHandler):
                 "total_violators": 0,
                 "total_violations": 0,
                 # "timestamp": "11/21/22 12:19:53",
-                "timestamp": violation_details.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+                "timestamp": violation_details.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
                 "violators": []
             }
             for violator in violation_details.violators:
