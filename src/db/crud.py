@@ -146,7 +146,7 @@ class DatabaseCRUD(DatabaseHandler):
                 ppe_bbox_id = ppeitem["id"]
                 ppeclass_name = ppeitem["class_name"]
                 confidence = ppeitem["confidence"]
-                bbox_overlaps = ppeitem["bbox_overlaps"]
+                bbox_overlaps = ppeitem["overlaps"]
                 ppeclass = self.session.query(PPEClass).filter_by(class_name=ppeclass_name).first()
                 if ppeclass is not None:
                     """
@@ -255,16 +255,17 @@ class DatabaseCRUD(DatabaseHandler):
         for violation_details in all_violation_details:
             serializable_violation_details = {
                 "uuid": devicedetails_uuid,
-                "image": "",
+                "image": violation_details.image,
                 "total_violators": 0,
                 "total_violations": 0,
-                "timestamp": "11/21/22 12:19:53",
+                # "timestamp": "11/21/22 12:19:53",
+                "timestamp": violation_details.timestamp.strftime("%Y-%m-%d %H:%M:%S")
                 "violators": []
             }
             for violator in violation_details.violators:
                 serializable_violation_details["total_violators"] += 1
                 serializable_violator = {
-                    "id": 2,
+                    "id": violator.bbox_id,
                     "violations": []
                 }
                 for detectedppeclass in violator.detectedppeclasses:

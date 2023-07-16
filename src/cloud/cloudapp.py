@@ -4,12 +4,13 @@ from src.client import MQTTClient
 from src.utils import imageToBinary, binaryToImage, compressImage, decompressImage
 from src.cloud.deployedmodel import DeployedModel
 import time, os, threading, json, cv2, logging
+from datetime import datetime
 import numpy as np
 
 class Application:
 
     capture_from_camera_stream = False
-    db_save_enabled = False
+    db_save_enabled = True
     detection_enabled = False
     mqtt_enabled = True
     display_image = False
@@ -193,7 +194,7 @@ class Application:
 
                 # Save in the database
                 if Application.db_save_enabled:
-                    image = db.insertViolationDetails(
+                    violationdetails_id = db.insertViolationDetails(
                         imageToBinary(
                             decompressImage(
                                 compressImage(
@@ -201,22 +202,19 @@ class Application:
                                     quality=20
                                 )
                             )
-                        )
-                    )
-                    violationdetails_id = db.inesrtViolationDetails(
-                        image,
+                        ),
                         datetime.now()
                     )
                     result = db.insertViolationDetailsToDeviceDetails(
                         1,
                         violationdetails_id
                     )
-                    for violator in violators:
+                    for violator in mqtt_payload["violators"]:
                         result = db.insertViolator(
                             violationdetails_id=violationdetails_id,
                             bbox_id=violator["id"],
-                            topleft=0,
-                            bottomright=0,
+                            topleft=(0,0),
+                            bottomright=(0,0),
                             detectedppe=violator["violations"]
                         )
                         if result:
@@ -247,7 +245,5 @@ class Application:
 
                 Application.is_detecting = False
 
-            else:
-                time.sleep(0.01)
+            time.sleep(0.5)
 
-            time.sleep(1)
