@@ -9,8 +9,9 @@ import numpy as np
 class Application:
 
     capture_from_camera_stream = False
+    db_save_enabled = False
     detection_enabled = False
-    mqtt_enabled = False
+    mqtt_enabled = True
     display_image = False
 
     is_detecting = False
@@ -76,8 +77,6 @@ class Application:
             )
         )
 
-        return
-
         # Wait and Connect with the MQTT Client
         mqttclient.start()
         while not mqttclient.is_connected:
@@ -115,7 +114,7 @@ class Application:
             except:
                 frame = frame
 
-            if not Application.is_detecting:
+            if not Application.is_detecting and kvsconsumer.is_active:
                 Application.frame_to_be_detected = frame
                 Application.is_detecting = True
 
@@ -126,9 +125,11 @@ class Application:
     @staticmethod
     def detectFunc(mqttclient, deployedmodel):
 
+        db = DatabaseCRUD.getInstance()
+
         while not Application.stop_detectionprocess:
 
-            if Application.is_detecting == True and Application.frame_to_be_detected is not None:
+            if Application.is_detecting == True:
 
                 # Format of mqtt payload with sample data
                 mqtt_payload = {
@@ -181,6 +182,7 @@ class Application:
                     ]
                 }
 
+                # Submit video frame to the deployed detection model
                 if Application.detection_enabled:
                     deployedmodel_payload = {
                         "image": imageToBinary(Application.frame_to_be_detected),
@@ -189,12 +191,46 @@ class Application:
                     deployed_model_response = deployedmodel.invoke_endpoint(deployedmodel_payload)
                     mqtt_payload = deployed_model_response
 
+                # Save in the database
+                if Application.db_save_enabled:
+                    image = db.insertViolationDetails(
+                        imageToBinary(
+                            decompressImage(
+                                compressImage(
+                                    binaryToImage(mqtt_payload["image"]), 
+                                    quality=20
+                                )
+                            )
+                        )
+                    )
+                    violationdetails_id = db.inesrtViolationDetails(
+                        image,
+                        datetime.now()
+                    )
+                    result = db.insertViolationDetailsToDeviceDetails(
+                        1,
+                        violationdetails_id
+                    )
+                    for violator in violators:
+                        result = db.insertViolator(
+                            violationdetails_id=violationdetails_id,
+                            bbox_id=violator["id"],
+                            topleft=0,
+                            bottomright=0,
+                            detectedppe=violator["violations"]
+                        )
+                        if result:
+                            print(f"[DATABASE]: Successfully saved the detection to the database.")
+                        else:
+                            print(f"[DATABASE]: Failed saving the detection to the database.")
+
+                # Publish through MQTT
                 if Application.mqtt_enabled:
                     mqtt_payload["image"] = imageToBinary(
                         decompressImage(
                             compressImage(
                                 binaryToImage(mqtt_payload["image"]), 
-                                quality=12
+                                quality=25
                             )
                         )
                     )
@@ -213,3 +249,5 @@ class Application:
 
             else:
                 time.sleep(0.01)
+
+            time.sleep(1)

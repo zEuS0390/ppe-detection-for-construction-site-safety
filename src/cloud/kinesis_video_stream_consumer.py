@@ -24,7 +24,7 @@ class KinesisVideoStreamConsumer:
         self.kvs_client = self.session.client("kinesisvideo")
         self.stop_video_stream = False
         self.frames = []
-
+        self.is_active = False
     def _get_data_endpoint(self, stream_name, api_name):
         response = self.kvs_client.get_data_endpoint(
             StreamName=stream_name,
@@ -39,7 +39,7 @@ class KinesisVideoStreamConsumer:
             try:
                 get_media_response = kvs_media_client.get_media(
                     StreamName=self.aws_kvs_stream_name,
-                    StartSelector={
+                    StartSelector = {
                         'StartSelectorType': 'NOW'
                     }
                 )
@@ -52,6 +52,9 @@ class KinesisVideoStreamConsumer:
                 )
                 self.my_stream01_consumer.start()
                 self.my_stream01_consumer.join()
+                if self.is_active:
+                    self.is_active = False
+                    self.db.setDeviceDetailsStatus("ZMCI1", False)
             except KeyboardInterrupt as err:
                 self.stop_loop()
                 raise Exception(f"Keyboard interrupted")
@@ -60,25 +63,33 @@ class KinesisVideoStreamConsumer:
                 raise Exception(f"{err}")
     
     def stop_loop(self):
-        self.db.setDeviceDetailsStatus("ZMCI1", False)
+        if self.is_active:
+            self.is_active = False
+            self.db.setDeviceDetailsStatus("ZMCI1", False)
         self.my_stream01_consumer.stop_thread()
         self.stop_video_stream = True
 
     def on_fragment_arrived(self, stream_name, fragment_bytes, fragment_dom, fragment_receive_duration):
         try:
-            self.last_good_fragment_tags = self.kvs_fragment_processor.get_fragment_tags(fragment_dom)
+            self.last_good_fragment_tags = self.kvs_fragment_processor.get_fragment_tags(fragment_dom) 
             one_in_frames_ratio = 1
             ndarray_frames = self.kvs_fragment_processor.get_frames_as_ndarray(fragment_bytes, one_in_frames_ratio)
             self.frames += [cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) for frame in ndarray_frames]
-            self.db.setDeviceDetailsStatus("ZMCI1", True)
+            if not self.is_active:
+                self.is_active = True
+                self.db.setDeviceDetailsStatus("ZMCI1", True)
         except Exception as err:
             print(f"on_fragment_arrived error! {err}")
 
     def on_stream_read_complete(self, stream_name):
-        self.db.setDeviceDetailsStatus("ZMCI1", False)
+        if self.is_active:
+            self.is_active = False
+            self.db.setDeviceDetailsStatus("ZMCI1", False)
         print(f'Read Media on stream: {stream_name} Completed successfully - Last Fragment Tags: {self.last_good_fragment_tags}')
 
     def on_stream_read_exception(self, stream_name, error):
-        self.db.setDeviceDetailsStatus("ZMCI1", False)
+        if self.is_active:
+            self.is_active = False
+            self.db.setDeviceDetailsStatus("ZMCI1", False)
         print(f'####### ERROR: Exception on read stream: {stream_name}\n####### Fragment Tags:\n{self.last_good_fragment_tags}\nError Message:{error}')
 
