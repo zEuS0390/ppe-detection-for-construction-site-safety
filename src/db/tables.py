@@ -2,7 +2,8 @@ from sqlalchemy.orm import registry, relationship, Mapped
 from sqlalchemy import (
     Column, Integer, 
     String, DateTime, 
-    Boolean, ForeignKey
+    Boolean, ForeignKey,
+    Text
 )
 from datetime import datetime
 
@@ -67,7 +68,7 @@ class Violator:
 class ViolationDetails:
     __tablename__ = "violationdetails"
     id = Column(Integer, primary_key=True)
-    image = Column(String(length=250))
+    image = Column(Text)
     violators = relationship("Violator", back_populates="violationdetails", cascade="all, delete")
     timestamp = Column(DateTime, default=datetime.now())
     devicedetails_id = Column(Integer, ForeignKey("devicedetails.id", ondelete="CASCADE"))
