@@ -234,11 +234,11 @@ class DatabaseCRUD(DatabaseHandler):
 
     def getAllViolationDetails(
             self, 
-            devicedetails_uuid: str,
+            devicedetails_uuid: str = None,
             from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"), 
             to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59")
         ) -> list:
-        if uuid is not None: 
+        if devicedetails_uuid is not None: 
             all_violation_details = self.session.query(ViolationDetails).\
                 join(DeviceDetails).\
                 filter(
