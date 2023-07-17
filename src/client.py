@@ -97,8 +97,7 @@ class MQTTClient:
         print(f"Connection result: {connack_string(rc)}")
         if rc == 0:
             self.is_connected = True
-            # client.publish(self.pub_topic, payload=json.dumps({"message": "zeus"}), qos=0, retain=False)
-            # self.client.subscribe(self.sub_topic)
+            self.client.subscribe(self.sub_topic)
             # print(f"Client subscribe to {self.sub_topic}")
         elif rc == 5:
             # Not authorized (incorrect username or password)

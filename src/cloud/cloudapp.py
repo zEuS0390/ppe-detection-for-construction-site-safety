@@ -11,11 +11,11 @@ import numpy as np
 class Application:
 
     # Configuration varaiables
-    capture_from_camera_stream = False
+    capture_from_camera_stream = True
     db_save_enabled = False
     detection_enabled = False
     mqtt_enabled = False
-    display_image = False
+    display_image = True
 
     # Variables for the detection process
     is_detecting = False
@@ -51,6 +51,8 @@ class Application:
                 "keyfile":os.environ.get("CLOUD_MQTT_KEYFILE")
             }
         )
+
+        mqttclient.client.on_message = Application.setPreferences
 
         deployedmodel = DeployedModel(
             aws_access_key_id=os.environ.get("AWS_SAGEMAKER_ACCESS_KEY_ID"),
@@ -124,9 +126,13 @@ class Application:
             except:
                 frame = frame
 
-            if not Application.is_detecting and kvsconsumer.is_active:
+            if not Application.is_detecting:
                 Application.frame_to_be_detected = frame
                 Application.is_detecting = True
+
+            # if not Application.is_detecting and kvsconsumer.is_active:
+            #     Application.frame_to_be_detected = frame
+            #     Application.is_detecting = True
 
             time.sleep(0.01)
 
@@ -231,3 +237,10 @@ class Application:
 
             time.sleep(0.1)
 
+    @staticmethod
+    def setPreferences(client, userdata, msg):
+        payload = msg.payload.decode()
+        try:
+            print(payload)
+        except Exception as err:
+            print(f"[SET PREFERENCES ERROR]: {err}")
