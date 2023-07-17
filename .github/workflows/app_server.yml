@@ -5,6 +5,9 @@ on:
   pull_request:
     branches:
       - '*'
+env:
+  PPEDETECTION_APP_MODE: local
+
 jobs:
   build:
       name: Application Server CI
