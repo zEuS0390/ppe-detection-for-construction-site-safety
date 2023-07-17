@@ -11,11 +11,11 @@ import numpy as np
 class Application:
 
     # Configuration varaiables
-    capture_from_camera_stream = True
-    db_save_enabled = False
-    detection_enabled = False
-    mqtt_enabled = False
-    display_image = True
+    capture_from_camera_stream = False
+    db_save_enabled = True
+    detection_enabled = True
+    mqtt_enabled = True
+    display_image = False
 
     # Variables for the detection process
     is_detecting = False
@@ -125,14 +125,10 @@ class Application:
                     frame = kvsconsumer.frames.pop(0)
             except:
                 frame = frame
-
-            if not Application.is_detecting:
+            
+            if not Application.is_detecting and kvsconsumer.is_active:
                 Application.frame_to_be_detected = frame
                 Application.is_detecting = True
-
-            # if not Application.is_detecting and kvsconsumer.is_active:
-            #     Application.frame_to_be_detected = frame
-            #     Application.is_detecting = True
 
             time.sleep(0.01)
 
