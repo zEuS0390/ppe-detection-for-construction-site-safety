@@ -42,8 +42,8 @@ class TestDatabaseCRUD(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.db.scoped.remove()
         cls.db.session.close()
+        cls.db.engine.dispose()
         os.remove(DB_FILE)
 
     def test_step_1_load_data(self):
