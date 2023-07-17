@@ -6,7 +6,7 @@ from configparser import ConfigParser
 
 # Using SQLAlchemy 2.0
 
-class DatabaseHandler(metaclass=Singleton):
+class DatabaseHandler:
 
     isRunning = True
 
