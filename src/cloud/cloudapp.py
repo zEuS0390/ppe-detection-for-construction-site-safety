@@ -1,23 +1,27 @@
+from src.utils import imageToBinary, binaryToImage, compressImage, decompressImage, imageToByteStream
 from src.cloud.kinesis_video_stream_consumer import KinesisVideoStreamConsumer
+from src.cloud.deployedmodel import DeployedModel
+from src.cloud.s3storage import S3Storage
 from src.db.crud import DatabaseCRUD
 from src.client import MQTTClient
-from src.utils import imageToBinary, binaryToImage, compressImage, decompressImage
-from src.cloud.deployedmodel import DeployedModel
 import time, os, threading, json, cv2, logging
 from datetime import datetime
 import numpy as np
 
 class Application:
 
-    capture_from_camera_stream = False
+    # Configuration varaiables
+    capture_from_camera_stream = True
     db_save_enabled = True
     detection_enabled = False
-    mqtt_enabled = True
-    display_image = False
+    mqtt_enabled = False
+    display_image = True
 
+    # Variables for the detection process
     is_detecting = False
     frame_to_be_detected = None
 
+    # Control variables for the two threads
     stop_detectionprocess = False
     stop_mainprocess = False
 
@@ -62,11 +66,16 @@ class Application:
             aws_kvs_region=os.environ.get("AWS_KINESIS_VIDEO_STREAM_REGION")
         )
 
-        mainProcessThread = threading.Thread(
-            target=Application.mainProcessFunc, 
+        s3storage = S3Storage(
+            aws_access_key_id=os.environ.get("AWS_S3_STORAGE_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.environ.get("AWS_S3_STORAGE_SECRET_ACCESS_KEY"),
+            region_name=os.environ.get("AWS_S3_STORAGE_REGION")
+        )
+
+        acquiringFrameThread = threading.Thread(
+            target=Application.acquiringFrameFunc, 
             args = (
-                deployedmodel, 
-                kvsconsumer
+                kvsconsumer,
             )
         )
 
@@ -86,7 +95,7 @@ class Application:
         try:
             # Start the processes
             detectionThread.start()
-            mainProcessThread.start()
+            acquiringFrameThread.start()
             kvsconsumer.start_loop()
         except Exception as err:
             print(f"[Application]: {err}")
@@ -98,7 +107,7 @@ class Application:
         kvsconsumer.stop_loop()
 
     @staticmethod
-    def mainProcessFunc(deployedmodel, kvsconsumer):
+    def acquiringFrameFunc(kvsconsumer):
 
         if Application.capture_from_camera_stream:
             cap = cv2.VideoCapture(0)
@@ -115,9 +124,13 @@ class Application:
             except:
                 frame = frame
 
-            if not Application.is_detecting and kvsconsumer.is_active:
+            if not Application.is_detecting:
                 Application.frame_to_be_detected = frame
                 Application.is_detecting = True
+
+            # if not Application.is_detecting and kvsconsumer.is_active:
+            #     Application.frame_to_be_detected = frame
+            #     Application.is_detecting = True
 
             time.sleep(0.01)
 
@@ -126,61 +139,41 @@ class Application:
     @staticmethod
     def detectFunc(mqttclient, deployedmodel):
 
+        # Get the instance of the created database handler
         db = DatabaseCRUD.getInstance()
 
+        s3storage: S3Storage = S3Storage.getInstance()
+
+        # Set up paths for using s3 storage
+        base_dir = os.path.join("images", "devices")
+        device_uuid = "ZMCI1"
+        start_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        images_group_name = f"{device_uuid}_{start_datetime}"
+
+        # Current directory in this instance
+        current_dir = os.path.join(base_dir, device_uuid, images_group_name)
+
+        bucket_name = "pd-ppe-detection-s3-storage"
+
+        # Detection process
         while not Application.stop_detectionprocess:
 
-            if Application.is_detecting == True:
+            if Application.is_detecting:
 
-                # Format of mqtt payload with sample data
-                mqtt_payload = {
+                now = datetime.now()
+                timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+                current_filename = f"{device_uuid}_{timestamp}.jpg"
+                key = os.path.join(current_dir, current_filename).replace("\\", "/")
+
+                message = {
+                    "uuid": device_uuid,
                     "image": imageToBinary(Application.frame_to_be_detected),
-                    "timestamp": "11/21/22 12:19:53",
-                    "total_violations": 3,
-                    "total_violators": 1,
-                    "violators": [
-                        {
-                            "id": 2,
-                            "person_info": [
-                                {
-                                    "first_name": "Nick Frederick",
-                                    "job_title": "Contractor",
-                                    "last_name": "Smith",
-                                    "middle_name": "Bell",
-                                    "overlaps": [
-                                        2
-                                    ],
-                                    "person_id": 1
-                                }
-                            ],
-                            "violations": [
-                                {
-                                    "class_name": "no helmet",
-                                    "confidence": 0.852,
-                                    "id": 1,
-                                    "overlaps": [
-                                        2
-                                    ]
-                                },
-                                {
-                                    "class_name": "glasses",
-                                    "confidence": 0.6996,
-                                    "id": 3,
-                                    "overlaps": [
-                                        2
-                                    ]
-                                },
-                                {
-                                    "class_name": "no vest",
-                                    "confidence": 0.5462,
-                                    "id": 4,
-                                    "overlaps": [
-                                        2
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
+                    "timestamp": now.strftime("%m/%d/%Y %H:%M:%S"),
+                    "total_violations": 0,
+                    "total_violators": 0,
+                    "total_compliant_ppe": 0,
+                    "total_noncompliant_ppe": 0,
+                    "violators": []
                 }
 
                 # Submit video frame to the deployed detection model
@@ -190,26 +183,19 @@ class Application:
                         "ppe_preferences": deployedmodel.ppe_preferences
                     }
                     deployed_model_response = deployedmodel.invoke_endpoint(deployedmodel_payload)
-                    mqtt_payload = deployed_model_response
+                    message = deployed_model_response
 
-                # Save in the database
+                # Upload the image to s3 storage and save the record in the database
                 if Application.db_save_enabled:
-                    violationdetails_id = db.insertViolationDetails(
-                        imageToBinary(
-                            decompressImage(
-                                compressImage(
-                                    binaryToImage(mqtt_payload["image"]), 
-                                    quality=20
-                                )
-                            )
-                        ),
-                        datetime.now()
+                    s3storage.upload(
+                        bucket=bucket_name,
+                        key=os.path.join("public", key).replace("\\", "/"),
+                        body=imageToByteStream(Application.frame_to_be_detected),
+                        contenttype="image/jpg"
                     )
-                    result = db.insertViolationDetailsToDeviceDetails(
-                        1,
-                        violationdetails_id
-                    )
-                    for violator in mqtt_payload["violators"]:
+                    violationdetails_id = db.insertViolationDetails(key, now)
+                    result = db.insertViolationDetailsToDeviceDetails(1, violationdetails_id)
+                    for violator in message["violators"]:
                         result = db.insertViolator(
                             violationdetails_id=violationdetails_id,
                             bbox_id=violator["id"],
@@ -224,26 +210,28 @@ class Application:
 
                 # Publish through MQTT
                 if Application.mqtt_enabled:
-                    mqtt_payload["image"] = imageToBinary(
+                    message["image"] = imageToBinary(
                         decompressImage(
                             compressImage(
-                                binaryToImage(mqtt_payload["image"]), 
+                                binaryToImage(message["image"]), 
                                 quality=25
                             )
                         )
                     )
-                    mqttclient.publish(json.dumps(mqtt_payload))
+                    mqttclient.publish(json.dumps(message))
 
+                # Display the image using OpenCV imshow
                 if Application.display_image:
                     # cv2.imshow("frame", Application.frame_to_be_detected)
-                    cv2.imshow("frame", binaryToImage(mqtt_payload["image"]))
+                    cv2.imshow("frame", binaryToImage(message["image"]))
                     key = cv2.waitKey(25)
                     if key == 27:
                         Application.stop_mainprocess = True
                         Application.stop_detectionprocess = True
                         break
 
+                # Reset back the is_detecting state to False for the next frame
                 Application.is_detecting = False
 
-            time.sleep(0.5)
+            time.sleep(0.1)
 

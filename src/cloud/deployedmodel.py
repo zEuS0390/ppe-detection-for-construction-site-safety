@@ -1,6 +1,7 @@
+from src.singleton import Singleton
 import boto3, json
 
-class DeployedModel:
+class DeployedModel(metaclass=Singleton):
 
     def __init__(
             self,
