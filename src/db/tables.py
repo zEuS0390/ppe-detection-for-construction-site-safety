@@ -1,11 +1,13 @@
-from sqlalchemy.orm import registry, relationship, Mapped
+from sqlalchemy.orm import registry, relationship
 from sqlalchemy import (
     Column, Integer, 
     String, DateTime, 
     Boolean, ForeignKey,
-    Text
+    Text, event
 )
+from src.cloud.s3storage import S3Storage
 from datetime import datetime
+import os
 
 mapper_registry = registry()
 
@@ -94,3 +96,14 @@ class DeviceDetails:
         return f"DeviceDetails(id={self.id}, uuid='{self.uuid}', pub_topic='{self.pub_topic}', set_topic='{self.set_topic}', is_active={self.is_active})"
     def __repr__(self):
         return f"DeviceDetails(id={self.id}, uuid='{self.uuid}', pub_topic='{self.pub_topic}', set_topic='{self.set_topic}', is_active={self.is_active})"
+
+@event.listens_for(ViolationDetails, "before_delete")
+def violation_details_before_delete(mapper, connect, target: ViolationDetails):
+    try:
+        s3storage: S3Storage = S3Storage.getInstance()
+        image = target.image
+        bucket_name = target.devicedetails.bucket_name
+        response = s3storage.delete(bucket=bucket_name, key=os.path.join("public", image).replace("\\", "/"))
+        print(f"[ViolationDetails DELETE SUCCESS]: {response}")
+    except Exception as err:
+        print(f"[ViolationDetails DELETE ERROR]: {err}")
