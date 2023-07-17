@@ -12,17 +12,45 @@ import csv
 class DatabaseCRUD(DatabaseHandler):
     
     """
-    Methods:
-        - insertPPEClasses          (filepath: str)                                                             -> None
-        - getPPEClasses             ()                                                                          -> dict
-        - insertViolator            (violationdetails_id: int, 
-                                     topleft: tuple, 
-                                     bottomright: tuple, 
-                                     detectedppeclasses: list, 
-                                     verbose: bool = False, 
-                                     commit: bool = True)                                                       -> bool
-        - getAllViolationDetails    (from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"),
-                                     to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59"))      -> list
+    DatabaseCRUD Methods:
+
+        - insertPPEClasses                          (filepath: str) -> None
+
+        - getPPEClasses                             () -> dict
+
+        - getAllDeviceDetails                       ()
+
+        - insertDeviceDetails                       (kvs_name: str,
+                                                     bucket_name: str,
+                                                     uuid: str, 
+                                                     password: str, 
+                                                     pub_topic: str, 
+                                                     set_topic: str) -> int
+                                                     
+        - insertViolationDetails                    (image=None, 
+                                                     timestamp=None) -> int:
+
+        - insertViolationDetailsToDeviceDetails     (devicedetails_id: int,
+                                                     violationdetails_id: int) -> bool:
+
+        - insertViolator                            (violationdetails_id: int,
+                                                     bbox_id: int,
+                                                     topleft: tuple,
+                                                     bottomright: tuple, 
+                                                     detectedppeclasses: list, 
+                                                     verbose: bool = False, 
+                                                     commit: bool = True) -> bool
+
+        - deleteViolator                            (violator_id: int,
+                                                     commit: bool = True) -> bool:
+
+        - getAllViolationDetails                    (devicedetails_uuid: str = None,
+                                                     from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"),
+                                                     to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59")) -> list
+
+        - setDeviceDetailsStatus                    (devicedetails_uuid: str,
+                                                     is_active: bool) -> bool:
+    
     """
 
     def __init__(self, 
@@ -67,6 +95,7 @@ class DatabaseCRUD(DatabaseHandler):
             del ppeclass["id"]
         return ppeclasses
 
+    # Get all items in the devicedetails table
     def getAllDeviceDetails(self) -> list:
         return self.session.query(DeviceDetails).all()
 
@@ -223,9 +252,11 @@ class DatabaseCRUD(DatabaseHandler):
 
         return True
 
-    def deleteViolator(self,
+    def deleteViolator(
+            self,
             violator_id: int,
-            commit: bool = True) -> bool:
+            commit: bool = True
+        ) -> bool:
         violator = self.session.query(Violator).filter_by(id=violator_id).scalar()
         if violator is not None: 
             self.session.delete(violator)
@@ -235,6 +266,7 @@ class DatabaseCRUD(DatabaseHandler):
             return True
         return False
 
+    # Get all violation details from given devicedetails's uuid within the ranged datetime
     def getAllViolationDetails(
             self, 
             devicedetails_uuid: str = None,
@@ -287,7 +319,7 @@ class DatabaseCRUD(DatabaseHandler):
             self,
             devicedetails_uuid: str,
             is_active: bool
-        ):
+        ) -> bool:
         devicedetails = self.session.query(DeviceDetails).filter_by(uuid=devicedetails_uuid).scalar()
         if devicedetails is not None:
             devicedetails.is_active = is_active
