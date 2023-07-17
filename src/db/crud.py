@@ -70,9 +70,11 @@ class DatabaseCRUD(DatabaseHandler):
     def getAllDeviceDetails(self) -> list:
         return self.session.query(DeviceDetails).all()
 
+    # Insert into the devicedetails table
     def insertDeviceDetails(
             self, 
             kvs_name: str,
+            bucket_name: str,
             uuid: str, 
             password: str, 
             pub_topic: str, 
@@ -81,6 +83,7 @@ class DatabaseCRUD(DatabaseHandler):
         devicedetails_id = -1
         devicedetails = DeviceDetails()
         devicedetails.kvs_name = kvs_name
+        devicedetails.bucket_name = bucket_name
         devicedetails.uuid = uuid
         devicedetails.password = password
         devicedetails.pub_topic = pub_topic

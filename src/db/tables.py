@@ -83,6 +83,7 @@ class DeviceDetails:
     __tablename__="devicedetails"
     id = Column(Integer, primary_key=True)
     kvs_name = Column(String(length=250))
+    bucket_name = Column(String(length=250))
     uuid = Column(String(length=250))
     password = Column(String(length=250))
     pub_topic = Column(String(length=250))

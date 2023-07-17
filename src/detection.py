@@ -74,12 +74,12 @@ class Detection(metaclass=Singleton):
             self.indicator: Indicator = Indicator.getInstance()
             self.db: DatabaseCRUD = DatabaseCRUD.getInstance()
             self.devicedetails_id = self.db.insertDeviceDetails(
-                "ZMCI1",
-                "pass123",
-                "ZMCI/test/notif",
-                "ZMCI/test/set",
-                "Device Name",
-                "Description"
+                kvs_name="",
+                bucket_name="pd-ppe-detection-s3-storage",
+                uuid="ZMCI1",
+                password="pass123",
+                pub_topic="ZMCI/test/notif",
+                set_topic="ZMCI/test/set",
             )
             self.camera: Camera = Camera.getInstance()
             self.mqtt_client.client.on_message = self.onClientSet

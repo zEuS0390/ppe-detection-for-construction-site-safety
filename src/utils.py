@@ -14,6 +14,15 @@ import numpy as np
         - getLatestFiles        (cfg_name, target_names)
 """
 
+def imageToByteStream(image) -> BytesIO:
+    rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    pil_image = Image.fromarray(rgb_image)
+    image_bytestream = BytesIO()
+    pil_image.save(image_bytestream, format="jpeg")
+    image_bytestream.seek(0)
+    # Alternative -> image_bytes = cv2.imencode(".jpg", frame)[1].tobytes()
+    return image_bytestream
+
 def compressImage(
         image: np.ndarray, 
         quality: int = 10, 
@@ -33,6 +42,7 @@ def decompressImage(compressed_image_buffer: BytesIO) -> np.ndarray:
     bgr_image = cv2.cvtColor(np.array(decompressed_image), cv2.COLOR_RGB2BGR)
     return bgr_image
 
+# Convert a base64 string to an image
 def binaryToImage(binary):
     buffer = base64.b64decode(binary)
     npimg = np.frombuffer(buffer, dtype=np.uint8)
@@ -40,6 +50,7 @@ def binaryToImage(binary):
     frame = cv2.resize(img, (640, 640), interpolation=cv2.INTER_AREA)
     return frame
     
+# Convert an image into a base64 string
 def imageToBinary(image):
     """
     Convert a numpy array image to binary data.
