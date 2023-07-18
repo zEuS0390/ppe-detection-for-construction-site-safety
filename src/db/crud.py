@@ -300,7 +300,7 @@ class DatabaseCRUD(DatabaseHandler):
             start_datetime: datetime,
             number_of_limit: int = 1
         ) -> dict:
-        all_violation_details = db.session.query(ViolationDetails).join(DeviceDetails).filter(and_(DeviceDetails.uuid == devicedetails_uuid, ViolationDetails.timestamp > start_datetime)).limit(number_of_limit).all()
+        all_violation_details = self.session.query(ViolationDetails).join(DeviceDetails).filter(and_(DeviceDetails.uuid == devicedetails_uuid, ViolationDetails.timestamp > start_datetime)).limit(number_of_limit).all()
         serializable_all_violation_details = []
         for violation_details in all_violation_details:
             serializable_violation_details = self.serializeViolationDetails(violation_details)
