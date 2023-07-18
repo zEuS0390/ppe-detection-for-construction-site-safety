@@ -1,3 +1,4 @@
+from sqlalchemy import and_
 from .database import DatabaseHandler
 from .tables import (
     PPEClass, 
@@ -285,35 +286,56 @@ class DatabaseCRUD(DatabaseHandler):
                     DeviceDetails.uuid==devicedetails_uuid
             ).all()
         else:
+            # Get violation details from all devices
             all_violation_details = self.session.query(ViolationDetails).all()
+            serializable_all_violation_details = []
+            for violation_details in all_violation_details:
+                serializable_violation_details = self.serialiazeViolationDetails(violation_details)
+                serializable_all_violation_details.append(serializable_violation_details)
+            return serializable_all_violation_details
+
+    def getDeviceViolationDetails(
+            self,
+            devicedetails_uuid: str,
+            start_datetime: datetime,
+            number_of_limit: int = 1
+        ) -> dict:
+        all_violation_details = db.session.query(ViolationDetails).join(DeviceDetails).filter(and_(DeviceDetails.uuid == devicedetails_uuid, ViolationDetails.timestamp > start_datetime)).limit(number_of_limit).all()
         serializable_all_violation_details = []
         for violation_details in all_violation_details:
-            serializable_violation_details = {
-                "uuid": devicedetails_uuid,
-                "image": violation_details.image,
-                "total_violators": 0,
-                "total_violations": 0,
-                # "timestamp": "11/21/22 12:19:53",
-                "timestamp": violation_details.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-                "violators": []
-            }
-            for violator in violation_details.violators:
-                serializable_violation_details["total_violators"] += 1
-                serializable_violator = {
-                    "id": violator.bbox_id,
-                    "violations": []
-                }
-                for detectedppeclass in violator.detectedppeclasses:
-                    serializable_violation_details["total_violations"] += 1
-                    serializable_violations = {
-                        "id": detectedppeclass.bbox_id,
-                        "confidence": detectedppeclass.confidence,
-                        "class_name": detectedppeclass.ppeclass.class_name
-                    }
-                    serializable_violator["violations"].append(serializable_violations)
-                serializable_violation_details["violators"].append(serializable_violator)
+            serializable_violation_details = self.serializeViolationDetails(violation_details)
             serializable_all_violation_details.append(serializable_violation_details)
         return serializable_all_violation_details
+
+    def serializeViolationDetails(
+            self, 
+            violation_details: ViolationDetails
+        ) -> dict:
+        serializable_violation_details = {
+            "uuid": devicedetails_uuid,
+            "image": violation_details.image,
+            "total_violators": 0,
+            "total_violations": 0,
+            # "timestamp": "11/21/22 12:19:53",
+            "timestamp": violation_details.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            "violators": []
+        }
+        for violator in violation_details.violators:
+            serializable_violation_details["total_violators"] += 1
+            serializable_violator = {
+                "id": violator.bbox_id,
+                "violations": []
+            }
+            for detectedppeclass in violator.detectedppeclasses:
+                serializable_violation_details["total_violations"] += 1
+                serializable_violations = {
+                    "id": detectedppeclass.bbox_id,
+                    "confidence": detectedppeclass.confidence,
+                    "class_name": detectedppeclass.ppeclass.class_name
+                }
+                serializable_violator["violations"].append(serializable_violations)
+            serializable_violation_details["violators"].append(serializable_violator)
+        return serializable_violation_details
 
     def setDeviceDetailsStatus(
             self,
