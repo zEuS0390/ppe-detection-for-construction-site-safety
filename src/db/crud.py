@@ -312,7 +312,7 @@ class DatabaseCRUD(DatabaseHandler):
             violation_details: ViolationDetails
         ) -> dict:
         serializable_violation_details = {
-            "uuid": devicedetails_uuid,
+            "uuid": violation_details.devicedetails.uuid,
             "image": violation_details.image,
             "total_violators": 0,
             "total_violations": 0,
