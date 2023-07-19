@@ -49,9 +49,8 @@ class DetectedPPEClass:
 @mapper_registry.mapped
 class OverlappingViolator:
     __tablename__ = "overlappingviolator"
-    id = Column(Integer, primary_key=True)
-    detectedppeclass_id = Column(Integer, ForeignKey("detectedppeclass.id", ondelete="CASCADE"))
-    violator_id = Column(Integer, ForeignKey("violator.id", ondelete="CASCADE"))
+    detectedppeclass_id = Column(Integer, ForeignKey("detectedppeclass.id", ondelete="CASCADE"), primary_key=True)
+    violator_id = Column(Integer, ForeignKey("violator.id", ondelete="CASCADE"), primary_key=True)
     def __str__(self):
         return f"OverlappingViolator(detectedppeclass_id={self.detectedppeclass_id}, violator_id={self.violator_id})"
     def __repr__(self):

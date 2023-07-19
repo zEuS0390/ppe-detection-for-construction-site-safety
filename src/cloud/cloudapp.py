@@ -30,7 +30,7 @@ class Application:
     def main():
 
         # cfg = ConfigParser()
-        cfg.read("cfg/app.cfg")
+        # cfg.read("cfg/app.cfg")
         db = DatabaseCRUD(
             db_URL="mysql+mysqldb://{username}:{password}@{hostname}:{port}/{dbname}".format(
                 hostname=os.environ.get("RDS_DB_HOSTNAME"),
