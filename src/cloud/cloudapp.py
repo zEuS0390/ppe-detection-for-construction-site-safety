@@ -130,15 +130,9 @@ class Application:
             except:
                 frame = frame
             
-            if not Application.is_detecting:
-                Application.frame_to_be_detected = frame
-                Application.is_detecting = True
-
-            """
             if not Application.is_detecting and kvsconsumer.is_active:
                 Application.frame_to_be_detected = frame
                 Application.is_detecting = True
-            """
 
             time.sleep(0.01)
 
