@@ -27,7 +27,7 @@ class PPEClass:
     def __repr__(self):
         return f"'{self.class_name}'"
 
-# Associative table for PPEClass and violator
+# Detected PPE Class Table 
 @mapper_registry.mapped
 class DetectedPPEClass:
     """
@@ -37,15 +37,27 @@ class DetectedPPEClass:
     id = Column(Integer, primary_key=True)
     bbox_id = Column(Integer)
     confidence = Column(Integer)
-    violator_id = Column(Integer, ForeignKey("violator.id", ondelete="CASCADE"))
     ppeclass_id = Column(Integer, ForeignKey("ppeclass.id", ondelete="CASCADE"))
-    violator = relationship("Violator", back_populates="detectedppeclasses")
     ppeclass = relationship("PPEClass", back_populates="detectedppeclasses")
+    violators = relationship("Violator", secondary="overlappingviolator", back_populates="detectedppeclasses")
     def __str__(self):
-        return f"DetectedPPEClass(violator_id='{self.violator_id}',ppeclass_id='{self.ppeclass_id}')"
-    def __str__(self):
-        return f"DetectedPPEClass(violator_id='{self.violator_id}',ppeclass_id='{self.ppeclass_id}')"
+        return f"DetectedPPEClass(ppeclass.class_name='{self.ppeclass.class_name}')"
+    def __repr__(self):
+        return f"DetectedPPEClass(ppeclass.class_name='{self.ppeclass.class_name}')"
 
+# Associative Table for DetectedPPEClass and Violator
+@mapper_registry.mapped
+class OverlappingViolator:
+    __tablename__ = "overlappingviolator"
+    id = Column(Integer, primary_key=True)
+    detectedppeclass_id = Column(Integer, ForeignKey("detectedppeclass.id", ondelete="CASCADE"))
+    violator_id = Column(Integer, ForeignKey("violator.id", ondelete="CASCADE"))
+    def __str__(self):
+        return f"OverlappingViolator(detectedppeclass_id={self.detectedppeclass_id}, violator_id={self.violator_id})"
+    def __repr__(self):
+        return f"OverlappingViolator(detectedppeclass_id={self.detectedppeclass_id}, violator_id={self.violator_id})"
+
+# Violator Table
 @mapper_registry.mapped
 class Violator:
     """
@@ -58,7 +70,7 @@ class Violator:
     y1 = Column(Integer)
     x2 = Column(Integer)
     y2 = Column(Integer)
-    detectedppeclasses = relationship("DetectedPPEClass", back_populates="violator", cascade="all, delete")
+    detectedppeclasses = relationship("DetectedPPEClass", secondary="overlappingviolator", back_populates="violators")
     violationdetails_id = Column(Integer, ForeignKey("violationdetails.id", ondelete="CASCADE"))
     violationdetails = relationship("ViolationDetails", back_populates="violators")
     def __str__(self):
@@ -66,6 +78,7 @@ class Violator:
     def __repr__(self):
         return f"Violator(id={self.id}, detectedppeclasses={self.detectedppeclasses})"
 
+# ViolationDetails Table
 @mapper_registry.mapped
 class ViolationDetails:
     __tablename__ = "violationdetails"
@@ -80,6 +93,7 @@ class ViolationDetails:
     def __repr__(self):
         return f"ViolationDetails(id={self.id},image='{self.image}',violators='{self.violators}',timestamp={self.timestamp})"
     
+# DeviceDetails Table
 @mapper_registry.mapped
 class DeviceDetails:
     __tablename__="devicedetails"
@@ -97,16 +111,14 @@ class DeviceDetails:
     def __repr__(self):
         return f"DeviceDetails(id={self.id}, uuid='{self.uuid}', pub_topic='{self.pub_topic}', set_topic='{self.set_topic}', is_active={self.is_active})"
 
+# Event Hook Before Deleting a ViolationDetails Instance
 @event.listens_for(ViolationDetails, "before_delete")
 def violation_details_before_delete(mapper, connect, target: ViolationDetails):
-    if os.environ.get("PPEDETECTION_APP_MODE") == "cloud":
-        try:
-            s3storage: S3Storage = S3Storage.getInstance()
-            image = target.image
-            bucket_name = target.devicedetails.bucket_name
-            response = s3storage.delete(bucket=bucket_name, key=os.path.join("public", image).replace("\\", "/"))
-            print(f"[ViolationDetails DELETE SUCCESS]: {response}")
-        except Exception as err:
-            print(f"[ViolationDetails DELETE ERROR]: {err}")
-    else:
-        pass
+    try:
+        s3storage: S3Storage = S3Storage.getInstance()
+        image = target.image
+        bucket_name = target.devicedetails.bucket_name
+        response = s3storage.delete(bucket=bucket_name, key=os.path.join("public", image).replace("\\", "/"))
+        print(f"[ViolationDetails DELETE SUCCESS]: {response}")
+    except Exception as err:
+        print(f"[ViolationDetails DELETE ERROR]: {err}")

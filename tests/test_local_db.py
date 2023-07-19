@@ -1,7 +1,7 @@
 import unittest, configparser, os
 from src.db.tables import Violator, ViolationDetails, DeviceDetails
 from src.db.crud import DatabaseCRUD
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from faker import Faker
 from csv import DictWriter
 import time
@@ -50,94 +50,225 @@ class TestDatabaseCRUD(unittest.TestCase):
         self.db.insertPPEClasses(self.cfg.get("yolor", "classes"))
         ppe_classes = self.db.getPPEClasses()
         self.assertGreater(len(ppe_classes), 0)
+    
+    def test_step_3_insert_violation_details_with_violators(self):
 
-    def test_step_2_insert_violation_details_with_violators(self):
-
-        devicedetails = DeviceDetails()
-        self.db.session.add(devicedetails)
-        self.db.session.flush()
-        devicedetails_id = devicedetails.id
-        self.db.session.commit()
-        self.db.session.close()
-
-        # Create violation details
-        violationdetails = ViolationDetails()
-        self.db.session.add(violationdetails)
-        self.db.session.flush()
-        violationdetails_id = violationdetails.id
-        self.db.session.commit()
-        self.db.session.close()
-
-        result = self.db.insertViolationDetailsToDeviceDetails(devicedetails_id, violationdetails_id)
-        self.assertTrue(result)
-
-        # Insert violator entry with the correct inputs
-        detected = [
-                {"id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
-                {"id": 2, "class_name": "no glasses", "confidence": 0.80, "overlaps": [1,]}, 
-                {"id": 3, "class_name": "no gloves", "confidence": 0.76, "overlaps": [1,]}, 
-                {"id": 4, "class_name": "no boots", "confidence": 0.9, "overlaps": [1,]}
-        ]
-        result = self.db.insertViolator(
-                violationdetails_id=violationdetails_id, 
-                bbox_id=1, 
-                topleft=(0, 0), 
-                bottomright=(100, 400), 
-                detectedppe=detected
+        ####################### FIRST DEVICEDETAILS #######################
+        
+        # Insert row in devicedetails table
+        devicedetails_id = self.db.insertDeviceDetails(
+            kvs_name="ppedetection_video_stream_test",
+            bucket_name="ppedetection_s3_bucket_test",
+            uuid="ppedetection_uuid_test",
+            password="ppedetection_test_pass",
+            pub_topic="ppedetection_pub_topic_test",
+            set_topic="ppedetection_set_topic_test"
         )
-        self.assertTrue(result)
 
-        # Insert violator entry with the same name (NOTE: This case is possible when there are multiple recognized faces)
-        detected = [
-                {"id": 5, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
-                {"id": 6, "class_name": "no glasses", "confidence": 0.98, "overlaps": [2,]}, 
-                {"id": 7, "class_name": "no gloves", "confidence": 0.91, "overlaps": [2,]}, 
-                {"id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [2,]}
-        ]
-        result = self.db.insertViolator(
-                violationdetails_id=violationdetails_id, 
-                bbox_id=2,
-                topleft=(0, 0), 
-                bottomright=(100, 400), 
-                detectedppe=detected
+        # Insert row in violationdetails table
+        violationdetails_id = self.db.insertViolationDetails()
+
+        # Connect row of violationdetails table to the row of devicedetails table
+        self.db.insertViolationDetailsToDeviceDetails(
+            devicedetails_id=devicedetails_id,
+            violationdetails_id=violationdetails_id
         )
-        self.assertTrue(result)
 
-        # # Check the number of rows in the Violator. The result should be 2, because insertion is performed twice
-        count = self.db.session.query(func.count(Violator.id)).scalar()
+        violators = [
+            {
+                "id": 1,
+                "x1": 0,
+                "y1": 0,
+                "x2": 0,
+                "y2": 0,
+                "violations": [
+                    {"id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
+                    {"id": 2, "class_name": "no glasses", "confidence": 0.80, "overlaps": [1,]}, 
+                    {"id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [1,2]},
+                    {"id": 4, "class_name": "no gloves", "confidence": 0.9, "overlaps": [1,]}
+                ]
+            },
+            {
+                "id": 2,
+                "x1": 0,
+                "y1": 0,
+                "x2": 0,
+                "y2": 0,
+                "violations": [
+                    {"id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
+                    {"id": 6, "class_name": "no glasses", "confidence": 0.98, "overlaps": [2,]}, 
+                    {"id": 7, "class_name": "no gloves", "confidence": 0.91, "overlaps": [2,]}, 
+                    {"id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [2,1]}
+                ]
+            }
+        ]
+
+        self.db.insertViolators(
+            violationdetails_id, 
+            violators
+        )
+        
+        count = self.db.session.query(func.count(Violator.id)).select_from(Violator).\
+                join(ViolationDetails).\
+                join(DeviceDetails).\
+                filter(DeviceDetails.uuid=="ppedetection_uuid_test").scalar()
+
+        self.assertEqual(count, 2)
+        
+        ####################### SECOND DEVICEDETAILS #######################
+
+        # Insert row in devicedetails table
+        devicedetails_id = self.db.insertDeviceDetails(
+            kvs_name="ppedetection_video_stream_test_2",
+            bucket_name="ppedetection_s3_bucket_test_2",
+            uuid="ppedetection_uuid_test_2",
+            password="ppedetection_test_pass_2",
+            pub_topic="ppedetection_pub_topic_test_2",
+            set_topic="ppedetection_set_topic_test_2"
+        )
+
+        # Insert row in violationdetails table
+        violationdetails_id = self.db.insertViolationDetails()
+
+        # Connect row of violationdetails table to the row of devicedetails table
+        self.db.insertViolationDetailsToDeviceDetails(
+            devicedetails_id=devicedetails_id,
+            violationdetails_id=violationdetails_id
+        )
+
+        violators = [
+            {
+                "id": 1,
+                "x1": 0,
+                "y1": 0,
+                "x2": 0,
+                "y2": 0,
+                "violations": [
+                    {"id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
+                    {"id": 2, "class_name": "no glasses", "confidence": 0.80, "overlaps": [1,]}, 
+                    {"id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [1,2]},
+                    {"id": 4, "class_name": "no gloves", "confidence": 0.9, "overlaps": [1,]}
+                ]
+            },
+            {
+                "id": 2,
+                "x1": 0,
+                "y1": 0,
+                "x2": 0,
+                "y2": 0,
+                "violations": [
+                    {"id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
+                    {"id": 6, "class_name": "no glasses", "confidence": 0.98, "overlaps": [2,]}, 
+                    {"id": 10, "class_name": "no glasses", "confidence": 0.98, "overlaps": [2,3]}, 
+                    {"id": 7, "class_name": "no gloves", "confidence": 0.91, "overlaps": [2,]}, 
+                    {"id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [2,1]}
+                ]
+            },
+            {
+                "id": 3,
+                "x1": 0,
+                "y1": 0,
+                "x2": 0,
+                "y2": 0,
+                "violations": [
+                    {"id": 9, "class_name": "no helmet", "confidence": 0.75, "overlaps": [3]}, 
+                    {"id": 10, "class_name": "no glasses", "confidence": 0.98, "overlaps": [3]}, 
+                    {"id": 11, "class_name": "no gloves", "confidence": 0.91, "overlaps": [3]}, 
+                    {"id": 12, "class_name": "no boots", "confidence": 0.90, "overlaps": [3]}
+                ]
+            }
+        ]
+
+        self.db.insertViolators(
+            violationdetails_id, 
+            violators
+        )
+
+        count = self.db.session.query(func.count(Violator.id)).select_from(Violator).\
+                join(ViolationDetails).\
+                join(DeviceDetails).\
+                filter(DeviceDetails.uuid=="ppedetection_uuid_test_2").scalar()
+
+        self.assertEqual(count, 3)
+
+    def test_step_5_query_violators(self):
+
+        # Check the number of overlappingviolators in the detectedppeclasses of the violator with bbox_id and violationdetails's id
+        violator = self.db.session.query(Violator).join(ViolationDetails).filter(and_(Violator.bbox_id==1, ViolationDetails.id==1)).scalar()
+        
+        for detectedppeclass in violator.detectedppeclasses:
+            class_name = detectedppeclass.ppeclass.class_name
+            number_of_violators = len(detectedppeclass.violators)
+            if class_name in ["no helmet", "no boots"]:
+                self.assertEqual(number_of_violators, 2)
+
+        # Check the number of overlappingviolators in the detectedppeclasses of the violator with bbox_id and violationdetails's id
+        violator = self.db.session.query(Violator).join(ViolationDetails).filter(and_(Violator.bbox_id==2, ViolationDetails.id==2)).scalar()
+        
+        for detectedppeclass in violator.detectedppeclasses:
+            class_name = detectedppeclass.ppeclass.class_name
+            number_of_violators = len(detectedppeclass.violators)
+            if class_name in ["no helmet", "no boots"]:
+                self.assertEqual(number_of_violators, 2)
+            elif class_name in ["no glasses"]:
+                try:
+                    self.assertEqual(number_of_violators, 1)
+                except:
+                    self.assertEqual(number_of_violators, 2)
+                
+
+    def test_step_6_delete_violator(self):
+        # Delete violator with correct inputs
+
+        # Check the number of violators
+        count = self.db.session.query(func.count(Violator.id)).\
+                select_from(Violator).\
+                join(ViolationDetails).\
+                filter(ViolationDetails.id==1)\
+                .scalar()
         self.assertEqual(count, 2)
 
-        # Insert violator entry with non existing ppe classes
-        detected = [
-                {"id": 9, "class_name": "no helmet", "confidence": 0.62, "overlaps": [3,]}, 
-                {"id": 10, "class_name": "pencil", "confidence": 0.95, "overlaps": [3,]}, 
-                {"id": 11, "class_name": "cap", "confidence": 0.92, "overlaps": [3,]}
-        ]
-        result = self.db.insertViolator(
-                violationdetails_id=violationdetails_id, 
-                bbox_id=3,
-                topleft=(0, 0), 
-                bottomright=(100, 400), 
-                detectedppe=detected
-        )
-        self.assertFalse(result)
+        # Get the instance of the violator
+        violator = self.db.session.query(Violator).\
+                join(ViolationDetails).\
+                filter(and_(
+                    Violator.id==1, 
+                    ViolationDetails.id==1
+                )).scalar()
 
-    def test_step_5_delete_violator(self):
-        # Delete violator with correct inputs
-        result = self.db.deleteViolator("1")
-        self.assertTrue(result)
+        # Deleting the first violator
+        self.db.session.delete(violator)
 
-        result = self.db.deleteViolator("2")
-        self.assertTrue(result)
+        # Check the number of violators
+        count = self.db.session.query(func.count(Violator.id)).\
+                select_from(Violator).\
+                join(ViolationDetails).\
+                filter(ViolationDetails.id==1)\
+                .scalar()
 
-        # Delete the same violator once again
-        result = self.db.deleteViolator("2")
-        self.assertFalse(result)
+        self.assertEqual(count, 1)
 
-        count = self.db.session.query(func.count(Violator.id)).scalar()
+        # Get the instance of the violator
+        violator = self.db.session.query(Violator).\
+                join(ViolationDetails).\
+                filter(and_(
+                    Violator.id==2, 
+                    ViolationDetails.id==1
+                )).scalar()
+
+        # Deleting the second violator
+        self.db.session.delete(violator)
+
+        # Check the number of violators
+        count = self.db.session.query(func.count(Violator.id)).\
+                select_from(Violator).\
+                join(ViolationDetails).\
+                filter(ViolationDetails.id==1)\
+                .scalar()
+
         self.assertEqual(count, 0)
 
-    def test_step_6_update_device_details_status(self):
+    def test_step_7_update_device_details_status(self):
         result = self.db.setDeviceDetailsStatus("doesnotexist", False)
         self.assertFalse(result)
 

@@ -5,7 +5,8 @@ from .tables import (
     Violator, 
     DetectedPPEClass,
     ViolationDetails,
-    DeviceDetails
+    DeviceDetails,
+    OverlappingViolator
 )
 from datetime import datetime
 import csv
@@ -157,6 +158,94 @@ class DatabaseCRUD(DatabaseHandler):
             return True
         return False
 
+    def insertViolators(
+            self,
+            violationdetails_id: int,
+            violators: list
+        ) -> None:
+
+        violationdetails = self.session.query(ViolationDetails).filter_by(id=violationdetails_id).first()
+
+        if violationdetails is not None:
+
+            # Iterate to all violators for adding the rows for Violator table
+            for violator in violators:
+                bbox_id = violator["id"]
+                x1 = violator["x1"]
+                y1 = violator["y1"]
+                x2 = violator["x2"]
+                y2 = violator["y2"]
+
+                violator = Violator(
+                    bbox_id = bbox_id,
+                    x1 = x1, y1 = y1,
+                    x2 = x2, y2 = y2,
+                    violationdetails = violationdetails,
+                )
+
+                self.session.add(violator)
+
+            # Iterate to all violators for adding the rows for DetectedPPEClass table
+            for violator in violators:
+                detectedppeclasses = violator["violations"]
+
+                for detectedppeclass in detectedppeclasses:
+                    detectedppeclass_bbox_id = detectedppeclass["id"]
+                    class_name = detectedppeclass["class_name"]
+                    confidence = detectedppeclass["confidence"]
+                    overlaps = detectedppeclass["overlaps"]
+
+                    # Check if there is an existing row of PPEClass table
+                    ppeclass = self.session.query(PPEClass).filter_by(class_name=class_name).first()
+
+                    if ppeclass is not None:
+
+                        # Check if there is an existing DetectedPPEClass table
+                        detectedppeclass = self.session.query(DetectedPPEClass).\
+                                join(OverlappingViolator).\
+                                join(Violator).\
+                                filter(
+                                    DetectedPPEClass.bbox_id == detectedppeclass_bbox_id,
+                                    OverlappingViolator.violator_id == Violator.id,
+                                    Violator.violationdetails_id == violationdetails_id
+                                ).scalar()
+
+                        if detectedppeclass is None: 
+                            detectedppeclass = DetectedPPEClass(
+                                bbox_id=detectedppeclass_bbox_id,
+                                ppeclass=ppeclass,
+                                confidence=confidence
+                            )
+
+                            self.session.add(detectedppeclass)
+
+                        # Iterate to all given bbox overlaps to violators
+                        for overlapping_violator_bbox_id in overlaps:
+
+                            # Get the instance of the violator based on its bbox_id
+                            violator = self.session.query(Violator).\
+                                    join(ViolationDetails).\
+                                    filter(and_(
+                                        Violator.bbox_id==overlapping_violator_bbox_id,
+                                        ViolationDetails.id==violationdetails_id
+                                    )).scalar()
+
+                            # Check if the violator exists
+                            if violator is not None:
+
+                                # Check if the overlapping violator has been previously added in the detectedppeclass
+                                existing_violator = self.session.query(Violator).\
+                                        join(OverlappingViolator).\
+                                        join(DetectedPPEClass).\
+                                        filter(and_(
+                                            OverlappingViolator.violator_id == violator.id,
+                                            DetectedPPEClass.id == detectedppeclass.id
+                                        )).scalar()
+
+                                if existing_violator is None:
+                                    detectedppeclass.violators.append(violator)
+
+
     def insertViolator(
             self, 
             violationdetails_id: int, 
@@ -237,13 +326,11 @@ class DatabaseCRUD(DatabaseHandler):
                 self.session.add(detectedppeclass)
 
                 for bbox_id in bbox_overlaps:
-                    
                     violators = self.session.query(Violator).filter_by(bbox_id=bbox_id).all()
-
-                    for violator in violators:
-
-                        # detectedppeclass.violators.append(violator)
-                        violator.detectedppeclasses.append(detectedppeclass)
+                    if len(bbox_overlaps) == len(violators):
+                        for violator in violators:
+                            detectedppeclass.violators.append(violator)
+                            # violator.detectedppeclasses.append(detectedppeclass)
 
             if commit:
                 if verbose:
