@@ -217,8 +217,6 @@ class DatabaseCRUD(DatabaseHandler):
                                 confidence=confidence
                             )
 
-                            self.session.add(detectedppeclass)
-
                         # Iterate to all given bbox overlaps to violators
                         for overlapping_violator_bbox_id in overlaps:
 
@@ -245,6 +243,8 @@ class DatabaseCRUD(DatabaseHandler):
                                 if existing_violator is None:
                                     detectedppeclass.violators.append(violator)
 
+                        self.session.add(detectedppeclass)
+                        self.session.commit()
 
     def insertViolator(
             self, 

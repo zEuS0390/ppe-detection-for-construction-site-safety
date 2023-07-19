@@ -6,6 +6,7 @@ from src.db.crud import DatabaseCRUD
 from src.client import MQTTClient
 import time, os, threading, json, cv2, logging
 from datetime import datetime
+# from configparser import ConfigParser
 import numpy as np
 
 class Application:
@@ -28,6 +29,8 @@ class Application:
     @staticmethod
     def main():
 
+        # cfg = ConfigParser()
+        cfg.read("cfg/app.cfg")
         db = DatabaseCRUD(
             db_URL="mysql+mysqldb://{username}:{password}@{hostname}:{port}/{dbname}".format(
                 hostname=os.environ.get("RDS_DB_HOSTNAME"),
@@ -37,6 +40,7 @@ class Application:
                 dbname=os.environ.get("RDS_DB_DBNAME")
             )
         )
+        # db.insertPPEClasses(cfg.get("yolor", "classes"))
 
         mqttclient = MQTTClient(
             auth_cert=True,
@@ -126,9 +130,15 @@ class Application:
             except:
                 frame = frame
             
+            if not Application.is_detecting:
+                Application.frame_to_be_detected = frame
+                Application.is_detecting = True
+
+            """
             if not Application.is_detecting and kvsconsumer.is_active:
                 Application.frame_to_be_detected = frame
                 Application.is_detecting = True
+            """
 
             time.sleep(0.01)
 
@@ -193,18 +203,11 @@ class Application:
                     )
                     violationdetails_id = db.insertViolationDetails(key, now)
                     result = db.insertViolationDetailsToDeviceDetails(1, violationdetails_id)
-                    for violator in message["violators"]:
-                        result = db.insertViolator(
-                            violationdetails_id=violationdetails_id,
-                            bbox_id=violator["id"],
-                            topleft=(0,0),
-                            bottomright=(0,0),
-                            detectedppe=violator["violations"]
-                        )
-                        if result:
-                            print(f"[DATABASE]: Successfully saved the detection to the database.")
-                        else:
-                            print(f"[DATABASE]: Failed saving the detection to the database.")
+                    db.insertViolators(
+                        violationdetails_id, 
+                        message["violators"]
+                    )
+                    print(f"[DATABASE]: Successfully saved the detection to the database.")
 
                 # Publish through MQTT
                 if Application.mqtt_enabled:
