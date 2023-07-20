@@ -132,14 +132,20 @@ class DatabaseCRUD(DatabaseHandler):
     def insertViolationDetails(
             self, 
             image=None, 
-            timestamp=None
+            timestamp=None,
+            total_violations=None,
+            total_violators=None,
+            total_compliant_ppe=None,
+            total_noncompliant_ppe=None
         ) -> int:
         violationdetails_id = -1
         violationdetails = ViolationDetails()
-        if image is not None:
-            violationdetails.image = image
-        if timestamp is not None:
-            violationdetails.timestamp = timestamp
+        if image is not None: violationdetails.image = image
+        if timestamp is not None: violationdetails.timestamp = timestamp
+        if total_violations is not None: violationdetails.total_violations = total_violations
+        if total_violators is not None: violationdetails.total_violators = total_violators
+        if total_compliant_ppe is not None: violationdetails.total_compliant_ppe = total_compliant_ppe
+        if total_noncompliant_ppe is not None: violationdetails.total_noncompliant_ppe = total_noncompliant_ppe
         self.session.add(violationdetails)
         self.session.flush()
         violationdetails_id = violationdetails.id
@@ -197,6 +203,10 @@ class DatabaseCRUD(DatabaseHandler):
                     class_name = detectedppeclass["class_name"]
                     confidence = detectedppeclass["confidence"]
                     overlaps = detectedppeclass["overlaps"]
+                    x1 = int(detectedppeclass["x1"])
+                    y1 = int(detectedppeclass["y1"])
+                    x2 = int(detectedppeclass["x2"])
+                    y2 = int(detectedppeclass["y2"])
 
                     # Check if there is an existing row of PPEClass table
                     ppeclass = self.session.query(PPEClass).filter_by(class_name=class_name).first()
@@ -217,7 +227,9 @@ class DatabaseCRUD(DatabaseHandler):
                             detectedppeclass = DetectedPPEClass(
                                 bbox_id=detectedppeclass_bbox_id,
                                 ppeclass=ppeclass,
-                                confidence=confidence
+                                confidence=confidence,
+                                x1 = x1, y1 = y1,
+                                x2 = x2, y2 = y2
                             )
 
                         # Iterate to all given bbox overlaps to violators

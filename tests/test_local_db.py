@@ -82,10 +82,10 @@ class TestDatabaseCRUD(unittest.TestCase):
                 "x2": 0,
                 "y2": 0,
                 "violations": [
-                    {"id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
-                    {"id": 2, "class_name": "no glasses", "confidence": 0.80, "overlaps": [1,]}, 
-                    {"id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [1,2]},
-                    {"id": 4, "class_name": "no gloves", "confidence": 0.9, "overlaps": [1,]}
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 2, "class_name": "no glasses", "confidence": 0.80, "overlaps": [1,]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [1,2]},
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 4, "class_name": "no gloves", "confidence": 0.9, "overlaps": [1,]}
                 ]
             },
             {
@@ -95,10 +95,10 @@ class TestDatabaseCRUD(unittest.TestCase):
                 "x2": 0,
                 "y2": 0,
                 "violations": [
-                    {"id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
-                    {"id": 6, "class_name": "no glasses", "confidence": 0.98, "overlaps": [2,]}, 
-                    {"id": 7, "class_name": "no gloves", "confidence": 0.91, "overlaps": [2,]}, 
-                    {"id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [2,1]}
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 6, "class_name": "no glasses", "confidence": 0.98, "overlaps": [2,]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 7, "class_name": "no gloves", "confidence": 0.91, "overlaps": [2,]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [2,1]}
                 ]
             }
         ]
@@ -144,10 +144,10 @@ class TestDatabaseCRUD(unittest.TestCase):
                 "x2": 0,
                 "y2": 0,
                 "violations": [
-                    {"id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
-                    {"id": 2, "class_name": "no glasses", "confidence": 0.80, "overlaps": [1,]}, 
-                    {"id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [1,2]},
-                    {"id": 4, "class_name": "no gloves", "confidence": 0.9, "overlaps": [1,]}
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 2, "class_name": "no glasses", "confidence": 0.80, "overlaps": [1,]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [1,2]},
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 4, "class_name": "no gloves", "confidence": 0.9, "overlaps": [1,]}
                 ]
             },
             {
@@ -157,11 +157,11 @@ class TestDatabaseCRUD(unittest.TestCase):
                 "x2": 0,
                 "y2": 0,
                 "violations": [
-                    {"id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
-                    {"id": 6, "class_name": "no glasses", "confidence": 0.98, "overlaps": [2,]}, 
-                    {"id": 10, "class_name": "no glasses", "confidence": 0.98, "overlaps": [2,3]}, 
-                    {"id": 7, "class_name": "no gloves", "confidence": 0.91, "overlaps": [2,]}, 
-                    {"id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [2,1]}
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 1, "class_name": "no helmet", "confidence": 0.75, "overlaps": [1, 2]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 6, "class_name": "no glasses", "confidence": 0.98, "overlaps": [2,]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 10, "class_name": "no glasses", "confidence": 0.98, "overlaps": [2,3]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 7, "class_name": "no gloves", "confidence": 0.91, "overlaps": [2,]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 8, "class_name": "no boots", "confidence": 0.90, "overlaps": [2,1]}
                 ]
             },
             {
@@ -171,10 +171,10 @@ class TestDatabaseCRUD(unittest.TestCase):
                 "x2": 0,
                 "y2": 0,
                 "violations": [
-                    {"id": 9, "class_name": "no helmet", "confidence": 0.75, "overlaps": [3]}, 
-                    {"id": 10, "class_name": "no glasses", "confidence": 0.98, "overlaps": [3]}, 
-                    {"id": 11, "class_name": "no gloves", "confidence": 0.91, "overlaps": [3]}, 
-                    {"id": 12, "class_name": "no boots", "confidence": 0.90, "overlaps": [3]}
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 9, "class_name": "no helmet", "confidence": 0.75, "overlaps": [3]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 10, "class_name": "no glasses", "confidence": 0.98, "overlaps": [3]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 11, "class_name": "no gloves", "confidence": 0.91, "overlaps": [3]}, 
+                    {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "id": 12, "class_name": "no boots", "confidence": 0.90, "overlaps": [3]}
                 ]
             }
         ]

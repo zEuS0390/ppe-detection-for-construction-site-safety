@@ -195,7 +195,14 @@ class Application:
                         body=imageToByteStream(Application.frame_to_be_detected),
                         contenttype="image/jpg"
                     )
-                    violationdetails_id = db.insertViolationDetails(key, now)
+                    violationdetails_id = db.insertViolationDetails(
+                        image=key, 
+                        timestamp=now,
+                        total_violations = int(message["total_violations"]),
+                        total_violators = int(message["total_violators"]),
+                        total_compliant_ppe = int(message["total_compliant_ppe"])
+                        total_noncompliant_ppe = int(message["total_noncompliant_ppe"])
+                    )
                     result = db.insertViolationDetailsToDeviceDetails(1, violationdetails_id)
                     db.insertViolators(
                         violationdetails_id, 

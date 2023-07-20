@@ -35,6 +35,10 @@ class DetectedPPEClass:
     """
     __tablename__ = "detectedppeclass"
     id = Column(Integer, primary_key=True)
+    x1 = Column(Integer)
+    y1 = Column(Integer)
+    x2 = Column(Integer)
+    y2 = Column(Integer)
     bbox_id = Column(Integer)
     confidence = Column(Integer)
     ppeclass_id = Column(Integer, ForeignKey("ppeclass.id", ondelete="CASCADE"))
