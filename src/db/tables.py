@@ -3,7 +3,8 @@ from sqlalchemy import (
     Column, Integer, 
     String, DateTime, 
     Boolean, ForeignKey,
-    Text, event
+    Text, event,
+    Float
 )
 from src.cloud.s3storage import S3Storage
 from datetime import datetime
@@ -40,7 +41,7 @@ class DetectedPPEClass:
     x2 = Column(Integer)
     y2 = Column(Integer)
     bbox_id = Column(Integer)
-    confidence = Column(Integer)
+    confidence = Column(Float)
     ppeclass_id = Column(Integer, ForeignKey("ppeclass.id", ondelete="CASCADE"))
     ppeclass = relationship("PPEClass", back_populates="detectedppeclasses")
     violators = relationship("Violator", secondary="overlappingviolator", back_populates="detectedppeclasses")
