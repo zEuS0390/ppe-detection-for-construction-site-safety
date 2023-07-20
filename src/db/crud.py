@@ -95,11 +95,14 @@ class DatabaseCRUD(DatabaseHandler):
                 ppeclass[column.name] = getattr(col, column.name)
             ppeclasses[ppeclass["id"]] = ppeclass
             del ppeclass["id"]
+        self.session.close()
         return ppeclasses
 
     # Get all items in the devicedetails table
     def getAllDeviceDetails(self) -> list:
-        return self.session.query(DeviceDetails).all()
+        result = self.session.query(DeviceDetails).all()
+        self.session.close()
+        return result
 
     # Insert into the devicedetails table
     def insertDeviceDetails(
@@ -246,6 +249,8 @@ class DatabaseCRUD(DatabaseHandler):
                         self.session.add(detectedppeclass)
                         self.session.commit()
 
+        self.session.close()
+
     def insertViolator(
             self, 
             violationdetails_id: int, 
@@ -271,14 +276,6 @@ class DatabaseCRUD(DatabaseHandler):
                 bbox_overlaps = ppeitem["overlaps"]
                 ppeclass = self.session.query(PPEClass).filter_by(class_name=ppeclass_name).first()
                 if ppeclass is not None:
-                    """
-                    detectedppeclass = DetectedPPEClass(
-                        bbox_id=ppe_bbox_id,
-                        confidence=confidence
-                    )
-                    detectedppeclass.ppeclasses.append(ppeclass)
-                    self.session.add(detectedppeclass)
-                    """
                     to_be_added.append(
                         {
                             # "detectedppeclass": detectedppeclass,
@@ -379,6 +376,7 @@ class DatabaseCRUD(DatabaseHandler):
             for violation_details in all_violation_details:
                 serializable_violation_details = self.serialiazeViolationDetails(violation_details)
                 serializable_all_violation_details.append(serializable_violation_details)
+            self.session.close()
             return serializable_all_violation_details
 
     def getDeviceViolationDetails(
@@ -392,6 +390,7 @@ class DatabaseCRUD(DatabaseHandler):
         for violation_details in all_violation_details:
             serializable_violation_details = self.serializeViolationDetails(violation_details)
             serializable_all_violation_details.append(serializable_violation_details)
+        self.session.close()
         return serializable_all_violation_details
 
     def serializeViolationDetails(
@@ -423,6 +422,14 @@ class DatabaseCRUD(DatabaseHandler):
                 serializable_violator["violations"].append(serializable_violations)
             serializable_violation_details["violators"].append(serializable_violator)
         return serializable_violation_details
+    
+    def getDeviceDetailsStatus(
+            self,
+            uuid: str
+        ) -> dict:
+        devicestatuses = self.session.query(DeviceDetails.is_active).filter(DeviceDetails.uuid==uuid).scalar()
+        self.session.close()
+        return devicestatuses
 
     def setDeviceDetailsStatus(
             self,
