@@ -30,7 +30,8 @@ class BGRColor(Enum):
     BISQUE = (242, 210, 189)
 
 device = select_device("cpu")
-names = [ "helmet",
+names = [
+    "helmet",
     "no helmet",
     "glasses",
     "no glasses",
@@ -43,6 +44,20 @@ names = [ "helmet",
     "person"
 ]
 colors = list(BGRColor)
+compliant_ppe = [
+    "helmet",
+    "glasses",
+    "vest",
+    "gloves",
+    "boots"
+]
+noncompliant_ppe = [
+    "no helmet",
+    "no glasses",
+    "no vest",
+    "no gloves",
+    "no boots"
+]
 
 @dataclass
 class Box:
@@ -155,6 +170,9 @@ def plotBox(_id: int, image: np.ndarray, coordinates: Box, color: BGRColor, labe
 @torch.no_grad()
 def predict_fn(input_data, model):
 
+    total_compliant_ppe = 0
+    total_noncompliant_ppe = 0
+
     logging.info("Running YOLOR detection...")
 
     processed_image = input_data[0]
@@ -181,6 +199,10 @@ def predict_fn(input_data, model):
         det[:, :4] = scale_coords(processed_image.shape[2:], det[:, :4], im0.shape).round()
         for *xyxy, conf, cls in det:
             class_name = names[int(cls)]
+            if class_name in compliant_ppe:
+                total_compliant_ppe += 1
+            if class_name in noncompliant_ppe:
+                total_noncompliant_ppe += 1
             # Filter class names based on PPE preferences
             if class_name in ppe_preferences:
                 if ppe_preferences[class_name] == False:
@@ -193,6 +215,10 @@ def predict_fn(input_data, model):
                   bottom=int(xyxy[3]), 
                   left=int(xyxy[0])
               ),
+              "x1": int(xyxy[0]),
+              "y1": int(xyxy[1]),
+              "x2": int(xyxy[2]),
+              "y2": int(xyxy[3]),
               "confidence": float(conf), 
               "class_name": class_name
             }
@@ -202,7 +228,7 @@ def predict_fn(input_data, model):
             else:
                 ppe.append(detected_obj)
 
-    return persons, ppe, original_image
+    return persons, ppe, original_image, (total_compliant_ppe, total_noncompliant_ppe)
 
 def output_fn(prediction, content_type):
 
@@ -215,6 +241,7 @@ def output_fn(prediction, content_type):
     persons, ppe = prediction[:2]
     original_image = prediction[2].copy()
     image_plots = prediction[2].copy()
+    total_compliant_ppe, total_noncompliant_ppe = prediction[3]
 
     # Check overlaps of each detected ppe item
     for ppe_item in ppe:
@@ -228,6 +255,10 @@ def output_fn(prediction, content_type):
         id = person["id"]
         violator = {
             "id": id, 
+            "x1": person["x1"],
+            "y1": person["y1"],
+            "x2": person["x2"],
+            "y2": person["y2"],
             "person_info": [],
             "violations": []
         } 
@@ -269,8 +300,9 @@ def output_fn(prediction, content_type):
     message["image"] = imageToBase64String(image_plots)
     message["total_violators"] = len(violators)
     message["total_violations"] = total_violations 
+    message["total_compliant_ppe"] = total_compliant_ppe
+    message["total_noncompliant_ppe"] = total_noncompliant_ppe
     message["violators"] = violators
     message["timestamp"] = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
 
     return json.dumps(message)
-
