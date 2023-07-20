@@ -234,7 +234,6 @@ def output_fn(prediction, content_type):
 
     logging.info("Preparing to send the output...")
 
-    total_violations = 0
     class_bbox_drawn = []
     message = {}
 
@@ -281,10 +280,6 @@ def output_fn(prediction, content_type):
                     except:
                         pass
 
-                # Do not include ppe_items that have multiple overlaps
-                if len(ppe_item["overlaps"]) == 1:
-                    total_violations += 1
-
                 ppe_item["confidence"] = confidence
                 ppe_item["class_name"] = class_name
                 try:
@@ -299,7 +294,7 @@ def output_fn(prediction, content_type):
     
     message["image"] = imageToBase64String(image_plots)
     message["total_violators"] = len(violators)
-    message["total_violations"] = total_violations 
+    message["total_violations"] = len(ppe) 
     message["total_compliant_ppe"] = total_compliant_ppe
     message["total_noncompliant_ppe"] = total_noncompliant_ppe
     message["violators"] = violators
