@@ -52,7 +52,15 @@ class KinesisVideoStreamConsumer:
                 )
                 self.my_stream01_consumer.start()
                 self.my_stream01_consumer.join()
-                if self.is_active:
+                self.is_active = self.db.getDeviceDetailsStatus("ZMCI1")
+                if self.is_active is not None:
+                    if self.is_active:
+                        self.is_active = False
+                        self.db.setDeviceDetailsStatus("ZMCI1", False)
+                    else:
+                        self.is_active = False
+                        self.db.setDeviceDetailsStatus("ZMCI1", False)
+                else:
                     self.is_active = False
                     self.db.setDeviceDetailsStatus("ZMCI1", False)
             except KeyboardInterrupt as err:
@@ -75,9 +83,17 @@ class KinesisVideoStreamConsumer:
             one_in_frames_ratio = 1
             ndarray_frames = self.kvs_fragment_processor.get_frames_as_ndarray(fragment_bytes, one_in_frames_ratio)
             self.frames += [cv2.cvtColor(frame, cv2.COLOR_RGB2BGR) for frame in ndarray_frames]
-            if not self.is_active:
-                self.is_active = True
-                self.db.setDeviceDetailsStatus("ZMCI1", True)
+            self.is_active = self.db.getDeviceDetailsStatus("ZMCI1")
+            if self.is_active is not None:
+                if not self.is_active:
+                    self.is_active = True
+                    self.db.setDeviceDetailsStatus("ZMCI1", True)
+                else:
+                    self.is_active = False
+                    self.db.setDeviceDetailsStatus("ZMCI1", False)
+            else:
+                self.is_active = False
+                self.db.setDeviceDetailsStatus("ZMCI1", False)
         except Exception as err:
             print(f"on_fragment_arrived error! {err}")
 
