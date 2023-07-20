@@ -90,6 +90,10 @@ class ViolationDetails:
     image = Column(Text)
     violators = relationship("Violator", back_populates="violationdetails", cascade="all, delete")
     timestamp = Column(DateTime, default=datetime.now())
+    total_violations = Column(Integer)
+    total_violators = Column(Integer)
+    total_compliant_ppe = Column(Integer)
+    total_noncompliant_ppe = Column(Integer)
     devicedetails_id = Column(Integer, ForeignKey("devicedetails.id", ondelete="CASCADE"))
     devicedetails = relationship("DeviceDetails", back_populates="violationdetails")
     def __str__(self):
