@@ -185,7 +185,7 @@ class Application:
                         "ppe_preferences": deployedmodel.ppe_preferences
                     }
                     deployed_model_response = deployedmodel.invoke_endpoint(deployedmodel_payload)
-                    message = deployed_model_response
+                    message.update(deployed_model_response)
 
                 # Upload the image to s3 storage and save the record in the database
                 if Application.db_save_enabled:
