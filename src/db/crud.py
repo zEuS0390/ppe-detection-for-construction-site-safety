@@ -167,10 +167,10 @@ class DatabaseCRUD(DatabaseHandler):
         if total_no_gloves is not None: violationdetails.total_no_gloves = total_no_gloves
         if total_no_boots is not None: violationdetails.total_no_boots = total_no_boots
         self.session.add(violationdetails)
-        self.session.flush()
-        violationdetails_id = violationdetails.id
+        # self.session.flush()
         self.session.commit()
-        self.session.close()
+        violationdetails_id = violationdetails.id
+        # self.session.close()
         return violationdetails_id
 
     def insertViolationDetailsToDeviceDetails(

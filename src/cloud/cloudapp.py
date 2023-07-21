@@ -9,6 +9,9 @@ from datetime import datetime
 # from configparser import ConfigParser
 import numpy as np
 
+from sqlalchemy import and_
+from src.db.tables import *
+
 class Application:
 
     # Configuration varaiables
@@ -175,6 +178,16 @@ class Application:
                     "total_violators": 0,
                     "total_compliant_ppe": 0,
                     "total_noncompliant_ppe": 0,
+                    "total_helmet": 0,
+                    "total_glasses": 0,
+                    "total_vest": 0,
+                    "total_gloves": 0,
+                    "total_boots": 0,
+                    "total_no_helmet": 0,
+                    "total_no_glasses": 0,
+                    "total_no_vest": 0,
+                    "total_no_gloves": 0,
+                    "total_no_boots": 0,
                     "violators": []
                 }
 
@@ -188,30 +201,134 @@ class Application:
                     message.update(deployed_model_response)
 
                 # Upload the image to s3 storage and save the record in the database
-                if Application.db_save_enabled:
+                if Application.db_save_enabled and len(message["violators"]) > 0:
+
                     s3storage.upload(
                         bucket=bucket_name,
                         key=os.path.join("public", key).replace("\\", "/"),
-                        body=imageToByteStream(Application.frame_to_be_detected),
+                        body=imageToByteStream(binaryToImage(message["image"])),
                         contenttype="image/jpg"
                     )
-                    violationdetails_id = db.insertViolationDetails(
-                        image=key, 
-                        timestamp=now,
-                        total_violations = int(message["total_violations"]),
-                        total_violators = int(message["total_violators"]),
-                        total_compliant_ppe = int(message["total_compliant_ppe"])
-                        total_noncompliant_ppe = int(message["total_noncompliant_ppe"])
-                    )
-                    result = db.insertViolationDetailsToDeviceDetails(1, violationdetails_id)
-                    db.insertViolators(
-                        violationdetails_id, 
-                        message["violators"]
-                    )
+
+                    session = db.scoped()
+                    session.expire_on_commit = False
+
+                    violationdetails = ViolationDetails()
+                    violationdetails.image = key, 
+                    violationdetails.timestamp = now,
+                    violationdetails.total_violations = int(message["total_violations"]),
+                    violationdetails.total_violators = int(message["total_violators"]),
+                    violationdetails.total_compliant_ppe = int(message["total_compliant_ppe"]),
+                    violationdetails.total_noncompliant_ppe = int(message["total_noncompliant_ppe"]),
+                    violationdetails.total_helmet = int(message["total_helmet"]),
+                    violationdetails.total_glasses = int(message["total_glasses"]),
+                    violationdetails.total_vest = int(message["total_vest"]),
+                    violationdetails.total_gloves = int(message["total_gloves"]),
+                    violationdetails.total_boots = int(message["total_boots"]),
+                    violationdetails.total_no_helmet = int(message["total_no_helmet"]),
+                    violationdetails.total_no_glasses = int(message["total_no_glasses"]),
+                    violationdetails.total_no_vest = int(message["total_no_vest"]),
+                    violationdetails.total_no_gloves = int(message["total_no_gloves"]),
+                    violationdetails.total_no_boots = int(message["total_no_boots"])
+                    session.add(violationdetails)
+                    session.commit()
+
+                    devicedetails = session.query(DeviceDetails).filter(DeviceDetails.uuid == "ZMCI1").scalar()
+                    print(devicedetails.uuid)
+                    devicedetails.violationdetails.append(violationdetails)
+                    session.commit()
+    
+                    # Iterate to all violators for adding the rows for Violator table
+                    for violator in message["violators"]:
+                        bbox_id = violator["id"]
+                        x1 = violator["x1"]
+                        y1 = violator["y1"]
+                        x2 = violator["x2"]
+                        y2 = violator["y2"]
+
+                        violator = Violator(
+                            bbox_id = bbox_id,
+                            x1 = x1, y1 = y1,
+                            x2 = x2, y2 = y2,
+                            violationdetails = violationdetails,
+                        )
+
+                        session.add(violator)
+
+                    # Iterate to all violators for adding the rows for DetectedPPEClass table
+                    for violator in message["violators"]:
+                        detectedppeclasses = violator["violations"]
+
+                        for detectedppeclass in detectedppeclasses:
+                            detectedppeclass_bbox_id = detectedppeclass["id"]
+                            class_name = detectedppeclass["class_name"]
+                            confidence = detectedppeclass["confidence"]
+                            overlaps = detectedppeclass["overlaps"]
+                            x1 = int(detectedppeclass["x1"])
+                            y1 = int(detectedppeclass["y1"])
+                            x2 = int(detectedppeclass["x2"])
+                            y2 = int(detectedppeclass["y2"])
+
+                            # Check if there is an existing row of PPEClass table
+                            ppeclass = session.query(PPEClass).filter_by(class_name=class_name).first()
+
+                            if ppeclass is not None:
+
+                                # Check if there is an existing DetectedPPEClass table
+                                detectedppeclass = session.query(DetectedPPEClass).\
+                                        join(OverlappingViolator).\
+                                        join(Violator).\
+                                        filter(
+                                            DetectedPPEClass.bbox_id == detectedppeclass_bbox_id,
+                                            OverlappingViolator.violator_id == Violator.id,
+                                            Violator.violationdetails_id == violationdetails.id
+                                        ).scalar()
+
+                                if detectedppeclass is None: 
+                                    detectedppeclass = DetectedPPEClass(
+                                        bbox_id=detectedppeclass_bbox_id,
+                                        ppeclass=ppeclass,
+                                        confidence=confidence,
+                                        x1 = x1, y1 = y1,
+                                        x2 = x2, y2 = y2
+                                    )
+
+                                # Iterate to all given bbox overlaps to violators
+                                for overlapping_violator_bbox_id in overlaps:
+
+                                    # Get the instance of the violator based on its bbox_id
+                                    violator = session.query(Violator).\
+                                            join(ViolationDetails).\
+                                            filter(and_(
+                                                Violator.bbox_id==overlapping_violator_bbox_id,
+                                                ViolationDetails.id==violationdetails.id
+                                            )).scalar()
+
+                                    # Check if the violator exists
+                                    if violator is not None:
+
+                                        # Check if the overlapping violator has been previously added in the detectedppeclass
+                                        existing_violator = session.query(Violator).\
+                                                join(OverlappingViolator).\
+                                                join(DetectedPPEClass).\
+                                                filter(and_(
+                                                    OverlappingViolator.violator_id == violator.id,
+                                                    DetectedPPEClass.id == detectedppeclass.id
+                                                )).scalar()
+
+                                        if existing_violator is None:
+                                            detectedppeclass.violators.append(violator)
+
+                                session.add(detectedppeclass)
+                                session.commit()
+
+                    session.commit()
+                    session.close()
+
                     print(f"[DATABASE]: Successfully saved the detection to the database.")
 
                 # Publish through MQTT
-                if Application.mqtt_enabled:
+                if Application.mqtt_enabled and len(message["violators"]) > 0:
                     message["image"] = imageToBinary(
                         decompressImage(
                             compressImage(
