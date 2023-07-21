@@ -136,7 +136,17 @@ class DatabaseCRUD(DatabaseHandler):
             total_violations=None,
             total_violators=None,
             total_compliant_ppe=None,
-            total_noncompliant_ppe=None
+            total_noncompliant_ppe=None,
+            total_helmet=None,
+            total_glasses=None,
+            total_vest=None,
+            total_gloves=None,
+            total_boots=None,
+            total_no_helmet=None,
+            total_no_glasses=None,
+            total_no_vest=None,
+            total_no_gloves=None,
+            total_no_boots=None
         ) -> int:
         violationdetails_id = -1
         violationdetails = ViolationDetails()
@@ -146,6 +156,16 @@ class DatabaseCRUD(DatabaseHandler):
         if total_violators is not None: violationdetails.total_violators = total_violators
         if total_compliant_ppe is not None: violationdetails.total_compliant_ppe = total_compliant_ppe
         if total_noncompliant_ppe is not None: violationdetails.total_noncompliant_ppe = total_noncompliant_ppe
+        if total_helmet is not None: violationdetails.total_helmet = total_helmet
+        if total_glasses is not None: violationdetails.total_glasses = total_glasses
+        if total_vest is not None: violationdetails.total_vest = total_vest
+        if total_gloves is not None: violationdetails.total_gloves = total_gloves
+        if total_boots is not None: violationdetails.total_boots = total_boots
+        if total_no_helmet is not None: violationdetails.total_no_helmet = total_no_helmet
+        if total_no_glasses is not None: violationdetails.total_no_glasses = total_no_glasses
+        if total_no_vest is not None: violationdetails.total_no_vest = total_no_vest
+        if total_no_gloves is not None: violationdetails.total_no_gloves = total_no_gloves
+        if total_no_boots is not None: violationdetails.total_no_boots = total_no_boots
         self.session.add(violationdetails)
         self.session.flush()
         violationdetails_id = violationdetails.id
