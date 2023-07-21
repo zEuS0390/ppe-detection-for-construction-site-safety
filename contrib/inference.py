@@ -241,6 +241,18 @@ def output_fn(prediction, content_type):
     original_image = prediction[2].copy()
     image_plots = prediction[2].copy()
     total_compliant_ppe, total_noncompliant_ppe = prediction[3]
+    total_each_ppe = {
+        "helmet": 0,
+        "glasses": 0,
+        "vest": 0,
+        "gloves": 0,
+        "boots": 0,
+        "no helmet": 0,
+        "no glasses": 0,
+        "no vest": 0,
+        "no gloves": 0,
+        "no boots": 0
+    }
 
     # Check overlaps of each detected ppe item
     for ppe_item in ppe:
@@ -273,6 +285,12 @@ def output_fn(prediction, content_type):
 
                 # Draw PPE if not drawn yet
                 if ppe_item["id"] not in class_bbox_drawn:
+
+                    # Increment to the total number of the selected ppe item
+                    if class_name in total_each_ppe:
+                        total_each_ppe[class_name] += 1
+
+                    # Draw
                     label = f"{class_name}"
                     class_bbox_drawn.append(ppe_item["id"])
                     try:
@@ -291,13 +309,27 @@ def output_fn(prediction, content_type):
         violators.append(violator)
 
     logging.info("Consolidating message...")
+
+    all_total_ppe = {
+        "total_helmet": total_each_ppe["helmet"],
+        "total_glasses": total_each_ppe["glasses"],
+        "total_vest": total_each_ppe["vest"],
+        "total_gloves": total_each_ppe["gloves"],
+        "total_boots": total_each_ppe["boots"],
+        "total_no_helmet": total_each_ppe["no helmet"],
+        "total_no_glasses": total_each_ppe["no glasses"],
+        "total_no_vest": total_each_ppe["no vest"],
+        "total_no_gloves": total_each_ppe["no gloves"],
+        "total_no_boots": total_each_ppe["no boots"]
+    }
     
     message["image"] = imageToBase64String(image_plots)
     message["total_violators"] = len(violators)
-    message["total_violations"] = len(ppe) 
+    message["total_violations"] = total_noncompliant_ppe
     message["total_compliant_ppe"] = total_compliant_ppe
     message["total_noncompliant_ppe"] = total_noncompliant_ppe
     message["violators"] = violators
     message["timestamp"] = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
+    message.update(all_total_ppe)
 
     return json.dumps(message)
