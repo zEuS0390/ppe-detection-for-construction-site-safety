@@ -202,7 +202,7 @@ We are currently doing some tests on various construction sites to determine the
   <li><a href="https://youtu.be/HjcbnA7a1iU">PPE for Construction Detection Test #5</a></li>
 </ul>
 
-## Acknowledgements
+## Acknowledgments
 - https://github.com/aws-samples/amazon-kinesis-video-streams-consumer-library-for-python/
 - https://en.wikipedia.org/wiki/Representational_state_transfer/
 - https://en.wikipedia.org/wiki/Light-emitting_diode/
