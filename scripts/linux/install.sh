@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Create a virtual environment to store and isolate the dependencies to the system
 virtualenv .venv/ 
 
