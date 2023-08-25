@@ -5,7 +5,7 @@
 ![Untitled-1](https://github.com/cpe-pd/ppe-for-construction-detection/assets/39390245/53f0fdc5-fc15-4667-8d9b-bc875c31d87c)
 
 ## 📓 About
-This is the official repository of our PPE detection application for construction which is part of the whole system in our capstone project. It analyzes the detected PPE from camera stream and evaluates the violations of each person. We also used an API that predicts their identities using [face_recognition](https://github.com/ageitgey/face_recognition). When obtaining the output from the detection, it will be wrapped up as a message to be published and sent as a payload which will then be received by multiple clients that are connected in the broker through lightweight messaging protocol called [MQTT](https://en.wikipedia.org/wiki/MQTT).
+This is the official repository of our PPE detection application for construction safety which is part of the whole system in our capstone project. It analyzes the detected PPE from the camera stream and evaluates the violations of each person present. When obtaining the output from the detection, it will be consolidated as a payload for the clients to be received via the lightweight messaging protocol called [MQTT](https://en.wikipedia.org/wiki/MQTT). These clients are safety officers because they are the people who have the authority and responsibility within the area regarding the safety of the people.
 
 ## 🤝 Team Members
 <div align="center">
