@@ -57,16 +57,16 @@ This is the official repository of our PPE detection application for constructio
   </table>
 </div>
 
-- <b>Zeus James Baltazar (zEuS0390)</b> - Lead developer and focuses mostly on utilization of ideas and their integration to the whole system.
-- <b>Martin Lorenzo Basbacio (mahteenbash)</b> - Facilitates methods regarding detection and recognition.
-- <b>Clarece Gail Larrosa (clarencelarrosa)</b> - Manages the documentation and provides assets to mobile application.
-- <b>Ian Gabriel Marquez (ianmarquez1129)</b> - Handles mobile application development and its UI/UX design.
+- <b>Zeus James Baltazar (zEuS0390)</b> - He is the lead developer and focuses mostly on the utilization of ideas brought on by the team.
+- <b>Martin Lorenzo Basbacio (mahteenbash)</b> - He facilitates the methods regarding data science concepts such as object detection.
+- <b>Clarece Gail Larrosa (clarencelarrosa)</b> - She mostly manages and maintains the documentation of the project.
+- <b>Ian Gabriel Marquez (ianmarquez1129)</b> - He handles the development of the mobile application and its UI/UX design.
 
 ## ✔️ Features
-- PPE detection for construction safety
-- Human detection to determine worker violations
-- Face recognition to predict the detected violator
-- Mobile application reports and notifications
+- Can be used in a cloud or local environment
+- Detects 5 basic PPE for construction safety and without wearing them
+- Detects a human person to determine worker violations
+- Delivers real-time reports for the mobile application
 
 ## System Flowchart
 <p align="center">
@@ -74,11 +74,7 @@ This is the official repository of our PPE detection application for constructio
 </p>
 
 ## ⚙️ Hardware Design
-We used a Rasperry Pi 4 Model B and an OKdo camera module in this project. Additionally, we included some minor components to 
-help the user determine the status of the device and physically turn it off. These components are: RGB LED light, piezo buzzer, and a 
-tactile switch. A tripod can also be attached and detached to the bottom of the enclosure to adjust the angle of the camera, 
-which aids the mobility of the device. The ventillation also plays a vital role in the every hardware. Therefore, in the enclosure, 
-the exhausts are found at the top, right, and left.
+We used a Raspberry Pi 4 Model B and an OKdo camera module in this project. Additionally, we included some minor components to help the user determine the status of the device and physically turn it off. These components are: an RGB LED light, a piezo buzzer, and a tactile switch. A tripod can also be attached and detached to the bottom of the enclosure to adjust the angle of the camera, which aids the mobility of the device. Ventilation also plays a vital role in every hardware. Therefore, in the enclosure, the exhausts are found at the top, right, and left.
 
 <details>
   <summary>Raspberry Pi Specifications</summary>
@@ -205,3 +201,32 @@ We are currently doing some tests on various construction sites to determine the
   <li><a href="https://youtu.be/ogvOjIQox6o">PPE for Construction Detection Test #4</a></li>
   <li><a href="https://youtu.be/HjcbnA7a1iU">PPE for Construction Detection Test #5</a></li>
 </ul>
+
+## Acknowledgements
+- https://github.com/aws-samples/amazon-kinesis-video-streams-consumer-library-for-python/
+- https://en.wikipedia.org/wiki/Representational_state_transfer/
+- https://en.wikipedia.org/wiki/Light-emitting_diode/
+- https://en.wikipedia.org/wiki/Bounding_volume/
+- https://learn.microsoft.com/en-us/powershell/
+- https://en.wikipedia.org/wiki/Push-button/
+- https://www.django-rest-framework.org/
+- https://github.com/WongKinYiu/yolor/
+- https://en.wikipedia.org/wiki/Base64/
+- https://en.wikipedia.org/wiki/Buzzer/
+- https://www.gnu.org/software/bash/
+- https://en.wikipedia.org/wiki/Linux/
+- https://gstreamer.freedesktop.org/
+- https://en.wikipedia.org/wiki/API/
+- https://www.raspberrypi.com/
+- https://www.sqlalchemy.org/
+- https://www.virtualbox.org/
+- https://www.paramiko.org/
+- https://www.openssh.com/
+- https://aws.amazon.com/
+- https://www.python.org/
+- https://www.sqlite.org/
+- https://mosquitto.org/
+- https://colab.google/
+- https://git-scm.com/
+- https://opencv.org/
+- https://mqtt.org/
