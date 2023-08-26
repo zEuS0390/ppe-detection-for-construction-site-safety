@@ -2,12 +2,14 @@
 [![.github/workflows/app_server.yml](https://github.com/cpe-pd/rpi-camera/actions/workflows/app_server.yml/badge.svg?event=push)](https://github.com/cpe-pd/rpi-camera/actions/workflows/app_server.yml)
 
 <!-- Background image by pikisuperstar: https://www.freepik.com/free-vector/geometric-abstract-green-background_6189913.htm#query=black%20green%20polygon&position=24&from_view=search&track=ais -->
-![Untitled-1](https://github.com/cpe-pd/ppe-for-construction-detection/assets/39390245/53f0fdc5-fc15-4667-8d9b-bc875c31d87c)
+![banner-image](https://github.com/zEuS0390/ppe-for-construction-safety-detection/assets/39390245/dba51548-d7f9-4db0-818e-682265c281c8)
 
 ## 📓 About
 This is the official repository of our PPE detection application for construction safety which is part of the whole system in our capstone project. It analyzes the detected PPE from the camera stream and evaluates the violations of each person present. When obtaining the output from the detection, it will be consolidated as a payload for the clients to be received via the lightweight messaging protocol called [MQTT](https://en.wikipedia.org/wiki/MQTT). These clients are safety officers because they are the people who have the authority and responsibility within the area regarding the safety of the people.
 
 ## 🤝 Team Members
+Our team is a dynamic group, encompassing a wide range of skills, expertise, and backgrounds that collectively drive our project forward. The dedication of each member to their designated role results in great productivity and a remarkable team.
+
 <div align="center">
   <table>
     <tbody>
@@ -68,9 +70,17 @@ This is the official repository of our PPE detection application for constructio
 - Detects a human person to determine worker violations
 - Delivers real-time reports for the mobile application
 
-## System Flowchart
+## 📓 System Flowchart
+The flowchart illustrates how the input flows throughout the system. It starts from capturing the video stream from the Raspberry Pi until receiving the outputs from the detection for the users.
+
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/39390245/226389227-8c31513f-9587-465d-b0f2-0c762376fca3.png" width=640 height=720 alt="System Flowchart">
+  <img src="https://github.com/zEuS0390/ppe-for-construction-safety-detection/assets/39390245/63166846-f42d-4dbe-ae83-dd3c646c982a" width=640 height=640 alt="System Flowchart">
+</p>
+
+## 📔 Data Flow Diagram
+The diagram outlines the interactions between various entities for the mobile application. Basically, the hardware device captures the real-time video stream and sends it into a service provided by the Amazon Web Service (AWS) cloud platform. 
+<p align="center">
+  <img src="https://github.com/zEuS0390/ppe-for-construction-safety-detection/assets/39390245/9d3a1f27-1f4e-4331-874a-b6d3404945e0" width=640 height=640 alt="Data Flow Diagram">
 </p>
 
 ## ⚙️ Hardware Design
@@ -121,11 +131,9 @@ We used a Raspberry Pi 4 Model B and an OKdo camera module in this project. Addi
 <br>
 
 <p align="center">
-  <img src="https://github.com/cpe-pd/ppe-for-construction-detection/assets/39390245/a2b2c684-8e8b-4dfc-8ccd-4327aa1bb156" width=640 height=480 alt="hardware-design-1">
+  <img src="https://github.com/zEuS0390/ppe-for-construction-safety-detection/assets/39390245/e2374d34-2f7d-48cd-9778-d72d6c502aa7" width=640 height=480 alt="hardware-design-1">
   <br>
-  <img src="https://github.com/cpe-pd/ppe-for-construction-detection/assets/39390245/60148172-3349-4ee7-8db2-3c5212fde6b4" width=640 height=480 alt="hardware-design-2">
-  <br>
-  <img src="https://github.com/cpe-pd/ppe-for-construction-detection/assets/39390245/7409e33a-18db-450e-8ccb-a4faa04a0a98" width=640 height=480 alt="hardware-design-3">
+  <img src="https://github.com/zEuS0390/ppe-for-construction-safety-detection/assets/39390245/7a1c1573-a6d3-4bb3-9562-e09a050a0de8" width=640 height=480 alt="hardware-design-2">
 </p>
 
 ## 🔍 Model Classes
@@ -145,7 +153,7 @@ The trained model covers eleven classes. It can detect compliant and noncomplian
 </ul>
 
 ## 📊 Datasets
-The trained model was trained using these datasets with different image augmentation. The custom dataset used in this project were pre-processed and thoroughly scanned and labeled following the classes mentioned above. Images were resized to 640x640 and provided with different augmentations. The final datasets are split into three different sets 70% Training Set, 20% Validation Set, and 10% Testing Set.
+The model was trained using these datasets with different image augmentation. The custom datasets used in this project were pre-processed and thoroughly scanned and labeled following the classes mentioned above. Images were resized to 640x640 and provided with different augmentations. The final datasets are split into three different sets: 70% training Set, 20% validation set, and 10% testing set.
 
 The datasets are available in these links:
 <ul>
@@ -164,6 +172,8 @@ The datasets are available in these links:
 </ul>
 
 ## 🚀 Installation
+**NOTE:** Disregard this section if the application is set to the cloud environment. This is only applicable to the local environment as it uses LAN-based broker to communicate with other devices.
+
 To get started, install the required dependencies. It is highly recommended to use virtual environment ([Pipenv](https://pypi.org/project/pipenv/), [Virtualenv](https://pypi.org/project/virtualenv/)) to isolate them to the system. 
 
 There are some external dependencies that are not included in the script. Download and install them first before continuing to the next step. 
@@ -202,7 +212,7 @@ We are currently doing some tests on various construction sites to determine the
   <li><a href="https://youtu.be/HjcbnA7a1iU">PPE for Construction Detection Test #5</a></li>
 </ul>
 
-## Acknowledgments
+## 📎 Acknowledgments
 - https://github.com/aws-samples/amazon-kinesis-video-streams-consumer-library-for-python/
 - https://en.wikipedia.org/wiki/Representational_state_transfer/
 - https://en.wikipedia.org/wiki/Light-emitting_diode/
