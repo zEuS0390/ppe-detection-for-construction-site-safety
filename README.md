@@ -5,7 +5,7 @@
 ![banner-image](https://github.com/zEuS0390/ppe-for-construction-safety-detection/assets/39390245/dba51548-d7f9-4db0-818e-682265c281c8)
 
 ## 📓 About
-This is the official repository of our PPE detection application for construction safety which is part of the whole system in our capstone project. It analyzes the detected PPE from the camera stream and evaluates the violations of each person present. When obtaining the output from the detection, it will be consolidated as a payload for the clients to be received via the lightweight messaging protocol called [MQTT](https://en.wikipedia.org/wiki/MQTT). These clients are safety officers because they are the people who have the authority and responsibility within the area regarding the safety of the people.
+This is the official repository of our PPE detection application for construction safety which is part of the whole system in our capstone project. It analyzes the detected PPE from the camera stream and evaluates the violations of each person present using an object detection algorithm called [YOLOR](https://github.com/WongKinYiu/yolor). When obtaining the output from the detection, it will be consolidated as a payload for the clients to be received via the lightweight messaging protocol called [MQTT](https://en.wikipedia.org/wiki/MQTT). These clients are safety officers because they are the people who have the authority and responsibility within the area regarding the safety of the people.
 
 ## 🤝 Team Members
 Our team is a dynamic group, encompassing a wide range of skills, expertise, and backgrounds that collectively drive our project forward. The dedication of each member to their designated role results in great productivity and a remarkable team.
