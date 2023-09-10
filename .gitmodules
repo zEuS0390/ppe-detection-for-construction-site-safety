@@ -10,3 +10,8 @@
 	path = amazon-kinesis-video-streams-consumer-library-for-python
 	url = https://github.com/aws-samples/amazon-kinesis-video-streams-consumer-library-for-python.git
 	ignore = dirty
+[submodule "contrib/wifi-conn-web-app"]
+	path = contrib/wifi-conn-web-app
+	url = https://github.com/zEuS0390/wifi-conn-web-app.git
+	ignore = dirty
+
