@@ -203,7 +203,8 @@ mosquitto -c mosquitto.conf -v
 ```
 
 ## 🎦 Demonstration
-We are currently doing some tests on various construction sites to determine the quality of the system and draw conclusions about the accomplished objectives, particularly the accuracy of detection.
+After conducting tests at various construction sites to evaluate the system's quality, we have successfully achieved all of our objectives, especially in terms of detection accuracy.
+
 <ul>
   <li><a href="https://youtu.be/9GrYwxQUfOI">PPE for Construction Detection Test #1</a></li>
   <li><a href="https://youtu.be/NdW77oMXwo8">PPE for Construction Detection Test #2</a></li>
