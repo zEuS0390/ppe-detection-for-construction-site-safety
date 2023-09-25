@@ -207,11 +207,14 @@ mosquitto -c mosquitto.conf -v
 After conducting tests at various construction sites to evaluate the system's quality, we have successfully achieved all of our objectives, especially in terms of detection accuracy.
 
 <ul>
-  <li><a href="https://youtu.be/9GrYwxQUfOI">PPE for Construction Detection Test #1</a></li>
-  <li><a href="https://youtu.be/NdW77oMXwo8">PPE for Construction Detection Test #2</a></li>
-  <li><a href="https://youtu.be/BJzhbw56-tE">PPE for Construction Detection Test #3</a></li>
-  <li><a href="https://youtu.be/ogvOjIQox6o">PPE for Construction Detection Test #4</a></li>
-  <li><a href="https://youtu.be/HjcbnA7a1iU">PPE for Construction Detection Test #5</a></li>
+  <li><a href="https://youtu.be/9GrYwxQUfOI">Multiple PPE for Construction Safety Monitoring System Test (Local-based) #1</a></li>
+  <li><a href="https://youtu.be/NdW77oMXwo8">Multiple PPE for Construction Safety Monitoring System Test (Local-based) #2</a></li>
+  <li><a href="https://youtu.be/BJzhbw56-tE">Multiple PPE for Construction Safety Monitoring System Test (Local-based) #3</a></li>
+  <li><a href="https://youtu.be/ogvOjIQox6o">Multiple PPE for Construction Safety Monitoring System Test (Local-based) #4</a></li>
+  <li><a href="https://youtu.be/HjcbnA7a1iU">Multiple PPE for Construction Safety Monitoring System Test (Local-based) #5</a></li>
+  <li><a href="https://youtu.be/EVROnbGXeik">Multiple PPE for Construction Safety Monitoring System Demo (Cloud-based with AWS) #1</a></li>
+  <li><a href="https://youtu.be/_-cMzedA5Qk">Multiple PPE for Construction Safety Monitoring System Demo (Cloud-based with AWS) #2</a></li>
+  <li><a href="https://youtu.be/L9Klephq1J8">Multiple PPE for Construction Safety Monitoring System Demo (Cloud-based with AWS) #3</a></li>
 </ul>
 
 ## 📎 Acknowledgments
