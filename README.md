@@ -65,10 +65,11 @@ Our team is a dynamic group, encompassing a wide range of skills, expertise, and
 - <b>Ian Gabriel Marquez (ianmarquez1129)</b> - He handles the development of the mobile application and its UI/UX design.
 
 ## ✔️ Features
-- Can be used in a cloud or local environment
-- Detects 5 basic PPE for construction safety and without wearing them
+- Mainly cloud-based but can be utilized into a local-based by configuration
+- Detects 5 basic PPE for construction safety and another 5 without wearing them
 - Detects a human person to determine worker violations
-- Delivers real-time reports for the mobile application
+- Delivers real-time reports for the mobile application via MQTT
+- Retains data in storage and database for future processing
 
 ## 📓 System Flowchart
 The flowchart illustrates how the input flows throughout the system. It starts from capturing the video stream from the Raspberry Pi until receiving the outputs from the detection for the users.
