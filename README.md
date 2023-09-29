@@ -84,6 +84,11 @@ The diagram outlines the interactions between various entities for the mobile ap
   <img src="https://github.com/zEuS0390/ppe-for-construction-safety-detection/assets/39390245/9d3a1f27-1f4e-4331-874a-b6d3404945e0" width=640 height=640 alt="Data Flow Diagram">
 </p>
 
+## 🛢 Database Schema Diagram
+<p align="center">
+  <img src="https://github.com/zEuS0390/ppe-for-construction-safety-detection/assets/39390245/bee8abfe-0150-4600-9070-ffe75c6d0f1d" width=640 height=640 alt="Database Schema">
+</p>
+
 ## ⚙️ Hardware Design
 We used a Raspberry Pi 4 Model B and an OKdo camera module in this project. Additionally, we included some minor components to help the user determine the status of the device and physically turn it off. These components are: an RGB LED light, a piezo buzzer, and a tactile switch. A tripod can also be attached and detached to the bottom of the enclosure to adjust the angle of the camera, which aids the mobility of the device. Ventilation also plays a vital role in every hardware. Therefore, in the enclosure, the exhausts are found at the top, right, and left.
 
@@ -128,8 +133,6 @@ We used a Raspberry Pi 4 Model B and an OKdo camera module in this project. Addi
     </tbody>
   </table>
 </details>
-
-<br>
 
 <p align="center">
   <img src="https://github.com/zEuS0390/ppe-for-construction-safety-detection/assets/39390245/e2374d34-2f7d-48cd-9778-d72d6c502aa7" width=640 height=480 alt="hardware-design-1">
