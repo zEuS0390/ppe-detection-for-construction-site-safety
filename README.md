@@ -8,8 +8,6 @@
 This is the official repository of our PPE detection application for construction safety which is part of the whole system in our capstone project. It analyzes the detected PPE from the camera stream and evaluates the violations of each person present using an object detection algorithm called [YOLOR](https://github.com/WongKinYiu/yolor). When obtaining the output from the detection, it will be consolidated as a payload for the clients to be received via the lightweight messaging protocol called [MQTT](https://en.wikipedia.org/wiki/MQTT). These clients are safety officers because they are the people who have the authority and responsibility within the area regarding the safety of the people.
 
 ## 🤝 Team Members
-Our team is a dynamic group, encompassing a wide range of skills, expertise, and backgrounds that collectively drive our project forward. The dedication of each member to their designated role results in great productivity and a remarkable team.
-
 <div align="center">
   <table>
     <tbody>
@@ -59,10 +57,23 @@ Our team is a dynamic group, encompassing a wide range of skills, expertise, and
   </table>
 </div>
 
-- <b>Zeus James Baltazar (zEuS0390)</b> - He is the lead developer and focuses mostly on the utilization of ideas brought on by the team.
-- <b>Martin Lorenzo Basbacio (mahteenbash)</b> - He facilitates the methods regarding data science concepts such as object detection.
-- <b>Clarece Gail Larrosa (clarencelarrosa)</b> - She mostly manages and maintains the documentation of the project.
-- <b>Ian Gabriel Marquez (ianmarquez1129)</b> - He handles the development of the mobile application and its UI/UX design.
+Our team is a dynamic group, encompassing a wide range of skills, expertise, and backgrounds that collectively drive our project forward. The dedication of each member to their designated role results in great productivity and a remarkable team.
+
+<b>Zeus James Baltazar (zEuS0390)</b>
+<br>
+He is the lead developer and focuses mostly on the utilization of ideas brought on by the team.
+<br><br>
+<b>Martin Lorenzo Basbacio (mahteenbash)</b>
+<br>
+He facilitates the methods regarding data science concepts such as object detection.
+<br><br>
+<b>Clarece Gail Larrosa (clarencelarrosa)</b>
+<br>
+She mostly manages and maintains the documentation of the project.
+<br><br>
+<b>Ian Gabriel Marquez (ianmarquez1129)</b>
+<br>
+He handles the development of the mobile application and its UI/UX design.
 
 ## ✔️ Features
 - Mainly cloud-based but can be utilized into a local-based by configuration
