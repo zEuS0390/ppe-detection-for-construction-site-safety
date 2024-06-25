@@ -221,14 +221,15 @@ mosquitto -c mosquitto.conf -v
 After conducting tests at various construction sites to evaluate the system's quality, we have successfully achieved all of our objectives, especially in terms of detection accuracy.
 
 <ul>
-  <li><a href="https://youtu.be/9GrYwxQUfOI">Multiple PPE for Construction Safety Monitoring System Test (Local-based) #1</a></li>
-  <li><a href="https://youtu.be/NdW77oMXwo8">Multiple PPE for Construction Safety Monitoring System Test (Local-based) #2</a></li>
-  <li><a href="https://youtu.be/BJzhbw56-tE">Multiple PPE for Construction Safety Monitoring System Test (Local-based) #3</a></li>
-  <li><a href="https://youtu.be/ogvOjIQox6o">Multiple PPE for Construction Safety Monitoring System Test (Local-based) #4</a></li>
-  <li><a href="https://youtu.be/HjcbnA7a1iU">Multiple PPE for Construction Safety Monitoring System Test (Local-based) #5</a></li>
-  <li><a href="https://youtu.be/EVROnbGXeik">Multiple PPE for Construction Safety Monitoring System Demo (Cloud-based with AWS) #1</a></li>
-  <li><a href="https://youtu.be/_-cMzedA5Qk">Multiple PPE for Construction Safety Monitoring System Demo (Cloud-based with AWS) #2</a></li>
-  <li><a href="https://youtu.be/L9Klephq1J8">Multiple PPE for Construction Safety Monitoring System Demo (Cloud-based with AWS) #3</a></li>
+  <li><a href="https://youtu.be/9GrYwxQUfOI">PPE Detection System for Construction Site Safety Monitoring Test (Local-based) #1</a></li>
+  <li><a href="https://youtu.be/NdW77oMXwo8">PPE Detection System for Construction Site Safety Monitoring Test (Local-based) #2</a></li>
+  <li><a href="https://youtu.be/BJzhbw56-tE">PPE Detection System for Construction Site Safety Monitoring Test (Local-based) #3</a></li>
+  <li><a href="https://youtu.be/ogvOjIQox6o">PPE Detection System for Construction Site Safety Monitoring Test (Local-based) #4</a></li>
+  <li><a href="https://youtu.be/HjcbnA7a1iU">PPE Detection System for Construction Site Safety Monitoring Test (Local-based) #5</a></li>
+  <li><a href="https://youtu.be/EVROnbGXeik">PPE Detection System for Construction Site Safety Monitoring Demo (Cloud-based with AWS) #1</a></li>
+  <li><a href="https://youtu.be/_-cMzedA5Qk">PPE Detection System for Construction Site Safety Monitoring Demo (Cloud-based with AWS) #2</a></li>
+  <li><a href="https://youtu.be/L9Klephq1J8">PPE Detection System for Construction Site Safety Monitoring Demo (Cloud-based with AWS) #3</a></li>
+  <li><a href="https://youtu.be/5vAS3qFHn0s">PPE Detection System for Construction Site Safety Monitoring Deployment Demo</a></li>
 </ul>
 
 ## 📎 Acknowledgments
