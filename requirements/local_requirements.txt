@@ -8,7 +8,7 @@ sqlalchemy
 faker
 Cython
 matplotlib
-numpy
+numpy==1.26.4
 opencv-python
 Pillow
 PyYAML
