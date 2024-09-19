@@ -1,17 +1,23 @@
+# Submodule for the YOLOR (You Only Learn One Representation) algorithm repository
 [submodule "yolor"]
 	path = yolor
 	url = https://github.com/WongKinYiu/yolor.git
 	ignore = dirty
+
+# Submodule for Python-based YOLO dataset tools
 [submodule "contrib/python-based-yolo-dataset-tools"]
 	path = contrib/python-based-yolo-dataset-tools
 	url = https://github.com/zEuS0390/python-based-yolo-dataset-tools.git
 	ignore = dirty
+
+# Submodule for Amazon Kinesis Video Streams consumer library for Python
 [submodule "amazon-kinesis-video-streams-consumer-library-for-python"]
 	path = amazon-kinesis-video-streams-consumer-library-for-python
 	url = https://github.com/aws-samples/amazon-kinesis-video-streams-consumer-library-for-python.git
 	ignore = dirty
+
+# Submodule for Wi-Fi connection web application in Raspberry Pi
 [submodule "contrib/wifi-conn-web-app"]
 	path = contrib/wifi-conn-web-app
 	url = https://github.com/zEuS0390/wifi-conn-web-app.git
 	ignore = dirty
-

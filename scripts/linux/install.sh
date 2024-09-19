@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Create a virtual environment to store and isolate the dependencies to the system
-virtualenv .venv/ 
+python3 -m venv .venv/
 
 # Install all the dependencies
 if [[ $1 == "local" ]]; then

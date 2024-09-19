@@ -22,7 +22,7 @@ class Camera(metaclass=Singleton):
 
     # Initialize
     def __init__(
-            self, 
+            self,
             device: str = "0",
             rtsp_enabled: bool = False,
             record_enabled: bool = False
@@ -127,10 +127,10 @@ class Camera(metaclass=Singleton):
         Get frame with an additional dimension to be used by the detection model
         """
         if self.rtsp_enabled:
-            original_frame = self.q.get() if self.q.qsize() > 0 else np.zeros((480, 640, 3), dtype=np.unint8)
+            original_frame = self.q.get() if self.q.qsize() > 0 else np.zeros((480, 640, 3), dtype=np.uint8)
             img: np.ndarray = original_frame.copy()
         else:
-            original_frame = self.frame if self.frame is not None else np.zeros((480, 640, 3), dtype=np.unint8) 
+            original_frame = self.frame if self.frame is not None else np.zeros((480, 640, 3), dtype=np.uint8)
             img: np.ndarray = original_frame.copy()
         if include_processed:
             img = img[:,:,::-1]

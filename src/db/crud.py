@@ -1,8 +1,8 @@
 from sqlalchemy import and_
 from .database import DatabaseHandler
 from .tables import (
-    PPEClass, 
-    Violator, 
+    PPEClass,
+    Violator,
     DetectedPPEClass,
     ViolationDetails,
     DeviceDetails,
@@ -12,7 +12,7 @@ from datetime import datetime
 import csv
 
 class DatabaseCRUD(DatabaseHandler):
-    
+
     """
     DatabaseCRUD Methods:
 
@@ -24,12 +24,12 @@ class DatabaseCRUD(DatabaseHandler):
 
         - insertDeviceDetails                       (kvs_name: str,
                                                      bucket_name: str,
-                                                     uuid: str, 
-                                                     password: str, 
-                                                     pub_topic: str, 
+                                                     uuid: str,
+                                                     password: str,
+                                                     pub_topic: str,
                                                      set_topic: str) -> int
-                                                     
-        - insertViolationDetails                    (image=None, 
+
+        - insertViolationDetails                    (image=None,
                                                      timestamp=None) -> int:
 
         - insertViolationDetailsToDeviceDetails     (devicedetails_id: int,
@@ -38,9 +38,9 @@ class DatabaseCRUD(DatabaseHandler):
         - insertViolator                            (violationdetails_id: int,
                                                      bbox_id: int,
                                                      topleft: tuple,
-                                                     bottomright: tuple, 
-                                                     detectedppeclasses: list, 
-                                                     verbose: bool = False, 
+                                                     bottomright: tuple,
+                                                     detectedppeclasses: list,
+                                                     verbose: bool = False,
                                                      commit: bool = True) -> bool
 
         - deleteViolator                            (violator_id: int,
@@ -52,18 +52,18 @@ class DatabaseCRUD(DatabaseHandler):
 
         - setDeviceDetailsStatus                    (devicedetails_uuid: str,
                                                      is_active: bool) -> bool:
-    
+
     """
 
-    def __init__(self, 
-                 cfg = None, 
-                 db_URL = None, 
+    def __init__(self,
+                 cfg = None,
+                 db_URL = None,
                  echo = False):
         super(DatabaseCRUD, self).__init__(cfg, db_URL, echo)
         self.to_be_commited = []
 
     # Load the PPE classes that will be used for detection in PPE violations
-    def insertPPEClasses(self, 
+    def insertPPEClasses(self,
                          filepath: str) -> None:
         # Declare an empty list for names
         ppeclass_names = []
@@ -106,13 +106,13 @@ class DatabaseCRUD(DatabaseHandler):
 
     # Insert into the devicedetails table
     def insertDeviceDetails(
-            self, 
+            self,
             kvs_name: str,
             bucket_name: str,
-            uuid: str, 
-            password: str, 
-            pub_topic: str, 
-            set_topic: str, 
+            uuid: str,
+            password: str,
+            pub_topic: str,
+            set_topic: str,
         ) -> int:
         devicedetails_id = -1
         devicedetails = DeviceDetails()
@@ -121,17 +121,17 @@ class DatabaseCRUD(DatabaseHandler):
         devicedetails.uuid = uuid
         devicedetails.password = password
         devicedetails.pub_topic = pub_topic
-        devicedetails.set_topic = set_topic 
+        devicedetails.set_topic = set_topic
         self.session.add(devicedetails)
         self.session.flush()
         devicedetails_id = devicedetails.id
-        self.session.commit() 
+        self.session.commit()
         self.session.close()
         return devicedetails_id
 
     def insertViolationDetails(
-            self, 
-            image=None, 
+            self,
+            image=None,
             timestamp=None,
             total_violations=None,
             total_violators=None,
@@ -243,7 +243,7 @@ class DatabaseCRUD(DatabaseHandler):
                                     Violator.violationdetails_id == violationdetails_id
                                 ).scalar()
 
-                        if detectedppeclass is None: 
+                        if detectedppeclass is None:
                             detectedppeclass = DetectedPPEClass(
                                 bbox_id=detectedppeclass_bbox_id,
                                 ppeclass=ppeclass,
@@ -284,13 +284,13 @@ class DatabaseCRUD(DatabaseHandler):
         self.session.close()
 
     def insertViolator(
-            self, 
-            violationdetails_id: int, 
+            self,
+            violationdetails_id: int,
             bbox_id: int,
-            topleft: tuple, 
-            bottomright: tuple, 
-            detectedppe: list, 
-            verbose: bool = False, 
+            topleft: tuple,
+            bottomright: tuple,
+            detectedppe: list,
+            verbose: bool = False,
             commit: bool = True
         ) -> bool:
 
@@ -315,7 +315,7 @@ class DatabaseCRUD(DatabaseHandler):
                             "confidence": confidence,
                             "id": ppe_bbox_id,
                             "bbox_overlaps": bbox_overlaps
-                        } 
+                        }
                     )
                 else:
                     if verbose:
@@ -344,7 +344,7 @@ class DatabaseCRUD(DatabaseHandler):
                 ppeclass = item["ppeclass"]
                 bbox_overlaps = item["bbox_overlaps"]
                 confidence = item["confidence"]
-                 
+
                 detectedppeclass = DetectedPPEClass(
                     bbox_id=bbox_id,
                     confidence=confidence
@@ -375,7 +375,7 @@ class DatabaseCRUD(DatabaseHandler):
             commit: bool = True
         ) -> bool:
         violator = self.session.query(Violator).filter_by(id=violator_id).scalar()
-        if violator is not None: 
+        if violator is not None:
             self.session.delete(violator)
             if commit:
                 self.session.commit()
@@ -385,17 +385,17 @@ class DatabaseCRUD(DatabaseHandler):
 
     # Get all violation details from given devicedetails's uuid within the ranged datetime
     def getAllViolationDetails(
-            self, 
+            self,
             devicedetails_uuid: str = None,
-            from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"), 
+            from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"),
             to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59")
         ) -> list:
-        if devicedetails_uuid is not None: 
+        if devicedetails_uuid is not None:
             all_violation_details = self.session.query(ViolationDetails).\
                 join(DeviceDetails).\
                 filter(
                     ViolationDetails.timestamp.between(
-                        from_datetime, 
+                        from_datetime,
                         to_datetime)
                     ).\
                 filter(
@@ -426,7 +426,7 @@ class DatabaseCRUD(DatabaseHandler):
         return serializable_all_violation_details
 
     def serializeViolationDetails(
-            self, 
+            self,
             violation_details: ViolationDetails
         ) -> dict:
         serializable_violation_details = {
@@ -454,7 +454,7 @@ class DatabaseCRUD(DatabaseHandler):
                 serializable_violator["violations"].append(serializable_violations)
             serializable_violation_details["violators"].append(serializable_violator)
         return serializable_violation_details
-    
+
     def getDeviceDetailsStatus(
             self,
             uuid: str

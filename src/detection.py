@@ -6,8 +6,8 @@ from configparser import ConfigParser
 from src.box import Box, isColliding
 import torch.backends.cudnn as cudnn
 from src.utils import (
-    imageToBinary, 
-    parsePlainConfig, 
+    imageToBinary,
+    parsePlainConfig,
     getDetectionModel
 )
 from src.db.crud import DatabaseCRUD
@@ -17,8 +17,8 @@ from src.indicator import Indicator
 from src.db.tables import ViolationDetails
 import torch, threading, time
 from src.constants import (
-    Class, 
-    BGRColor, 
+    Class,
+    BGRColor,
     DEFAULT_MQTT_IMG_SIZE
 )
 from src.camera import Camera
@@ -27,7 +27,7 @@ import numpy as np
 import json, logging, cv2
 
 class Detection(metaclass=Singleton):
-    
+
     """
     Methods:
         - start                 () -> None
@@ -54,7 +54,7 @@ class Detection(metaclass=Singleton):
     camera_details = {}
 
     # Initialize
-    def __init__(self, 
+    def __init__(self,
         cfg: ConfigParser,
         mqtt_client: MQTTClient = None
     ):
@@ -65,7 +65,7 @@ class Detection(metaclass=Singleton):
         cudnn.benchmark = True
         self.loadData()
         self.logger.info("Detection initialized")
-        
+
     def start(self):
         """
         Starts the detection thread. It will not start if one or more required arguments are missing.
@@ -91,7 +91,7 @@ class Detection(metaclass=Singleton):
 
     def stop(self):
         self.isRunning = False
-        
+
     def onClientSet(self, client, userdata, msg):
         self.indicator.info_receiving_msg_mqtt()
         self.indicator.info_none(buzzer=False)
@@ -163,17 +163,17 @@ class Detection(metaclass=Singleton):
         tl = round(0.002 * (image.shape[0] + image.shape[1]) / 2) + 1 # Line/font thickness
         # Set the font thickness of text labels
         font_thickness = max(tl - 1, 1)  # font thickness
-        # This is the label _id, which is basically a PPE class id. 
+        # This is the label _id, which is basically a PPE class id.
         # Do not include _id in the plot if it's value is -1
         if _id != -1:
             cv2.putText(image, str(_id), (coordinates.left, coordinates.top), 0, tl / 3, color.value, thickness=font_thickness, lineType=cv2.LINE_AA)
         # Draw the bounding box
         cv2.rectangle(
-            image, 
-            (coordinates.left, coordinates.top), 
-            (coordinates.right, coordinates.bottom), 
-            color.value, 
-            thickness=tl, 
+            image,
+            (coordinates.left, coordinates.top),
+            (coordinates.right, coordinates.bottom),
+            color.value,
+            thickness=tl,
             lineType=cv2.LINE_AA
         )
         cv2.putText(image, label, (coordinates.left, coordinates.bottom), 0, tl / 3, color.value, thickness=font_thickness, lineType=cv2.LINE_AA)
@@ -206,12 +206,12 @@ class Detection(metaclass=Singleton):
                 detected_obj = {
                         "id": id,
                         "coordinate": Box(
-                            top=int(xyxy[1]), 
-                            right=int(xyxy[2]), 
-                            bottom=int(xyxy[3]), 
+                            top=int(xyxy[1]),
+                            right=int(xyxy[2]),
+                            bottom=int(xyxy[3]),
                             left=int(xyxy[0])
                         ),
-                        "confidence": float(conf), 
+                        "confidence": float(conf),
                         "class_name": class_name
                 }
                 id+=1
@@ -243,6 +243,7 @@ class Detection(metaclass=Singleton):
 
         self.db.insertViolator(
             violationdetails_id=violationdetails_id,
+            bbox_id=1,
             topleft=(body_coordinate.left, body_coordinate.top),
             bottomright=(body_coordinate.right, body_coordinate.bottom),
             detectedppe=violations,
@@ -268,7 +269,7 @@ class Detection(metaclass=Singleton):
     def checkViolations(self, processed_image, image):
         """
         Analyzes which PPE objects belong to a certain person by checking the overlapping bounding boxes.
-        
+
         Note: It ignores all PPE objects that do not reside within the bounding box of the person class.
 
         Args:
@@ -291,7 +292,7 @@ class Detection(metaclass=Singleton):
         for ppe_item in ppe:
             overlaps = self.checkOverlaps(ppe_item["coordinate"], persons)
             ppe_item["overlaps"] = overlaps
-        
+
         # Resize image to be published from mqtt client
         image_plots = cv2.resize(image_plots, (self.mqtt_img_size[0], self.mqtt_img_size[1]), interpolation=cv2.INTER_AREA)
 
@@ -300,9 +301,9 @@ class Detection(metaclass=Singleton):
         for person in persons:
             id = person["id"]
             violator = {
-                "id": id, 
+                "id": id,
                 "violations": []
-            } 
+            }
 
             # Plot the person's id in the image
             self.plotBox(id, image_plots, person["coordinate"], self.colors[self.names.index(person["class_name"])], "")
@@ -348,7 +349,7 @@ class Detection(metaclass=Singleton):
         message["total_violations"] = total_violations
         message["violators"] = violators
         message["timestamp"] = datetime.now().strftime(r"%y-%m-%d_%H-%M-%S")
-        
+
         return message
 
     @torch.no_grad()

@@ -20,3 +20,9 @@ draft/
 
 # Archive files
 *.rar
+
+.env
+
+mosquitto.conf
+
+passwd_file

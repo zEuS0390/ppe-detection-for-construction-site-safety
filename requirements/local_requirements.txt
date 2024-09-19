@@ -10,6 +10,7 @@ Cython
 matplotlib
 numpy==1.26.4
 opencv-python
+# opencv-python-headless
 Pillow
 PyYAML
 scipy

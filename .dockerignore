@@ -1,0 +1,8 @@
+**/.venv/
+
+**/.env
+
+**/passwd_file
+
+mosquitto.conf
+

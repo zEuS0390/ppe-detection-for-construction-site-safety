@@ -1,0 +1,38 @@
+services:
+
+  app:
+    restart: unless-stopped
+    container_name: ppe-detection-for-construction-site-safety
+    build:
+      dockerfile: "./Dockerfile"
+    environment:
+      MQTT_CLIENT_ID: "${MQTT_CLIENT_ID}"
+      MQTT_SUB_TOPIC: "${MQTT_SUB_TOPIC}"
+      MQTT_PUB_TOPIC: "${MQTT_PUB_TOPIC}"
+      MQTT_HOSTNAME: "${MQTT_HOSTNAME}"
+      MQTT_USERNAME: "${MQTT_USERNAME}"
+      MQTT_PASSWORD: "${MQTT_PASSWORD}"
+      MQTT_PORT: "${MQTT_PORT}"
+    volumes:
+      - "./cfg:/app/cfg"
+      - "./data:/app/data"
+    depends_on:
+      - mosquitto_broker
+    networks:
+      - ppenetwork
+
+  mosquitto_broker:
+    restart: unless-stopped
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+    volumes:
+      - "./mosquitto.conf:/mosquitto/config/mosquitto.conf"
+      - "./passwd_file:/mosquitto/config/passwd_file"
+    networks:
+      - ppenetwork
+
+networks:
+  ppenetwork:
+
