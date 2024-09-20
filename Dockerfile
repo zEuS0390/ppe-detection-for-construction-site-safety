@@ -10,7 +10,6 @@ COPY . .
 RUN apt-get update -y
 
 # Install git for version control
-# RUN apt-get install -y python3 git
 RUN apt-get install -y python3 python3-venv git
 
 # Clone the pyenv repository to manage Python versions
@@ -34,7 +33,5 @@ RUN pyenv global 3.9.2
 # RUN eval "$(pyenv init -)" && pip install virtualenv
 RUN eval "$(pyenv init -)" && ./scripts/linux/install.sh local
 
-# RUN python3 -m venv .venv/
-
-# ENTRYPOINT [".venv/bin/python", "main.py", "--local"]
 CMD [".venv/bin/python", "main.py", "--local"]
+
