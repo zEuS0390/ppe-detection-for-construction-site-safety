@@ -58,9 +58,6 @@ echo "20s/from *utils./from yolor.utils./1 > ./yolor/utils/plots.py"
 
 # ----------------------------------------------
 
-# Create a copy of sample configuration files for MQTT clients
-cp "cfg/client/mqtt/sample.cfg" "cfg/client/mqtt/notif.cfg"
-cp "cfg/client/mqtt/sample.cfg" "cfg/client/mqtt/set.cfg"
 cp "cfg/client/sftp/sample.cfg" "cfg/client/sftp/data.cfg"
 
 # Create ssh keys for SFTP
