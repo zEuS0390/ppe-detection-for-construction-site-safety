@@ -5,8 +5,8 @@ from openpyxl import Workbook
 import os
 
 def exportAsXLSX(cfg: ConfigParser,
-                 path_to_directory: str = "data/export", 
-                 from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"), 
+                 path_to_directory: str
+                 from_datetime: datetime = datetime.now().strftime("%Y-%m-%d 00:00:00"),
                  to_datetime: datetime = datetime.now().strftime("%Y-%m-%d 23:59:59")):
   """
   Generate and export the requested data from the database to XLSX file.
